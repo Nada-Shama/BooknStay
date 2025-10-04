@@ -19,115 +19,10 @@
     <link rel="stylesheet" href="{% static 'css/owl.css' %}">
     <link rel="stylesheet" href="{% static 'css/animate.css' %}">
     <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
-    
-    <style>
-        /* Fix logo layout to prevent wrapping - Override original CSS */
-        .header-area .main-nav {
-            display: flex !important;
-            align-items: center !important;
-            justify-content: space-between !important;
-            flex-wrap: nowrap !important;
-        }
-        
-        .header-area .main-nav .logo {
-            flex: 0 0 auto !important;
-            min-width: 200px !important;
-            white-space: nowrap !important;
-            display: inline-block !important;
-        }
-        
-        .header-area .main-nav .logo h1 {
-            font-size: 28px !important;
-            font-weight: 700 !important;
-            margin: 0 !important;
-            line-height: 1.2 !important;
-            white-space: nowrap !important;
-            text-transform: uppercase !important;
-            color: #1e1e1e !important;
-        }
-        
-        .header-area .main-nav ul.nav {
-            flex: 1 !important;
-            flex-basis: auto !important;
-            display: flex !important;
-            justify-content: flex-end !important;
-            align-items: center !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            list-style: none !important;
-            margin-top: 0 !important;
-        }
-        
-        .header-area .main-nav .nav li {
-            margin: 0 5px !important;
-            white-space: nowrap !important;
-            padding-left: 5px !important;
-            padding-right: 5px !important;
-            height: auto !important;
-            line-height: normal !important;
-        }
-        
-        .header-area .main-nav .nav li a {
-            padding: 8px 12px !important;
-            font-size: 14px !important;
-            text-decoration: none !important;
-            color: #1e1e1e !important;
-            transition: color 0.3s !important;
-            display: block !important;
-            font-weight: 500 !important;
-        }
-        
-        .header-area .main-nav .nav li a:hover {
-            color: #f35525 !important;
-        }
-        
-        .header-area .main-nav .nav li a.active {
-            color: #f35525 !important;
-        }
-        
-        .header-area .main-nav .menu-trigger {
-            display: none !important;
-            flex: 0 0 auto !important;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .header-area .main-nav .nav {
-                display: none !important;
-            }
-            
-            .header-area .main-nav .menu-trigger {
-                display: block !important;
-            }
-            
-            .header-area .main-nav .logo h1 {
-                font-size: 24px !important;
-            }
-        }
-        
-        @media (max-width: 1200px) {
-            .header-area .main-nav .nav li {
-                padding-left: 3px !important;
-                padding-right: 3px !important;
-            }
-        }
-    </style>
   </head>
 
 <body>
 
-  <!-- ***** Preloader Start ***** -->
-  <div id="js-preloader" class="js-preloader">
-    <div class="preloader-inner">
-      <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </div>
-  <!-- ***** Preloader End ***** -->
 
   <div class="sub-header">
     <div class="container">
@@ -164,6 +59,8 @@
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
                       <li><a href="{% url 'home' %}" class="active">Home</a></li>
+                      <li><a href="{% url 'hotels' %}">Hotels</a></li>
+                      <li><a href="{% url 'booking' %}">Booking</a></li>
                       <li><a href="{% url 'properties' %}">Properties</a></li>
                       <li><a href="{% url 'property-details' %}">Property Details</a></li>
                       <li><a href="{% url 'contact' %}">Contact Us</a></li>

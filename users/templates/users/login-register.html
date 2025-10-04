@@ -75,18 +75,6 @@
 
 <body>
 
-  <!-- ***** Preloader Start ***** -->
-  <div id="js-preloader" class="js-preloader">
-    <div class="preloader-inner">
-      <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </div>
-  <!-- ***** Preloader End ***** -->
 
   <div class="sub-header">
     <div class="container">
@@ -116,16 +104,18 @@
             <div class="col-12">
                 <nav class="main-nav">
                     <!-- ***** Logo Start ***** -->
-                    <a href="index.html" class="logo">
-                        <h3>Book & Stay</h3>
+                    <a href="{% url 'home' %}" class="logo">
+                        <h1>Book & Stay</h1>
                     </a>
                     <!-- ***** Logo End ***** -->
                     <!-- ***** Menu Start ***** -->
                     <ul class="nav">
-                      <li><a href="index.html">Home</a></li>
-                      <li><a href="properties.html">Properties</a></li>
-                      <li><a href="property-details.html">Property Details</a></li>
-                      <li><a href="contact.html">Contact Us</a></li>
+                      <li><a href="{% url 'home' %}">Home</a></li>
+                      <li><a href="{% url 'hotels' %}">Hotels</a></li>
+                      <li><a href="{% url 'booking' %}">Booking</a></li>
+                      <li><a href="{% url 'properties' %}">Properties</a></li>
+                      <li><a href="{% url 'property-details' %}">Property Details</a></li>
+                      <li><a href="{% url 'contact' %}">Contact Us</a></li>
                       <li><a href="#"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
                   </ul>   
                     <a class='menu-trigger'>

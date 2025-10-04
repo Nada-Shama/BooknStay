@@ -50,6 +50,9 @@ def property_details(request):
 def contact(request):
     return render(request, 'contact.html')
 
+def hotels(request):
+    return render(request, 'hotels.html')
+
 def login_view(request):
     form = AuthenticationForm()
     return render(request, 'users/login-register.html', {'form': form})
@@ -57,3 +60,20 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+def booking(request):
+    """Handle hotel booking page for both guests and authenticated users"""
+    context = {
+        'user': request.user,
+        'is_authenticated': request.user.is_authenticated,
+    }
+    
+    # If user is authenticated, pre-fill some form data
+    if request.user.is_authenticated:
+        context.update({
+            'user_email': request.user.email,
+            'user_first_name': request.user.first_name,
+            'user_last_name': request.user.last_name,
+        })
+    
+    return render(request, 'booking.html', context)
