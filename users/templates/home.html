@@ -1,0 +1,7 @@
+<h1>Welcome to BookingHotelPro</h1>
+{% if user.is_authenticated %}
+  <p>Hello, {{ user.username }} ({{ user.role }})</p>
+  <a href="/users/logout/">Logout</a>
+{% else %}
+  <a href="{% url 'login_register' %}">Login / Register</a>
+{% endif %}
