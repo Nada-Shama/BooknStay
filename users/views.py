@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 
@@ -64,3 +64,20 @@ def redirect_user(user):
 
 def home(request):
     return render(request, 'home.html')
+
+def properties(request):
+    return render(request, 'properties.html')
+
+def property_details(request):
+    return render(request, 'property-details.html')
+
+def contact(request):
+    return render(request, 'contact.html')
+
+def login_view(request):
+    form = AuthenticationForm()
+    return render(request, 'users/login-register.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('home')
