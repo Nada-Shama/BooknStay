@@ -1,0 +1,52 @@
+{% load static %}
+  <div class="sub-header">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 col-md-8">
+          <ul class="info">
+            <li><i class="fa fa-envelope"></i> info@hotelbooking.com</li>
+            <li><i class="fa fa-map"></i> Hotel Booking System</li>
+          </ul>
+        </div>
+        <div class="col-lg-4 col-md-4">
+          <ul class="social-links">
+            <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+            <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+            <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+            <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="header-area header-sticky">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav class="main-nav">
+                    <!-- ***** Logo Start ***** -->
+                    <a href="{% url 'home' %}" class="logo">
+                        <h1>Book & Stay</h1>
+                    </a>
+                    <!-- ***** Logo End ***** -->
+                    <!-- ***** Menu Start ***** -->
+                    <ul class="nav">
+                      <li><a href="{% url 'home' %}">Home</a></li>
+                      <li><a href="{% url 'hotels' %}">Hotels</a></li>
+                      <li><a href="{% url 'booking' %}">Booking</a></li>
+                      <li><a href="{% url 'properties' %}">Properties</a></li>
+                      <li><a href="{% url 'property-details' %}">Property Details</a></li>
+                      <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                      <li><a href="#"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                  </ul>   
+                    <a class='menu-trigger'>
+                        <span>Menu</span>
+                    </a>
+                    <!-- ***** Menu End ***** -->
+                </nav>
+            </div>
+        </div>
+    </div>
+  </header>
+
