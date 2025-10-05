@@ -185,38 +185,91 @@
                         <div class="form-section">
                             <h3><i class="fa fa-credit-card"></i> Payment Information</h3>
                             
-                            <div class="form-group">
-                                <label>Payment Method *</label>
-                                <div class="payment-methods">
-                                    <label class="payment-option">
-                                        <input type="radio" name="paymentMethod" value="card" checked>
-                                        <span>Credit/Debit Card</span>
-                                    </label>
-                                    <label class="payment-option">
-                                        <input type="radio" name="paymentMethod" value="paypal">
-                                        <span>PayPal</span>
-                                    </label>
-                                </div>
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="stripe" checked>
+                                    <span><i class="fab fa-stripe"></i> Stripe (Recommended)</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="card">
+                                    <span><i class="fa fa-credit-card"></i> Credit/Debit Card</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="paypal">
+                                    <span><i class="fab fa-paypal"></i> PayPal</span>
+                                </label>
                             </div>
                             
-                            <div class="card-details" id="cardDetails">
-                                <div class="form-group">
-                                    <label for="cardNumber">Card Number *</label>
-                                    <input type="text" id="cardNumber" name="cardNumber" placeholder="XXXX XXXX XXXX XXXX" required>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="expiryDate">Expiry Date *</label>
-                                        <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/YY" required>
+                            <!-- Stripe Payment Section -->
+                            <div class="stripe-payment" id="stripePayment">
+                                <div class="stripe-info">
+                                    <div class="stripe-logo">
+                                        <i class="fab fa-stripe"></i>
+                                        <span>Stripe</span>
                                     </div>
+                                    <p>Secure payment processing by Stripe. Your payment information is encrypted and secure.</p>
+                                </div>
+                                
+                                <div class="stripe-form">
                                     <div class="form-group">
-                                        <label for="cvv">CVV *</label>
-                                        <input type="text" id="cvv" name="cvv" placeholder="XXX" required>
+                                        <label for="stripeEmail">Email Address *</label>
+                                        <input type="email" id="stripeEmail" name="stripeEmail" placeholder="your-email@example.com" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardNumber">Card Number *</label>
+                                        <div class="stripe-card-input">
+                                            <input type="text" id="stripeCardNumber" name="stripeCardNumber" placeholder="4242 4242 4242 4242" required>
+                                            <div class="card-icons">
+                                                <i class="fab fa-cc-visa"></i>
+                                                <i class="fab fa-cc-mastercard"></i>
+                                                <i class="fab fa-cc-amex"></i>
+                                                <i class="fab fa-cc-discover"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="stripeExpiry">Expiry Date *</label>
+                                            <input type="text" id="stripeExpiry" name="stripeExpiry" placeholder="12/25" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="stripeCvv">CVV *</label>
+                                            <input type="text" id="stripeCvv" name="stripeCvv" placeholder="123" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardholderName">Cardholder Name *</label>
+                                        <input type="text" id="stripeCardholderName" name="stripeCardholderName" placeholder="John Doe" required>
+                                    </div>
+                                    
+                                    <div class="stripe-security">
+                                        <div class="security-badges">
+                                            <span class="security-badge"><i class="fa fa-shield-alt"></i> SSL Encrypted</span>
+                                            <span class="security-badge"><i class="fa fa-lock"></i> PCI Compliant</span>
+                                            <span class="security-badge"><i class="fa fa-check-circle"></i> 3D Secure</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="cardholderName">Cardholder Name *</label>
-                                    <input type="text" id="cardholderName" name="cardholderName">
+                            </div>
+
+                            <!-- PayPal Section -->
+                            <div class="paypal-payment" id="paypalPayment">
+                                <div class="paypal-info">
+                                    <div class="paypal-logo">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>PayPal</span>
+                                    </div>
+                                    <p>Pay securely with your PayPal account. You'll be redirected to PayPal to complete your payment.</p>
+                                </div>
+                                
+                                <div class="paypal-button">
+                                    <button type="button" class="paypal-btn">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>Pay with PayPal</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -399,12 +452,23 @@
             
             // Payment method toggle
             $('input[name="paymentMethod"]').change(function() {
-                if ($(this).val() === 'card') {
+                const paymentMethod = $(this).val();
+                
+                // Hide all payment sections
+                $('#stripePayment, #cardDetails, #paypalPayment').hide();
+                
+                // Show selected payment section
+                if (paymentMethod === 'stripe') {
+                    $('#stripePayment').show();
+                } else if (paymentMethod === 'card') {
                     $('#cardDetails').show();
-                } else {
-                    $('#cardDetails').hide();
+                } else if (paymentMethod === 'paypal') {
+                    $('#paypalPayment').show();
                 }
             });
+
+            // Initialize with Stripe selected
+            $('#stripePayment').show();
             
             // Next step button
             $('#nextStep').click(function() {
@@ -489,14 +553,14 @@
                 if (currentStep === 2) {
                     const paymentMethod = $('input[name="paymentMethod"]:checked').val();
                     if (paymentMethod === 'card') {
-                        const cardNumber = $('#cardNumber').val();
-                        const expiryDate = $('#expiryDate').val();
-                        const cvv = $('#cvv').val();
-                        const cardholderName = $('#cardholderName').val();
+                        const cardNumber = $('#stripeCardNumber').val();
+                        const expiryDate = $('#stripeExpiry').val();
+                        const cvv = $('#stripeCvv').val();
+                        const cardholderName = $('#stripeCardholderName').val();
                         
                         if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
                             isValid = false;
-                            $('#cardDetails input').addClass('error');
+                            $('#stripePayment input').addClass('error');
                         }
                     }
                 }
@@ -525,15 +589,15 @@
                 }, 2000);
             }
             
-            // Card number formatting
-            $('#cardNumber').on('input', function() {
+            // Stripe card number formatting
+            $('#stripeCardNumber').on('input', function() {
                 var value = $(this).val().replace(/\s/g, '');
                 var formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
                 $(this).val(formattedValue);
             });
             
-            // Expiry date formatting
-            $('#expiryDate').on('input', function() {
+            // Stripe expiry date formatting
+            $('#stripeExpiry').on('input', function() {
                 var value = $(this).val().replace(/\D/g, '');
                 if (value.length >= 2) {
                     value = value.substring(0, 2) + '/' + value.substring(2, 4);
@@ -541,9 +605,15 @@
                 $(this).val(value);
             });
             
-            // CVV formatting
-            $('#cvv').on('input', function() {
+            // Stripe CVV formatting
+            $('#stripeCvv').on('input', function() {
                 $(this).val($(this).val().replace(/\D/g, ''));
+            });
+
+            // PayPal button click
+            $('.paypal-btn').click(function() {
+                // Simulate PayPal redirect
+                alert('Redirecting to PayPal... (This is a demo)');
             });
         });
         

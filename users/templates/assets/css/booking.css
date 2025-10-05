@@ -374,6 +374,10 @@
     color: #fff;
 }
 
+#completeBooking {
+    white-space: nowrap;
+}
+
 .booking-step-navigation .main-button:hover {
     background: #e04a1f;
     transform: translateY(-2px);
@@ -614,4 +618,211 @@
     .booking-summary {
         padding: 20px;
     }
+}
+
+/* Stripe Payment Styles */
+.stripe-payment {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.stripe-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stripe-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #635bff;
+    font-size: 18px;
+}
+
+.stripe-logo i {
+    font-size: 24px;
+}
+
+.stripe-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.stripe-card-input {
+    position: relative;
+}
+
+.stripe-card-input input {
+    padding-right: 80px;
+}
+
+.card-icons {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    gap: 8px;
+}
+
+.card-icons i {
+    font-size: 18px;
+    color: #6c757d;
+    opacity: 0.7;
+}
+
+.stripe-security {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.stripe-security .security-badges {
+    justify-content: center;
+    gap: 15px;
+}
+
+.stripe-security .security-badge {
+    background: #635bff;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.stripe-security .security-badge i {
+    color: white;
+}
+
+/* PayPal Payment Styles */
+.paypal-payment {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.paypal-info {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-top: 1px solid #e9ecef;
+}
+
+.paypal-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #0070ba;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.paypal-logo i {
+    font-size: 24px;
+}
+
+.paypal-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.paypal-button {
+    margin-top: 20px;
+}
+
+.paypal-btn {
+    background: #0070ba;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    min-width: 200px;
+    justify-content: center;
+}
+
+.paypal-btn:hover {
+    background: #005ea6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 112, 186, 0.3);
+}
+
+.paypal-btn i {
+    font-size: 20px;
+}
+
+/* Payment method options styling */
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.payment-option:hover {
+    border-color: #f35525;
+    background: #fff5f3;
+}
+
+.payment-option input[type="radio"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #f35525;
+}
+
+.payment-option input[type="radio"]:checked+span {
+    color: #f35525;
+    font-weight: 600;
+}
+
+.payment-option span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.payment-option span i {
+    font-size: 20px;
+}
+
+.payment-option:has(input:checked) {
+    border-color: #f35525;
+    background: #fff5f3;
 }
