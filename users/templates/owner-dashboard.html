@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block title %}Owner Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+{% endblock %}
 {% block content %}
   <div class="page-heading header-text">
     <div class="container">
@@ -12,10 +16,147 @@
     </div>
   </div>
 
-  <div class="section">
+  <div class="section owner-dashboard">
     <div class="container">
-      <p>Welcome, {{ user.first_name|default:user.username }}. This is a placeholder dashboard for hotel owners.</p>
-      <div class="main-button"><a href="{% url 'owner-register' %}">Register a Property</a></div>
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="od-nav">
+              <li class="active"><a href="#">Dashboard</a></li>
+              <li><a href="#">Profile</a></li>
+              <li><a href="#">View my Hotels</a></li>
+              <li><a href="#">Add New Hotel</a></li>
+              <li><a href="#">Add New Room</a></li>
+              <li><a href="#">Bookings Management</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            <div class="section-heading">
+              <h6>| Overview</h6>
+              <h2>Your Properties at a Glance</h2>
+            </div>
+            <div class="od-stats">
+              <div class="od-stat">
+                <h3>4</h3>
+                <p>Total Hotels</p>
+              </div>
+              <div class="od-stat">
+                <h3>36</h3>
+                <p>Total Rooms</p>
+              </div>
+              <div class="od-stat">
+                <h3>12</h3>
+                <p>Active Bookings</p>
+              </div>
+              <div class="od-stat">
+                <h3>92%</h3>
+                <p>Avg. Occupancy</p>
+              </div>
+            </div>
+
+            <div class="od-actions">
+              <div class="main-button"><a href="{% url 'owner-register' %}">Add New Hotel</a></div>
+              <div class="main-button"><a href="#">Add New Room</a></div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 30px;">
+              <h6>| Quick View</h6>
+              <h2>Latest Hotels</h2>
+            </div>
+            <div class="od-hotels">
+              <div class="od-hotel">
+                <img src="{% static 'images/property-01.jpg' %}" alt="Hotel">
+                <div>
+                  <h4>Grand Miami Hotel</h4>
+                  <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
+                </div>
+                <div class="od-hotel-actions">
+                  <a class="btn" href="#">View</a>
+                  <a class="btn btn-outline" href="#">Manage</a>
+                </div>
+              </div>
+              <div class="od-hotel">
+                <img src="{% static 'images/property-02.jpg' %}" alt="Hotel">
+                <div>
+                  <h4>Ocean View Resort</h4>
+                  <p><i class="fa fa-map-marker"></i> South Beach, FL</p>
+                </div>
+                <div class="od-hotel-actions">
+                  <a class="btn" href="#">View</a>
+                  <a class="btn btn-outline" href="#">Manage</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 30px;">
+              <h6>| Bookings</h6>
+              <h2>Calendar (Preview)</h2>
+            </div>
+            <div class="od-calendar">
+              <div class="od-calendar-header">
+                <button class="btn btn-outline">Prev</button>
+                <h4>December 2024</h4>
+                <button class="btn btn-outline">Next</button>
+              </div>
+              <div class="od-calendar-grid">
+                <div class="dow">Sun</div>
+                <div class="dow">Mon</div>
+                <div class="dow">Tue</div>
+                <div class="dow">Wed</div>
+                <div class="dow">Thu</div>
+                <div class="dow">Fri</div>
+                <div class="dow">Sat</div>
+                <div class="pad"></div>
+                <div class="pad"></div>
+                <div class="pad"></div>
+                <div class="pad"></div>
+                <div class="pad"></div>
+                <div class="day">1</div>
+                <div class="day">2</div>
+                <div class="day">3</div>
+                <div class="day">4</div>
+                <div class="day">5</div>
+                <div class="day">6</div>
+                <div class="day">7</div>
+                <div class="day">8</div>
+                <div class="day">9</div>
+                <div class="day">10</div>
+                <div class="day">11</div>
+                <div class="day">12</div>
+                <div class="day">13</div>
+                <div class="day">14</div>
+                <div class="day">15</div>
+                <div class="day">16</div>
+                <div class="day">17</div>
+                <div class="day">18</div>
+                <div class="day">19</div>
+                <div class="day">20</div>
+                <div class="day">21</div>
+                <div class="day">22</div>
+                <div class="day">23</div>
+                <div class="day">24</div>
+                <div class="day">25</div>
+                <div class="day">26</div>
+                <div class="day">27</div>
+                <div class="day">28</div>
+                <div class="day">29</div>
+                <div class="day">30</div>
+                <div class="day">31</div>
+              </div>
+              <p class="note">This is a static preview. Interactive booking calendar will be implemented later.</p>
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   </div>
 {% endblock %}

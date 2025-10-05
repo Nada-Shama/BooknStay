@@ -7,6 +7,9 @@ from .forms import CustomUserCreationForm
 
 # Create your views here.
 def login_register(request):
+    if request.user.is_authenticated:
+        return redirect_user(request.user)
+
     login_form = AuthenticationForm()
     register_form = CustomUserCreationForm()
 
@@ -25,7 +28,7 @@ def login_register(request):
                 login(request, user)
                 return redirect_user(user)
 
-    return render(request, 'users/login-register.html', {
+    return render(request, 'login-register.html', {
         'login_form': login_form,
         'register_form': register_form,
     })
@@ -57,7 +60,7 @@ def hotels(request):
 
 def login_view(request):
     form = AuthenticationForm()
-    return render(request, 'users/login-register.html', {'form': form})
+    return render(request, 'login-register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
@@ -108,3 +111,14 @@ def account(request):
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
     })
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_add_room(request):
+    return render(request, 'owner-room-new.html')
+
+def room_details(request, room_id):
+    context = {
+        'room_id': room_id,
+    }
+    return render(request, 'room-details.html', context)

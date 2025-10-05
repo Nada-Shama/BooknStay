@@ -9,8 +9,10 @@ urlpatterns = [
     path('booking/', views.booking, name='booking'),
     path('owner/register/', views.owner_register, name='owner-register'),
     path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
+    path('owner/hotels/rooms/new/', views.owner_add_room, name='owner_add_room'),
     path('account/', views.account, name='account'),
     path('properties/', views.properties, name='properties'),
     path('property-details/', views.property_details, name='property-details'),
+    path('rooms/<int:room_id>/', views.room_details, name='room_details'),
     path('contact/', views.contact, name='contact'),
 ]

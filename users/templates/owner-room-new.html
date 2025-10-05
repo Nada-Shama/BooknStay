@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Add New Room - Owner{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a> / Add New Room</span>
+          <h3>Add New Room</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section owner-dashboard">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <ul class="od-nav">
+              <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li class="active"><a href="#">Add New Room</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            <div class="section-heading">
+              <h6>| Room</h6>
+              <h2>Room Details</h2>
+            </div>
+            <form id="room-form" method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-md-6">
+                  <label>Hotel</label>
+                  <select class="form-control">
+                    <option>Select Hotel</option>
+                  </select>
+                </div>
+                <div class="col-md-6">
+                  <label>Room Name</label>
+                  <input type="text" class="form-control" placeholder="e.g., Deluxe King Room">
+                </div>
+                <div class="col-md-4">
+                  <label>Capacity</label>
+                  <input type="number" class="form-control" placeholder="2">
+                </div>
+                <div class="col-md-4">
+                  <label>Price per Night ($)</label>
+                  <input type="number" class="form-control" placeholder="199">
+                </div>
+                <div class="col-md-4">
+                  <label>Status</label>
+                  <select class="form-control">
+                    <option>Active</option>
+                    <option>Inactive</option>
+                  </select>
+                </div>
+                <div class="col-md-12">
+                  <label>Amenities</label>
+                  <div class="row">
+                    <div class="col-md-3"><label><input type="checkbox"> Free Wi‑Fi</label></div>
+                    <div class="col-md-3"><label><input type="checkbox"> Air Conditioning</label></div>
+                    <div class="col-md-3"><label><input type="checkbox"> TV</label></div>
+                    <div class="col-md-3"><label><input type="checkbox"> Mini Bar</label></div>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label>Description</label>
+                  <textarea class="form-control" rows="4" placeholder="Describe the room..."></textarea>
+                </div>
+                <div class="col-md-12" style="margin-top: 12px;">
+                  <div class="main-button"><button type="submit" class="btn" style="border:0;">Save Room</button></div>
+                </div>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+

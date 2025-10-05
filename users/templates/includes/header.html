@@ -34,19 +34,22 @@
                     <ul class="nav">
                         <li><a href="{% url 'home' %}">Home</a></li>
                         <li><a href="{% url 'hotels' %}">Hotels</a></li>
-                        <li><a href="{% url 'booking' %}">Booking</a></li>
                         <!--
+                        <li><a href="{% url 'booking' %}">Booking</a></li>
                         <li><a href="{% url 'properties' %}">Properties</a></li>
                         <li><a href="{% url 'property-details' %}">Property Details</a></li>
                         -->
                         <li><a href="{% url 'contact' %}">Contact Us</a></li>
-                        {% if user.is_authenticated %}
-                            <li><a href="{% url 'login_register' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                        {% if user.is_authenticated and user.is_customer %}
+                            <li><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                            <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        {% elif user.is_authenticated and user.is_owner %}
+                            <li><a href="{% url 'owner_dashboard' %}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
                             <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
                         {% else %}
                             <li><a href="{% url 'login_register' %}"><i class="fa fa-sign-in"></i> Login / Register</a></li>
                         {% endif %}
-                        <li><a href="#"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                        <li><a href="{% url 'booking' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
                     </ul>   
                     <a class='menu-trigger'>
                         <span>Menu</span>
