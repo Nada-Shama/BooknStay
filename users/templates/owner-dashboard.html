@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Owner Dashboard{% endblock %}
+{% block content %}
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Owner Dashboard</span>
+          <h3>Owner Dashboard</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="container">
+      <p>Welcome, {{ user.first_name|default:user.username }}. This is a placeholder dashboard for hotel owners.</p>
+      <div class="main-button"><a href="{% url 'owner-register' %}">Register a Property</a></div>
+    </div>
+  </div>
+{% endblock %}
+
+

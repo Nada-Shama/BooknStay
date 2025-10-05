@@ -15,6 +15,11 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default='customer'
     )
+    
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=30, blank=False)
+    date_of_birth = models.DateField(null=True, blank=True)
+    nationality = models.CharField(max_length=100, blank=True)
 
     def is_customer(self):
         return self.role == 'customer'

@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
@@ -78,5 +80,31 @@ def booking(request):
     
     return render(request, 'booking.html', context)
 
+def _is_owner_or_admin(user):
+    return user.is_authenticated and (getattr(user, 'is_owner', lambda: False)() or user.is_staff or user.is_superuser)
+
+# Owner Registration page for new owners 
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_register(request):
+    if request.method == 'POST':
+        # Lightweight validation: enforce email matches authenticated account
+        posted_email = (request.POST.get('email') or '').strip()
+        if posted_email and posted_email.lower() != (request.user.email or '').lower():
+            messages.error(request, 'Please use the same email address associated with your account.')
+            return render(request, 'owner-register.html')
+        messages.success(request, 'Your registration request has been received.')
+        return render(request, 'owner-register.html')
     return render(request, 'owner-register.html')
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_dashboard(request):
+    return render(request, 'owner-dashboard.html')
+
+@login_required(login_url='login_register')
+def account(request):
+    return render(request, 'account.html', {
+        'user': request.user,
+        'is_authenticated': request.user.is_authenticated,
+    })

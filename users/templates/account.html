@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Account - Book & Stay{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/account.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / My Account</span>
+          <h3>My Account</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section account-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="account-sidebar">
+            <div class="account-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div class="details">
+                <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="account-nav">
+              <li class="active"><a href="#">Bookings</a></li>
+              <li><a href="#">Saved Hotels</a></li>
+              <li><a href="#">Profile</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="account-content">
+            <div class="section-heading">
+              <h6>| My Bookings</h6>
+              <h2>Recent Reservations</h2>
+            </div>
+            <div class="booking-cards">
+              <div class="booking-card">
+                <div class="image">
+                  <img src="{% static 'images/property-01.jpg' %}" alt="Hotel image">
+                </div>
+                <div class="info">
+                  <h4>Grand Miami Hotel</h4>
+                  <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
+                  <ul>
+                    <li><strong>Check-in:</strong> Dec 15, 2024</li>
+                    <li><strong>Check-out:</strong> Dec 18, 2024</li>
+                    <li><strong>Guests:</strong> 2 Adults</li>
+                    <li><strong>Total:</strong> $862.50</li>
+                  </ul>
+                  <div class="actions">
+                    <a class="btn btn-outline" href="#">View</a>
+                    <a class="btn" href="#">Invoice</a>
+                  </div>
+                </div>
+              </div>
+
+              <div class="booking-card">
+                <div class="image">
+                  <img src="{% static 'images/property-02.jpg' %}" alt="Hotel image">
+                </div>
+                <div class="info">
+                  <h4>Ocean View Resort</h4>
+                  <p><i class="fa fa-map-marker"></i> South Beach, FL</p>
+                  <ul>
+                    <li><strong>Check-in:</strong> Jan 05, 2025</li>
+                    <li><strong>Check-out:</strong> Jan 09, 2025</li>
+                    <li><strong>Guests:</strong> 2 Adults, 1 Child</li>
+                    <li><strong>Total:</strong> $1,295.00</li>
+                  </ul>
+                  <div class="actions">
+                    <a class="btn btn-outline" href="#">View</a>
+                    <a class="btn" href="#">Invoice</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 40px;">
+              <h6>| Profile</h6>
+              <h2>Account Details</h2>
+            </div>
+            <div class="profile-details">
+              <div class="row">
+                <div class="col-md-6"><p><strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}</p></div>
+                <div class="col-md-6"><p><strong>Email:</strong> {{ user.email }}</p></div>
+                <div class="col-md-6"><p><strong>Phone:</strong> {{ user.phone|default:'—' }}</p></div>
+                <div class="col-md-6"><p><strong>Nationality:</strong> {{ user.nationality|default:'—' }}</p></div>
+              </div>
+              <div class="main-button" style="margin-top: 10px;"><a href="#">Edit Profile</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
