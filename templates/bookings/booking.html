@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book & Stay - Hotel Booking{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/booking.css' %}">
+{% endblock %}
+{% block content %}
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'hotels' %}">Hotels</a> / Booking</span>
+                    <h3>Complete Your Booking</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="booking-container">
+        <div class="booking-header">
+            <h1>Secure Your Stay</h1>
+            <p>Please fill in your details to complete the reservation process.</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="booking-progress-steps">
+            <div class="booking-step active" data-step="1">
+                <div class="booking-step-number">1</div>
+                <div class="booking-step-label">Guest Details</div>
+            </div>
+            <div class="booking-step" data-step="2">
+                <div class="booking-step-number">2</div>
+                <div class="booking-step-label">Payment</div>
+            </div>
+            <div class="booking-step" data-step="3">
+                <div class="booking-step-number">3</div>
+                <div class="booking-step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="booking-content">
+            <!-- Booking Form -->
+            <div class="booking-form">
+                <form id="bookingForm">
+                    <!-- Step 1: Guest Information -->
+                    <div class="booking-step-content active" id="step-1">
+                        <div class="form-section">
+                            <h3><i class="fa fa-user"></i> Guest Information</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" value="{{ user_first_name|default:'' }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" value="{{ user_last_name|default:'' }}" required>
+                                </div>                                
+                            </div>                
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" value="{{ user_email|default:'' }}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dob">Date of Birth</label>
+                                    <input type="date" id="dob" name="dob">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nationality">Nationality</label>
+                                    <input type="text" id="nationality" name="nationality" placeholder="e.g., American">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3><i class="fa fa-concierge-bell"></i> Special Requests</h3>
+                            
+                            <div class="form-group">
+                                <label for="arrivalTime">Estimated Arrival Time</label>
+                                <input type="time" id="arrivalTime" name="arrivalTime">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dietary">Dietary Requirements</label>
+                                <select id="dietary" name="dietary">
+                                    <option value="">None</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                    <option value="gluten-free">Gluten-free</option>
+                                    <option value="halal">Halal</option>
+                                    <option value="kosher">Kosher</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="specialRequests">Special Requests</label>
+                                <textarea id="specialRequests" name="specialRequests" rows="4" placeholder="Any special requests or notes for your stay..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Payment Information -->
+                    <div class="booking-step-content" id="step-2">
+                        <div class="form-section">
+                            <h3><i class="fa fa-credit-card"></i> Payment Information</h3>
+                            
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="stripe" checked>
+                                    <span><i class="fab fa-stripe"></i> Stripe (Recommended)</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="card">
+                                    <span><i class="fa fa-credit-card"></i> Credit/Debit Card</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="paypal">
+                                    <span><i class="fab fa-paypal"></i> PayPal</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Stripe Payment Section -->
+                            <div class="stripe-payment" id="stripePayment">
+                                <div class="stripe-info">
+                                    <div class="stripe-logo">
+                                        <i class="fab fa-stripe"></i>
+                                        <span>Stripe</span>
+                                    </div>
+                                    <p>Secure payment processing by Stripe. Your payment information is encrypted and secure.</p>
+                                </div>
+                                
+                                <div class="stripe-form">
+                                    <div class="form-group">
+                                        <label for="stripeEmail">Email Address *</label>
+                                        <input type="email" id="stripeEmail" name="stripeEmail" placeholder="your-email@example.com" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardNumber">Card Number *</label>
+                                        <div class="stripe-card-input">
+                                            <input type="text" id="stripeCardNumber" name="stripeCardNumber" placeholder="4242 4242 4242 4242" required>
+                                            <div class="card-icons">
+                                                <i class="fab fa-cc-visa"></i>
+                                                <i class="fab fa-cc-mastercard"></i>
+                                                <i class="fab fa-cc-amex"></i>
+                                                <i class="fab fa-cc-discover"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="stripeExpiry">Expiry Date *</label>
+                                            <input type="text" id="stripeExpiry" name="stripeExpiry" placeholder="12/25" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="stripeCvv">CVV *</label>
+                                            <input type="text" id="stripeCvv" name="stripeCvv" placeholder="123" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardholderName">Cardholder Name *</label>
+                                        <input type="text" id="stripeCardholderName" name="stripeCardholderName" placeholder="John Doe" required>
+                                    </div>
+                                    
+                                    <div class="stripe-security">
+                                        <div class="security-badges">
+                                            <span class="security-badge"><i class="fa fa-shield-alt"></i> SSL Encrypted</span>
+                                            <span class="security-badge"><i class="fa fa-lock"></i> PCI Compliant</span>
+                                            <span class="security-badge"><i class="fa fa-check-circle"></i> 3D Secure</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PayPal Section -->
+                            <div class="paypal-payment" id="paypalPayment">
+                                <div class="paypal-info">
+                                    <div class="paypal-logo">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>PayPal</span>
+                                    </div>
+                                    <p>Pay securely with your PayPal account. You'll be redirected to PayPal to complete your payment.</p>
+                                </div>
+                                
+                                <div class="paypal-button">
+                                    <button type="button" class="paypal-btn">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>Pay with PayPal</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Confirmation -->
+                    <div class="booking-step-content" id="step-3">
+                        <div class="booking-confirmation">
+                            <div class="confirmation-header">
+                                <i class="fa fa-check-circle success-icon"></i>
+                                <h3>Booking Confirmed!</h3>
+                                <p>Your hotel reservation has been successfully created.</p>
+                            </div>
+
+                            <div class="confirmation-details">
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-receipt"></i> Booking Reference</h4>
+                                    <div class="booking-reference">
+                                        <span class="reference-number">#BK-2024-001234</span>
+                                        <button class="copy-btn" onclick="copyReference()">
+                                            <i class="fa fa-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-envelope"></i> Confirmation Email</h4>
+                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">your-email@example.com</strong></p>
+                                    <p>Please check your inbox and spam folder.</p>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-calendar"></i> Booking Summary</h4>
+                                    <div class="booking-summary-mini">
+                                        <div class="summary-item">
+                                            <span class="label">Hotel:</span>
+                                            <span class="value">Grand Miami Hotel</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Check-in:</span>
+                                            <span class="value">Dec 15, 2024 at 3:00 PM</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Check-out:</span>
+                                            <span class="value">Dec 18, 2024 at 11:00 AM</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Guests:</span>
+                                            <span class="value">2 Adults, 1 Room</span>
+                                        </div>
+                                        <div class="summary-item total">
+                                            <span class="label">Total Paid:</span>
+                                            <span class="value">$862.50</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-info-circle"></i> Important Information</h4>
+                                    <ul class="info-list">
+                                        <li><i class="fa fa-check"></i> Free cancellation until Dec 10, 2024</li>
+                                        <li><i class="fa fa-check"></i> Check-in time: 3:00 PM - 11:00 PM</li>
+                                        <li><i class="fa fa-check"></i> Check-out time: 11:00 AM</li>
+                                        <li><i class="fa fa-check"></i> Contact hotel directly for special requests</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="terms" name="terms" required>
+                                <span>I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a> *</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="newsletter" name="newsletter">
+                                <span>Subscribe to our newsletter for special offers and updates</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step Navigation Buttons -->
+                    <div class="booking-step-navigation">
+                        <button type="button" class="btn-secondary" id="prevStep" style="display: none;">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </button>
+                        <button type="button" class="main-button" id="nextStep">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="main-button" id="completeBooking" style="display: none;">
+                            <i class="fa fa-check"></i> Complete Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h4 class="mb-4">Booking Summary</h4>
+                
+                <div class="hotel-info">
+                    <div class="hotel-image">
+                        <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
+                    </div>
+                    <div class="hotel-details">
+                        <h4>Grand Miami Hotel</h4>
+                        <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
+                        <p><i class="fa fa-star"></i> 5.0 (124 reviews)</p>
+                    </div>
+                </div>
+
+                <div class="booking-dates">
+                    <div class="date-item">
+                        <span class="date-label">Check-in</span>
+                        <span class="date-value">Dec 15, 2024</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Check-out</span>
+                        <span class="date-value">Dec 18, 2024</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Nights</span>
+                        <span class="date-value">3</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Guests</span>
+                        <span class="date-value">2 Adults</span>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div class="price-item">
+                        <span class="price-label">Room Rate</span>
+                        <span class="price-value">$250.00 x 3 nights</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="price-label">Taxes & Fees</span>
+                        <span class="price-value">$112.50</span>
+                    </div>
+                    <div class="price-item total">
+                        <span class="price-label">Total</span>
+                        <span class="price-value">$862.50</span>
+                    </div>
+                </div>
+
+                <div class="security-badges">
+                    <span class="security-badge"><i class="fa fa-lock"></i> Secure Payment</span>
+                    <span class="security-badge"><i class="fa fa-shield-alt"></i> SSL Protected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+        $(document).ready(function() {
+            let currentStep = 1;
+            const totalSteps = 3;
+            
+            // Payment method toggle
+            $('input[name="paymentMethod"]').change(function() {
+                const paymentMethod = $(this).val();
+                
+                // Hide all payment sections
+                $('#stripePayment, #cardDetails, #paypalPayment').hide();
+                
+                // Show selected payment section
+                if (paymentMethod === 'stripe') {
+                    $('#stripePayment').show();
+                } else if (paymentMethod === 'card') {
+                    $('#cardDetails').show();
+                } else if (paymentMethod === 'paypal') {
+                    $('#paypalPayment').show();
+                }
+            });
+
+            // Initialize with Stripe selected
+            $('#stripePayment').show();
+            
+            // Next step button
+            $('#nextStep').click(function() {
+                if (validateCurrentStep()) {
+                    if (currentStep < totalSteps) {
+                        currentStep++;
+                        showStep(currentStep);
+                    }
+                }
+            });
+            
+            // Previous step button
+            $('#prevStep').click(function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+            
+            // Complete booking button
+            $('#completeBooking').click(function() {
+                if (validateCurrentStep()) {
+                    completeBooking();
+                }
+            });
+            
+            function showStep(stepNumber) {
+                // Hide all step content
+                $('.booking-step-content').removeClass('active');
+                
+                // Show current step content
+                $('#step-' + stepNumber).addClass('active');
+                
+                // Update progress steps
+                $('.booking-step').removeClass('active completed');
+                $('.booking-step[data-step="' + stepNumber + '"]').addClass('active');
+                
+                // Mark previous steps as completed
+                for (let i = 1; i < stepNumber; i++) {
+                    $('.booking-step[data-step="' + i + '"]').addClass('completed');
+                }
+                
+                // Update navigation buttons
+                updateNavigationButtons();
+                
+                // Scroll to top
+                $('html, body').animate({scrollTop: 0}, 500);
+            }
+            
+            function updateNavigationButtons() {
+                if (currentStep === 1) {
+                    $('#prevStep').hide();
+                    $('#nextStep').show();
+                    $('#completeBooking').hide();
+                } else if (currentStep === totalSteps) {
+                    $('#prevStep').show();
+                    $('#nextStep').hide();
+                    $('#completeBooking').show();
+                } else {
+                    $('#prevStep').show();
+                    $('#nextStep').show();
+                    $('#completeBooking').hide();
+                }
+            }
+            
+            function validateCurrentStep() {
+                let isValid = true;
+                const currentStepContent = $('.booking-step-content.active');
+                
+                // Clear previous errors
+                currentStepContent.find('.error').removeClass('error');
+                
+                // Validate required fields in current step
+                currentStepContent.find('input[required], select[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('error');
+                        isValid = false;
+                    }
+                });
+                
+                // Special validation for payment step
+                if (currentStep === 2) {
+                    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+                    if (paymentMethod === 'card') {
+                        const cardNumber = $('#stripeCardNumber').val();
+                        const expiryDate = $('#stripeExpiry').val();
+                        const cvv = $('#stripeCvv').val();
+                        const cardholderName = $('#stripeCardholderName').val();
+                        
+                        if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+                            isValid = false;
+                            $('#stripePayment input').addClass('error');
+                        }
+                    }
+                }
+                
+                return isValid;
+            }
+            
+            function completeBooking() {
+                // Show loading state
+                $('#completeBooking').html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+                $('#completeBooking').prop('disabled', true);
+                
+                // Simulate booking process
+                setTimeout(function() {
+                    // Update confirmation email
+                    const userEmail = $('#email').val();
+                    $('#confirmationEmail').text(userEmail);
+                    
+                    // Move to confirmation step
+                    currentStep = 3;
+                    showStep(currentStep);
+                    
+                    // Reset button
+                    $('#completeBooking').html('<i class="fa fa-check"></i> Complete Booking');
+                    $('#completeBooking').prop('disabled', false);
+                }, 2000);
+            }
+            
+            // Stripe card number formatting
+            $('#stripeCardNumber').on('input', function() {
+                var value = $(this).val().replace(/\s/g, '');
+                var formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+                $(this).val(formattedValue);
+            });
+            
+            // Stripe expiry date formatting
+            $('#stripeExpiry').on('input', function() {
+                var value = $(this).val().replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                $(this).val(value);
+            });
+            
+            // Stripe CVV formatting
+            $('#stripeCvv').on('input', function() {
+                $(this).val($(this).val().replace(/\D/g, ''));
+            });
+
+            // PayPal button click
+            $('.paypal-btn').click(function() {
+                // Simulate PayPal redirect
+                alert('Redirecting to PayPal... (This is a demo)');
+            });
+        });
+        
+        // Copy reference number
+        function copyReference() {
+            const referenceNumber = document.querySelector('.reference-number').textContent;
+            navigator.clipboard.writeText(referenceNumber).then(function() {
+                // Show copied message
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa fa-check"></i> Copied!';
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+{% endblock %}
