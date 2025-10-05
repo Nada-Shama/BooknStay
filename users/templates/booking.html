@@ -1,21 +1,10 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <title>Book & Stay - Hotel Booking</title>
-    <link href="{% static 'bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'css/fontawesome.css' %}">
-    <link rel="stylesheet" href="{% static 'css/templatemo-villa-agency.css' %}">
-    <link rel="stylesheet" href="{% static 'css/booking.css' %}">
-    <link rel="stylesheet" href="{% static 'css/owl.css' %}">
-    <link rel="stylesheet" href="{% static 'css/animate.css' %}">
-    <link rel="stylesheet" href="https://unpkg.com/swiper@7/swiper-bundle.min.css"/>
-</head>
-<body>
-{% include 'includes/header.html' %}
+{% block title %}Book & Stay - Hotel Booking{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/booking.css' %}">
+{% endblock %}
+{% block content %}
 
     <div class="page-heading header-text">
         <div class="container">
@@ -367,16 +356,9 @@
             </div>
         </div>
     </div>
-{% include 'includes/footer.html' %}
-
-    <script src="{% static 'jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'js/isotope.min.js' %}"></script>
-    <script src="{% static 'js/owl-carousel.js' %}"></script>
-    <script src="{% static 'js/counter.js' %}"></script>
-    <script src="{% static 'js/custom.js' %}"></script>
-    
-    <script>
+{% endblock %}
+{% block extra_js %}
+<script>
         $(document).ready(function() {
             let currentStep = 1;
             const totalSteps = 3;
@@ -562,5 +544,4 @@
             });
         }
     </script>
-</body>
-</html>
+{% endblock %}
