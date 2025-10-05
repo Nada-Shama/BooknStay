@@ -77,3 +77,6 @@ def booking(request):
         })
     
     return render(request, 'booking.html', context)
+
+def owner_register(request):
+    return render(request, 'owner-register.html')
