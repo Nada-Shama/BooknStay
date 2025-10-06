@@ -1,0 +1,101 @@
+.account-section .account-sidebar {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+}
+
+.account-section .account-user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.account-section .account-user .avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f35525;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    margin-right: 12px;
+}
+
+.account-section .account-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.account-section .account-nav li {
+    margin-bottom: 10px;
+}
+
+.account-section .account-nav a {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    color: #3a3a3a;
+    background: #f6f6f6;
+}
+
+.account-section .account-nav .active a,
+.account-section .account-nav a:hover {
+    background: #f35525;
+    color: #fff;
+}
+
+.account-section .account-content {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.08);
+    padding: 20px;
+}
+
+.account-section .booking-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+.account-section .booking-card {
+    display: flex;
+    gap: 16px;
+    background: #fafafa;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.account-section .booking-card .image img {
+    width: 160px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.account-section .booking-card .actions {
+    margin-top: 8px;
+}
+
+.account-section .booking-card .btn {
+    background: #f35525;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 22px;
+    display: inline-block;
+}
+
+.account-section .booking-card .btn-outline {
+    background: transparent;
+    color: #f35525;
+    border: 1px solid #f35525;
+}
+
+@media (min-width: 992px) {
+    .account-section .booking-cards {
+        grid-template-columns: 1fr 1fr;
+    }
+}
