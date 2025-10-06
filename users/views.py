@@ -24,9 +24,16 @@ def login_register(request):
         elif 'register_submit' in request.POST:  # user clicked register form
             register_form = CustomUserCreationForm(request.POST)
             if register_form.is_valid():
-                user = register_form.save()
-                login(request, user)
-                return redirect_user(user)
+                saved_user = register_form.save()
+                raw_password = register_form.cleaned_data.get('password1')
+                # Authenticate to attach the backend; prefer username to avoid email uniqueness ambiguity
+                auth_user = authenticate(request, username=saved_user.username, password=raw_password)
+                if auth_user is not None:
+                    login(request, auth_user)
+                    return redirect_user(auth_user)
+                # Fallback: explicitly specify backend if authenticate did not return a user
+                login(request, saved_user, backend='users.backends.EmailOrUsernameBackend')
+                return redirect_user(saved_user)
 
     return render(request, 'users/login-register.html', {
         'login_form': login_form,
@@ -62,8 +69,8 @@ def all_hotels(request):
     return render(request, 'hotels/all-hotels.html')
 
 def login_view(request):
-    form = AuthenticationForm()
-    return render(request, 'users/login-register.html', {'form': form})
+    # Keep /users/login/ working by redirecting to the unified auth page
+    return redirect('login_register')
 
 def logout_view(request):
     logout(request)
