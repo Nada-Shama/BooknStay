@@ -27,6 +27,7 @@ urlpatterns = [
     path('', user_views.home, name='home'),
     path('users/', include('users.urls')),
     path('hotels/', include('hotels.urls')),
+    path('bookings/', include('bookings.urls'))
 ]
 
 # Serve static files during development

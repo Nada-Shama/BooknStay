@@ -7,7 +7,7 @@ from users.models import User
 
 def home(request):
     hotels = Hotel.objects.all()
-    return render(request, 'hotels/home.html', {'hotels': hotels})
+    return render(request, 'users/home.html', {'hotels': hotels})
 
 
 def hotel_list(request):
@@ -41,7 +41,7 @@ def book_room(request, hotel_id):
         'hotel': hotel,
         'rooms': rooms,
     }
-    return render(request, 'hotels/booking.html', context)
+    return render(request, 'bookings/booking.html', context)
 
 
 def add_review(request, hotel_id):
@@ -72,7 +72,7 @@ def add_review(request, hotel_id):
 
 
 def owner_register(request):
-    return render(request, 'hotels/owner-register.html')
+    return render(request, 'users/owner-register.html')
 
 def properties(request):
 
