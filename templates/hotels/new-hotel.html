@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Hotel Booking System - Hotel Owner Registration{% endblock %}
+{% block title %}Hotel Booking System - New Hotel Adding{% endblock %}
 {% block content %}
 
   <div class="page-heading header-text">
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a>  /  Hotel Owner Registration</span>
-          <h3>Hotel Owner Registration</h3>
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a>  /  New Hotel Adding</span>
+          <h3>New Hotel Adding</h3>
         </div>
       </div>
     </div>
@@ -31,58 +31,13 @@
             
           <div class="form-card">
             <div class="section-heading">
-              <h6>| Become a Partner</h6>
-              <h2>Register New Account & Add your Property.</h2>
+              <h6>| Adding New Hotel</h6>
+              <h2>Register New Property by filling all below details.</h2>
             </div>
 
             <form id="owner-register-form" method="post">
               {% csrf_token %}
               <div class="row">
-                <!--
-                <div class="col-lg-12">
-                  <div class="alert alert-info" role="alert" style="border-radius: 10px;">
-                    Please use the same email address your administration approval was sent to. Your account will be linked to that email once verified.
-                  </div>
-                </div>
-                -->
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_first_name">First Name</label>
-                    <input type="text" id="owner_first_name" name="first_name" placeholder="First Name" required>
-                  </fieldset>
-                </div>
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_last_name">Last Name</label>
-                    <input type="text" id="owner_last_name" name="last_name" placeholder="Last Name" required>
-                  </fieldset>
-                </div>
-
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_email">Email Address</label>
-                    <input type="email" id="owner_email" name="email" placeholder="you@company.com" required>
-                  </fieldset>
-                </div>
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_phone">Phone Number</label>
-                    <input type="tel" id="owner_phone" name="phone" placeholder="+1 (555) 123-4567" required>
-                  </fieldset>
-                </div>
-
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_password1">Password</label>
-                    <input type="password" id="owner_password1" name="password1" placeholder="Create Password" required autocomplete="new-password">
-                  </fieldset>
-                </div>
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="owner_password2">Confirm Password</label>
-                    <input type="password" id="owner_password2" name="password2" placeholder="Confirm Password" required autocomplete="new-password">
-                  </fieldset>
-                </div>
 
                 <div class="col-lg-12">
                   <fieldset>
@@ -104,6 +59,7 @@
                     </select>
                   </fieldset>
                 </div>
+                
                 <div class="col-lg-6">
                   <fieldset>
                     <label for="stars">Star Rating</label>
@@ -124,6 +80,7 @@
                     <input type="text" id="address" name="address" placeholder="123 Main St" >
                   </fieldset>
                 </div>
+
                 <div class="col-lg-4">
                   <fieldset>
                     <label for="zipcode">Zip/Postal Code</label>
@@ -137,12 +94,14 @@
                     <input type="text" id="city" name="city" placeholder="New York" >
                   </fieldset>
                 </div>
+
                 <div class="col-lg-4">
                   <fieldset>
                     <label for="state">State/Region</label>
                     <input type="text" id="state" name="state" placeholder="NY" >
                   </fieldset>
                 </div>
+
                 <div class="col-lg-4">
                   <fieldset>
                     <label for="country">Country</label>
@@ -156,6 +115,7 @@
                     <input type="number" id="num_rooms" name="num_rooms" min="1" placeholder="e.g., 120" >
                   </fieldset>
                 </div>
+
                 <div class="col-lg-6">
                   <fieldset>
                     <label for="opening_date">Opening Date</label>
@@ -193,6 +153,7 @@
                     <input type="text" id="business_name" name="business_name" placeholder="Registered Business Name" >
                   </fieldset>
                 </div>
+
                 <div class="col-lg-6">
                   <fieldset>
                     <label for="tax_id">Tax/VAT ID</label>
@@ -225,7 +186,7 @@
                 </div>
 
                 <div class="col-lg-12">
-                  <button type="submit" class="orange-button">Submit Registration</button>
+                  <button type="submit" class="orange-button">Submit Adding</button>
                 </div>
               </div>
             </form>

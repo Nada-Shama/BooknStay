@@ -12,6 +12,8 @@ def home(request):
 
 def hotel_list(request):
     hotels = Hotel.objects.all()
+    # this templete about search results -- you probably need to change naming .. 
+    # but don't delete tell to delete hotels.html damn again ok...
     return render(request, 'hotels/hotels.html', {'hotels': hotels})
 
 
@@ -78,3 +80,11 @@ def properties(request):
 
     
     return render(request, 'hotels/properties.html')
+
+
+
+def all_hotels(request):
+    return render(request, 'hotels/all-hotels.html')
+
+def all_rooms(request):
+    return render(request, 'hotels/all-rooms.html')
