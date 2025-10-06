@@ -28,7 +28,7 @@ def login_register(request):
                 login(request, user)
                 return redirect_user(user)
 
-    return render(request, 'login-register.html', {
+    return render(request, 'users/login-register.html', {
         'login_form': login_form,
         'register_form': register_form,
     })
@@ -44,23 +44,26 @@ def redirect_user(user):
     return redirect('home')
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'users/home.html')
 
 def properties(request):
-    return render(request, 'properties.html')
+    return render(request, 'hotels/properties.html')
 
 def property_details(request):
-    return render(request, 'property-details.html')
+    return render(request, 'hotels/property-details.html')
 
 def contact(request):
-    return render(request, 'contact.html')
+    return render(request, 'users/contact.html')
 
-def hotels(request):
-    return render(request, 'hotels.html')
+def hotels_search_results(request):
+    return render(request, 'hotels/hotels-search-results.html')
+
+def all_hotels(request):
+    return render(request, 'hotels/all-hotels.html')
 
 def login_view(request):
     form = AuthenticationForm()
-    return render(request, 'login-register.html', {'form': form})
+    return render(request, 'users/login-register.html', {'form': form})
 
 def logout_view(request):
     logout(request)
@@ -80,8 +83,8 @@ def booking(request):
             'user_first_name': request.user.first_name,
             'user_last_name': request.user.last_name,
         })
-    
-    return render(request, 'booking.html', context)
+
+    return render(request, 'bookings/booking.html', context)
 
 def _is_owner_or_admin(user):
     return user.is_authenticated and (getattr(user, 'is_owner', lambda: False)() or user.is_staff or user.is_superuser)
@@ -95,19 +98,19 @@ def owner_register(request):
         posted_email = (request.POST.get('email') or '').strip()
         if posted_email and posted_email.lower() != (request.user.email or '').lower():
             messages.error(request, 'Please use the same email address associated with your account.')
-            return render(request, 'owner-register.html')
+            return render(request, 'users/owner-register.html')
         messages.success(request, 'Your registration request has been received.')
-        return render(request, 'owner-register.html')
-    return render(request, 'owner-register.html')
+        return render(request, 'users/owner-register.html')
+    return render(request, 'users/owner-register.html')
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_dashboard(request):
-    return render(request, 'owner-dashboard.html')
+    return render(request, 'users/owner-dashboard.html')
 
 @login_required(login_url='login_register')
 def account(request):
-    return render(request, 'account.html', {
+    return render(request, 'users/account.html', {
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
     })
@@ -115,10 +118,10 @@ def account(request):
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_add_room(request):
-    return render(request, 'owner-room-new.html')
+    return render(request, 'hotels/owner-room-new.html')
 
 def room_details(request, room_id):
     context = {
         'room_id': room_id,
     }
-    return render(request, 'room-details.html', context)
+    return render(request, 'hotels/room-details.html', context)

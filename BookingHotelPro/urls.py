@@ -19,12 +19,15 @@ from django.urls import path, include
 from django.shortcuts import render
 from django.conf import settings
 from django.conf.urls.static import static
-from users import views
+from users import views as user_views
+from hotels import views as hotel_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
+    path('', user_views.home, name='home'),
     path('users/', include('users.urls')),
+    path('hotels/', include('hotels.urls')),
+    path('bookings/', include('bookings.urls'))
 ]
 
 # Serve static files during development

@@ -1,0 +1,186 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Add New Room - Owner{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a> / Add New Room</span>
+          <h3>Add New Room</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section owner-dashboard">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <ul class="od-nav">
+              <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li class="active"><a href="#">Add New Room</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            <div class="section-heading">
+              <h6>| Room</h6>
+              <h2>Room Details</h2>
+            </div>
+            <form id="room-form" method="post">
+              {% csrf_token %}
+              <div class="row od-form">
+                <div class="col-12">
+                  <div class="form-section">
+                    <h5>Basic Information</h5>
+                    <div class="row">
+                      <div class="col-md-6">
+                        <label class="form-label">Hotel</label>
+                        <select class="form-control">
+                          <option>Select Hotel</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Room Name</label>
+                        <input type="text" class="form-control" placeholder="e.g., Deluxe King Room">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Room Type</label>
+                        <select class="form-control">
+                          <option>Standard</option>
+                          <option>Deluxe</option>
+                          <option>Suite</option>
+                          <option>Family</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Capacity</label>
+                        <input type="number" class="form-control" placeholder="2">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Price per Night ($)</label>
+                        <input type="number" class="form-control" placeholder="199">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Beds</label>
+                        <input type="text" class="form-control" placeholder="1 King / 2 Twins">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Room Size (m²)</label>
+                        <input type="number" class="form-control" placeholder="35">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">View</label>
+                        <select class="form-control">
+                          <option>City</option>
+                          <option>Sea</option>
+                          <option>Garden</option>
+                          <option>Mountain</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Floor</label>
+                        <input type="number" class="form-control" placeholder="3">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Smoking</label>
+                        <select class="form-control">
+                          <option>No</option>
+                          <option>Yes</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Status</label>
+                        <select class="form-control">
+                          <option>Active</option>
+                          <option>Inactive</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-section">
+                    <h5>Amenities</h5>
+                    <div class="row od-amenities">
+                      <div class="col-md-3"><label><input type="checkbox"> Free Wi‑Fi</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Air Conditioning</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> TV</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Mini Bar</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Coffee Maker</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Safe</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Hair Dryer</label></div>
+                      <div class="col-md-3"><label><input type="checkbox"> Iron</label></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-section">
+                    <h5>Policies & Inventory</h5>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <label class="form-label">Refundable</label>
+                        <select class="form-control">
+                          <option>Yes</option>
+                          <option>No</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Rooms Available</label>
+                        <input type="number" class="form-control" placeholder="5">
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Discount (%)</label>
+                        <input type="number" class="form-control" placeholder="0">
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label">Cancellation Policy</label>
+                        <textarea class="form-control" rows="3" placeholder="e.g., Free cancellation up to 24 hours before check-in."></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-section">
+                    <h5>Photos</h5>
+                    <div class="od-upload">
+                      <input type="file" class="form-control" multiple>
+                      <p class="note">You can upload multiple images. JPG or PNG, max 2MB each.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-section">
+                    <h5>Description</h5>
+                    <textarea class="form-control" rows="4" placeholder="Describe the room..."></textarea>
+                  </div>
+                </div>
+
+                <div class="col-12">
+                  <div class="form-actions">
+                    <a href="{% url 'owner_dashboard' %}" class="btn btn-outline">Cancel</a>
+                    <div class="main-button"><button type="submit" class="btn" style="border:0;">Save Room</button></div>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+

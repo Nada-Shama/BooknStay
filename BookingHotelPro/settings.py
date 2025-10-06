@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'users',
+    'hotels',
+    'bookings',
 ]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -55,7 +58,7 @@ ROOT_URLCONF = 'BookingHotelPro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],  # Templates folder
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -120,8 +123,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Additional locations of static files
 STATICFILES_DIRS = [
-    BASE_DIR / 'users' / 'templates' / 'assets',
-    BASE_DIR / 'users' / 'templates' / 'vendor',
+    BASE_DIR / 'static',
+    BASE_DIR / 'static' / 'assets',
+    BASE_DIR / 'static' / 'vendor',
 ]
 
 # Default primary key field type
