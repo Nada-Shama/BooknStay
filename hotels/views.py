@@ -78,8 +78,8 @@ def owner_register(request):
 
 def properties(request):
 
-    
-    return render(request, 'hotels/properties.html')
+    # Render owner-styled New Hotel form page
+    return render(request, 'hotels/new-hotel.html')
 
 
 
@@ -88,3 +88,10 @@ def all_hotels(request):
 
 def all_rooms(request):
     return render(request, 'hotels/all-rooms.html')
+
+
+def room_details(request, room_id):
+    context = {
+        'room_id': room_id,
+    }
+    return render(request, 'hotels/room-details.html', context)

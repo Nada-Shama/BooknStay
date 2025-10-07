@@ -7,6 +7,9 @@ from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
 from hotels.models import Hotel
 
+from django.http import JsonResponse
+from datetime import date
+
 # Create your views here.
 def login_register(request):
     if request.user.is_authenticated:
@@ -27,7 +30,7 @@ def login_register(request):
             # Registration moved to separate page
             return redirect('register')
 
-    return render(request, 'users/login-register.html', {
+    return render(request, 'users/login.html', {
         'login_form': login_form,
         'register_form': register_form,
     })
@@ -182,14 +185,118 @@ def owner_register(request):
         )
 
         messages.success(request, 'Thanks! Your owner account and hotel were submitted. You can log in and continue setup.')
-        return render(request, 'users/login-register.html')
+        return render(request, 'users/login.html')
 
     return render(request, 'users/owner-register.html')
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_dashboard(request):
+
+
+
     return render(request, 'users/owner-dashboard.html')
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_bookings_calendar_data(request):
+
+    # Placeholder: mock reservation counts per day for current month (1..31)
+
+
+
+    # TODO: Replace with real Booking aggregation per date for this owner
+    # Example mocked data
+    sample = {1: 2, 3: 4, 5: 1, 7: 6, 9: 3, 12: 5, 15: 2, 18: 8, 20: 4, 22: 1, 24: 2, 27: 3, 30: 7, 31:12}
+
+    def color_for(count: int) -> str:
+        if count >= 10:
+            return '#e74c3c'  # red (busy)
+        if count >= 5:
+            return '#f39c12'  # yellow (medium)
+        return '#2ecc71'      # green (light)
+
+    today = date.today()
+    events = []
+    for d, c in sample.items():
+        events.append({
+            'title': f'{c} bookings',
+            'start': f'{today.year}-{today.month:02d}-{d:02d}',
+            'color': color_for(c),
+            'allDay': True,
+        })
+    return JsonResponse(events, safe=False)
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_hotels(request):
+    # For now, fetch all hotels. Later, filter by owner when ownership is modeled.
+    hotels = Hotel.objects.all().order_by('-created_at')
+    context = {
+        'hotels': hotels,
+    }
+    return render(request, 'users/owner-hotels.html', context)
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        first_name = (request.POST.get('first_name') or '').strip()
+        last_name = (request.POST.get('last_name') or '').strip()
+        username = (request.POST.get('username') or '').strip()
+        email = (request.POST.get('email') or '').strip().lower()
+        phone = (request.POST.get('phone') or '').strip()
+        date_of_birth = (request.POST.get('date_of_birth') or '').strip()
+        nationality = (request.POST.get('nationality') or '').strip()
+        bio = (request.POST.get('bio') or '').strip()
+
+        # Basic updates with minimal validation
+        # Ensure username uniqueness if changed
+        if username and username != user.username:
+            UserModel = get_user_model()
+            if UserModel.objects.filter(username=username).exclude(pk=user.pk).exists():
+                messages.error(request, 'Username is already taken.')
+            else:
+                user.username = username
+
+        # Ensure email uniqueness if changed
+        if email and email != user.email:
+            UserModel = get_user_model()
+            if UserModel.objects.filter(email=email).exclude(pk=user.pk).exists():
+                messages.error(request, 'Email is already in use by another account.')
+            else:
+                user.email = email
+
+        user.first_name = first_name
+        user.last_name = last_name
+        if hasattr(user, 'phone'):
+            user.phone = phone
+        if hasattr(user, 'nationality'):
+            user.nationality = nationality
+        if hasattr(user, 'date_of_birth'):
+            # Accept YYYY-MM-DD
+            user.date_of_birth = date_of_birth or None
+
+        user.save()
+        messages.success(request, 'Profile updated successfully.')
+
+        # Note: bio/avatar placeholders for future profile model
+
+    context = {
+        'profile': {
+            'first_name': getattr(user, 'first_name', ''),
+            'last_name': getattr(user, 'last_name', ''),
+            'username': getattr(user, 'username', ''),
+            'email': getattr(user, 'email', ''),
+            'phone': getattr(user, 'phone', ''),
+            'date_of_birth': getattr(user, 'date_of_birth', None),
+            'nationality': getattr(user, 'nationality', ''),
+            'bio': '',
+            'avatar_url': '',
+        }
+    }
+    return render(request, 'users/owner-profile.html', context)
 
 @login_required(login_url='login_register')
 def account(request):
@@ -198,13 +305,7 @@ def account(request):
         'is_authenticated': request.user.is_authenticated,
     })
 
-'''
-def room_details(request, room_id):
-    context = {
-        'room_id': room_id,
-    }
-    return render(request, 'hotels/room-details.html', context)
-'''
+
 
 '''
 @login_required(login_url='login_register')

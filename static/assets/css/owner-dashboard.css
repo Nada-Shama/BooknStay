@@ -200,6 +200,23 @@
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.04);
 }
 
+/* Reservation count badge inside calendar days */
+.owner-dashboard .od-calendar-grid .day {
+    position: relative;
+}
+
+.owner-dashboard .od-calendar-grid .day .res-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #f35525;
+    color: #fff;
+    border-radius: 10px;
+    padding: 2px 6px;
+    font-size: 11px;
+    line-height: 1;
+}
+
 .owner-dashboard .note {
     color: #666;
     font-size: 13px;

@@ -1,0 +1,71 @@
+.owner-dashboard .od-content .section-heading h2 {
+    margin-bottom: 12px;
+}
+
+.owner-dashboard .od-content .od-card {
+    padding: 24px;
+    border-radius: 12px;
+    background: #fff;
+}
+
+.owner-dashboard .od-content fieldset {
+    margin-bottom: 16px;
+}
+
+.owner-dashboard .od-content label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+}
+
+.owner-dashboard .od-content input[type="text"],
+.owner-dashboard .od-content input[type="number"],
+.owner-dashboard .od-content input[type="date"],
+.owner-dashboard .od-content input[type="url"],
+.owner-dashboard .od-content input[type="tel"],
+.owner-dashboard .od-content select,
+.owner-dashboard .od-content textarea {
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 10px 14px;
+    background: #fff;
+}
+
+.owner-dashboard .od-content textarea {
+    min-height: 120px;
+}
+
+.owner-dashboard .od-content .help-text {
+    color: #666;
+    font-size: 13px;
+    margin-top: 6px;
+}
+
+.owner-dashboard .od-content #amenities {
+    min-height: 120px;
+}
+
+.owner-dashboard .od-content .od-actions {
+    margin-top: 6px;
+}
+
+/* Inline checkbox + label for Agree Terms */
+.owner-dashboard .od-content input[type="checkbox"]#agree_terms {
+    width: auto;
+    display: inline-block;
+    margin: 0 8px 0 0;
+    vertical-align: middle;
+}
+
+.owner-dashboard .od-content input[type="checkbox"]#agree_terms+label {
+    display: inline;
+    margin: 0;
+    vertical-align: middle;
+}
+
+@media (max-width: 767.98px) {
+    .owner-dashboard .od-content {
+        margin-top: 16px;
+    }
+}

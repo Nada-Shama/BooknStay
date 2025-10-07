@@ -11,6 +11,10 @@ urlpatterns = [
     path('property-details/<int:hotel_id>/', hotel_views.hotel_detail, name='property-details'),
     path('owner/register/', views.owner_register, name='owner-register'),
     path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
+    path('owner/profile/', views.owner_profile, name='owner_profile'),
+    path('owner/hotels/', views.owner_hotels, name='owner_hotels'),
+    
+    path('owner/bookings-calendar-data/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
     path('account/', views.account, name='account'),
 
 
@@ -20,5 +24,4 @@ urlpatterns = [
     #path('booking/', views.booking, name='booking'),
 
     #path('owner/hotels/rooms/new/', views.owner_add_room, name='owner_add_room'),
-    #path('rooms/<int:room_id>/', views.room_details, name='room_details'),
 ]

@@ -10,7 +10,7 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <span class="breadcrumb"><a href="{% url 'hotels' %}">Hotels</a> / <a href="#">Sample Hotel</a> / Room #{{ room_id }}</span>
+          <span class="breadcrumb"><a href="{% url 'hotels' 1 %}">Hotels</a> / <a href="#">Sample Hotel</a> / Room #{{ room_id }}</span>
           <h3>Deluxe King Room</h3>
           <p class="text-muted">Under: Sample Hotel • City Center • 5 km from airport</p>
         </div>
@@ -74,7 +74,7 @@
           <h4>About this Room</h4>
           <p>Spacious king room with premium linens, modern bathroom, and work desk. Complimentary high-speed Wi‑Fi and smart TV included.</p>
           <div class="icon-button">
-            <a href="{% url 'booking' %}"><i class="fa fa-calendar"></i> Book this room</a>
+            <a href="{% url 'booking' 1 %}"><i class="fa fa-calendar"></i> Book this room</a>
           </div>
           <div class="price-card" style="margin-top:16px;">
             <div class="price">
@@ -117,7 +117,7 @@
               123 Main Street, City Center<br>
               ★★★★ 4.5 (1,240 reviews)
             </p>
-            <a href="{% url 'property-details' %}" class="btn-secondary">View Hotel</a>
+            <a href="{% url 'property-details'  1 %}" class="btn-secondary">View Hotel</a>
           </div>
         </div>
       </div>

@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Hotel Booking System - New Hotel Adding{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-new-hotel.css' %}">
+{% endblock %}
 {% block content %}
 
   <div class="page-heading header-text">
@@ -14,12 +19,31 @@
     </div>
   </div>
 
-  <div class="contact-page section">
+  <div class="section owner-dashboard">
     <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-10">
-
-          {% if messages %}
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="od-nav">
+              <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+              <li class="active"><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
+              <li><a href="#">Add New Room</a></li>
+              <li><a href="#">Bookings Management</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            {% if messages %}
             <div class="mb-3">
               {% for message in messages %}
                 <div class="alert alert-{% if 'error' in message.tags %}danger{% elif 'debug' in message.tags %}secondary{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert" style="border-radius: 10px;">
@@ -27,170 +51,174 @@
                 </div>
               {% endfor %}
             </div>
-          {% endif %}
-            
-          <div class="form-card">
+            {% endif %}
+
             <div class="section-heading">
               <h6>| Adding New Hotel</h6>
               <h2>Register New Property by filling all below details.</h2>
             </div>
 
-            <form id="owner-register-form" method="post">
-              {% csrf_token %}
-              <div class="row">
+            <div class="od-card">
+              <form id="owner-register-form" method="post">
+                {% csrf_token %}
+                <div class="row">
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <label for="hotel_name">Hotel/Property Name</label>
-                    <input type="text" id="hotel_name" name="hotel_name" placeholder="e.g., The Plaza Hotel" required>
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="hotel_name">Hotel/Property Name</label>
+                      <input type="text" id="hotel_name" name="hotel_name" placeholder="e.g., The Plaza Hotel" required>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="hotel_type">Property Type</label>
-                    <select id="hotel_type" name="property_type" required>
-                      <option value="">Select type</option>
-                      <option>Hotel</option>
-                      <option>Resort</option>
-                      <option>Boutique Hotel</option>
-                      <option>Guest House</option>
-                      <option>Apartment</option>
-                    </select>
-                  </fieldset>
-                </div>
-                
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="stars">Star Rating</label>
-                    <select id="stars" name="star_rating" required>
-                      <option value="">Select rating</option>
-                      <option>1 Star</option>
-                      <option>2 Stars</option>
-                      <option>3 Stars</option>
-                      <option>4 Stars</option>
-                      <option>5 Stars</option>
-                    </select>
-                  </fieldset>
-                </div>
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="hotel_type">Property Type</label>
+                      <select id="hotel_type" name="property_type" required>
+                        <option value="">Select type</option>
+                        <option>Hotel</option>
+                        <option>Resort</option>
+                        <option>Boutique Hotel</option>
+                        <option>Guest House</option>
+                        <option>Apartment</option>
+                      </select>
+                    </fieldset>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="stars">Star Rating</label>
+                      <select id="stars" name="star_rating" required>
+                        <option value="">Select rating</option>
+                        <option>1 Star</option>
+                        <option>2 Stars</option>
+                        <option>3 Stars</option>
+                        <option>4 Stars</option>
+                        <option>5 Stars</option>
+                      </select>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-8">
-                  <fieldset>
-                    <label for="address">Street Address</label>
-                    <input type="text" id="address" name="address" placeholder="123 Main St" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-8">
+                    <fieldset>
+                      <label for="address">Street Address</label>
+                      <input type="text" id="address" name="address" placeholder="123 Main St" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-4">
-                  <fieldset>
-                    <label for="zipcode">Zip/Postal Code</label>
-                    <input type="text" id="zipcode" name="zipcode" placeholder="10001" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="zipcode">Zip/Postal Code</label>
+                      <input type="text" id="zipcode" name="zipcode" placeholder="10001" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-4">
-                  <fieldset>
-                    <label for="city">City</label>
-                    <input type="text" id="city" name="city" placeholder="New York" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="city">City</label>
+                      <input type="text" id="city" name="city" placeholder="New York" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-4">
-                  <fieldset>
-                    <label for="state">State/Region</label>
-                    <input type="text" id="state" name="state" placeholder="NY" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="state">State/Region</label>
+                      <input type="text" id="state" name="state" placeholder="NY" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-4">
-                  <fieldset>
-                    <label for="country">Country</label>
-                    <input type="text" id="country" name="country" placeholder="United States" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="country">Country</label>
+                      <input type="text" id="country" name="country" placeholder="United States" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="num_rooms">Number of Rooms</label>
-                    <input type="number" id="num_rooms" name="num_rooms" min="1" placeholder="e.g., 120" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="num_rooms">Number of Rooms</label>
+                      <input type="number" id="num_rooms" name="num_rooms" min="1" placeholder="e.g., 120" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="opening_date">Opening Date</label>
-                    <input type="date" id="opening_date" name="opening_date">
-                  </fieldset>
-                </div>
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="opening_date">Opening Date</label>
+                      <input type="date" id="opening_date" name="opening_date">
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <label for="amenities">Amenities</label>
-                    <select id="amenities" name="amenities" multiple style="height: auto; min-height: 110px; border-radius: 12px; padding: 10px 14px;">
-                      <option>Free Wi‑Fi</option>
-                      <option>Parking</option>
-                      <option>Pool</option>
-                      <option>Spa</option>
-                      <option>Gym</option>
-                      <option>Restaurant</option>
-                      <option>Pet Friendly</option>
-                      <option>Airport Shuttle</option>
-                    </select>
-                    <div class="help-text">Hold Ctrl (Cmd on Mac) to select multiple</div>
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="amenities">Amenities</label>
+                      <select id="amenities" name="amenities" multiple style="height: auto; min-height: 110px; border-radius: 12px; padding: 10px 14px;">
+                        <option>Free Wi‑Fi</option>
+                        <option>Parking</option>
+                        <option>Pool</option>
+                        <option>Spa</option>
+                        <option>Gym</option>
+                        <option>Restaurant</option>
+                        <option>Pet Friendly</option>
+                        <option>Airport Shuttle</option>
+                      </select>
+                      <div class="help-text">Hold Ctrl (Cmd on Mac) to select multiple</div>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <label for="description">Property Description</label>
-                    <textarea id="description" name="description" placeholder="Tell us about your property, unique selling points, and policies..."></textarea>
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="description">Property Description</label>
+                      <textarea id="description" name="description" placeholder="Tell us about your property, unique selling points, and policies..."></textarea>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="business_name">Business/Legal Name</label>
-                    <input type="text" id="business_name" name="business_name" placeholder="Registered Business Name" >
-                  </fieldset>
-                </div>
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="business_name">Business/Legal Name</label>
+                      <input type="text" id="business_name" name="business_name" placeholder="Registered Business Name" >
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-6">
-                  <fieldset>
-                    <label for="tax_id">Tax/VAT ID</label>
-                    <input type="text" id="tax_id" name="tax_id" placeholder="Tax ID / VAT Number">
-                  </fieldset>
-                </div>
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="tax_id">Tax/VAT ID</label>
+                      <input type="text" id="tax_id" name="tax_id" placeholder="Tax ID / VAT Number">
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <label for="website">Website (optional)</label>
-                    <input type="url" id="website" name="website" placeholder="https://yourhotel.com">
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="website">Website (optional)</label>
+                      <input type="url" id="website" name="website" placeholder="https://yourhotel.com">
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <label for="contact_preference">Preferred Contact Method</label>
-                    <select id="contact_preference" name="contact_preference">
-                      <option>Email</option>
-                      <option>Phone</option>
-                    </select>
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="contact_preference">Preferred Contact Method</label>
+                      <select id="contact_preference" name="contact_preference">
+                        <option>Email</option>
+                        <option>Phone</option>
+                      </select>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <fieldset>
-                    <input type="checkbox" id="agree_terms" name="agree_terms" required>
-                    <label for="agree_terms"> I agree to the Terms & Conditions and Privacy Policy</label>
-                  </fieldset>
-                </div>
+                  <div class="col-md-12">
+                    <fieldset>
+                      <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                      <label for="agree_terms"> I agree to the Terms & Conditions and Privacy Policy</label>
+                    </fieldset>
+                  </div>
 
-                <div class="col-lg-12">
-                  <button type="submit" class="orange-button">Submit Adding</button>
+                  <div class="col-md-12">
+                    <div class="od-actions" style="justify-content: flex-end;">
+                      <div class="main-button"><button type="submit">Submit Adding</button></div>
+                      <div class="main-button"><a href="{% url 'owner_dashboard' %}">Cancel</a></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </form>
-          </div>
+              </form>
+            </div>
+          </section>
         </div>
       </div>
     </div>

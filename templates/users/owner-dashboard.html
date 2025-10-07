@@ -3,6 +3,7 @@
 {% block title %}Owner Dashboard{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
 {% endblock %}
 {% block content %}
   <div class="page-heading header-text">
@@ -29,10 +30,10 @@
               </div>
             </div>
             <ul class="od-nav">
-              <li class="active"><a href="#">Dashboard</a></li>
-              <li><a href="#">Profile</a></li>
-              <li><a href="#">View my Hotels</a></li>
-              <li><a href="#">Add New Hotel</a></li>
+              <li class="active"><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+              <li><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
               <li><a href="#">Add New Room</a></li>
               <li><a href="#">Bookings Management</a></li>
             </ul>
@@ -72,93 +73,72 @@
               <h6>| Quick View</h6>
               <h2>Latest Hotels</h2>
             </div>
-            <div class="od-hotels">
-              <div class="od-hotel">
-                <img src="{% static 'images/property-01.jpg' %}" alt="Hotel">
-                <div>
-                  <h4>Grand Miami Hotel</h4>
-                  <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
+            <div class="od-card">
+              <div class="row">
+                <div class="col-lg-6 col-md-6 mb-30">
+                  <div class="item">
+                    <a href="#"><img src="{% static 'images/property-01.jpg' %}" alt="Grand Miami Hotel"></a>
+                    <span class="category">Hotel</span>
+                    <h6>Downtown Miami, FL</h6>
+                    <h4><a href="#">Grand Miami Hotel</a></h4>
+                    <ul>
+                      <li>Amenities: <span>WiFi, Parking, Pool, Spa</span></li>
+                      <li>Rating: <span>4.8</span></li>
+                    </ul>
+                    <div class="main-button">
+                      <a href="#">View</a>
+                    </div>
+                  </div>
                 </div>
-                <div class="od-hotel-actions">
-                  <a class="btn" href="#">View</a>
-                  <a class="btn btn-outline" href="#">Manage</a>
-                </div>
-              </div>
-              <div class="od-hotel">
-                <img src="{% static 'images/property-02.jpg' %}" alt="Hotel">
-                <div>
-                  <h4>Ocean View Resort</h4>
-                  <p><i class="fa fa-map-marker"></i> South Beach, FL</p>
-                </div>
-                <div class="od-hotel-actions">
-                  <a class="btn" href="#">View</a>
-                  <a class="btn btn-outline" href="#">Manage</a>
+                <div class="col-lg-6 col-md-6 mb-30">
+                  <div class="item">
+                    <a href="#"><img src="{% static 'images/property-02.jpg' %}" alt="Ocean View Resort"></a>
+                    <span class="category">Hotel</span>
+                    <h6>South Beach, FL</h6>
+                    <h4><a href="#">Ocean View Resort</a></h4>
+                    <ul>
+                      <li>Amenities: <span>WiFi, Pool, Spa</span></li>
+                      <li>Rating: <span>4.5</span></li>
+                    </ul>
+                    <div class="main-button">
+                      <a href="#">View</a>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
             <div class="section-heading" style="margin-top: 30px;">
               <h6>| Bookings</h6>
-              <h2>Calendar (Preview)</h2>
+              <h2>Calendar Overview.</h2>
+              <p style="color: #666;">For total bookings per day.</p>
             </div>
-            <div class="od-calendar">
-              <div class="od-calendar-header">
-                <button class="btn btn-outline">Prev</button>
-                <h4>December 2024</h4>
-                <button class="btn btn-outline">Next</button>
-              </div>
-              <div class="od-calendar-grid">
-                <div class="dow">Sun</div>
-                <div class="dow">Mon</div>
-                <div class="dow">Tue</div>
-                <div class="dow">Wed</div>
-                <div class="dow">Thu</div>
-                <div class="dow">Fri</div>
-                <div class="dow">Sat</div>
-                <div class="pad"></div>
-                <div class="pad"></div>
-                <div class="pad"></div>
-                <div class="pad"></div>
-                <div class="pad"></div>
-                <div class="day">1</div>
-                <div class="day">2</div>
-                <div class="day">3</div>
-                <div class="day">4</div>
-                <div class="day">5</div>
-                <div class="day">6</div>
-                <div class="day">7</div>
-                <div class="day">8</div>
-                <div class="day">9</div>
-                <div class="day">10</div>
-                <div class="day">11</div>
-                <div class="day">12</div>
-                <div class="day">13</div>
-                <div class="day">14</div>
-                <div class="day">15</div>
-                <div class="day">16</div>
-                <div class="day">17</div>
-                <div class="day">18</div>
-                <div class="day">19</div>
-                <div class="day">20</div>
-                <div class="day">21</div>
-                <div class="day">22</div>
-                <div class="day">23</div>
-                <div class="day">24</div>
-                <div class="day">25</div>
-                <div class="day">26</div>
-                <div class="day">27</div>
-                <div class="day">28</div>
-                <div class="day">29</div>
-                <div class="day">30</div>
-                <div class="day">31</div>
-              </div>
-              <p class="note">This is a static preview. Interactive booking calendar will be implemented later.</p>
+            <div class="od-card">
+              <div id="owner-calendar"></div>
             </div>
           </section>
         </div>
       </div>
     </div>
   </div>
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const el = document.getElementById('owner-calendar');
+  if (!el) return;
+  const calendar = new FullCalendar.Calendar(el, {
+
+    initialView: 'dayGridMonth',
+    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
+    height: 'auto',
+    events: '{% url "owner_bookings_calendar_data" %}',
+    
+  });
+  calendar.render();
+});
+</script>
+{% endblock %}
 {% endblock %}
 
 
