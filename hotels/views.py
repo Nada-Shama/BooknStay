@@ -3,7 +3,8 @@ from .models import Hotel, Room, Review
 from django.db.models import Avg
 from django.contrib import messages
 from users.models import User
-
+from users.views import _is_owner_or_admin
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 def home(request):
     hotels = Hotel.objects.all()
@@ -90,8 +91,23 @@ def all_rooms(request):
     return render(request, 'hotels/all-rooms.html')
 
 
+
+
+
+
+
+
+
 def room_details(request, room_id):
     context = {
         'room_id': room_id,
     }
     return render(request, 'hotels/room-details.html', context)
+
+
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_add_room(request):
+    
+    return render(request, 'hotels/owner-room-new.html')

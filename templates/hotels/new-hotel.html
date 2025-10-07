@@ -35,8 +35,8 @@
               <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
               <li><a href="{% url 'owner_profile' %}">Profile</a></li>
               <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
-              <li class="active"><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
-              <li><a href="#">Add New Room</a></li>
+              <li class="active"><a href="#">Add New Hotel</a></li>
+              <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
               <li><a href="#">Bookings Management</a></li>
             </ul>
           </aside>

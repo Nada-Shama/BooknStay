@@ -3,6 +3,8 @@
 {% block title %}Add New Room - Owner{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-new-hotel.css' %}">
 {% endblock %}
 {% block content %}
 
@@ -10,7 +12,7 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <span class="breadcrumb"><a href="{% url 'owner_dashboard' %}">Owner Dashboard</a> / Add New Room</span>
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Add New Room</span>
           <h3>Add New Room</h3>
         </div>
       </div>
@@ -22,159 +24,231 @@
       <div class="row">
         <div class="col-lg-3">
           <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
             <ul class="od-nav">
               <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+              <li><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
               <li class="active"><a href="#">Add New Room</a></li>
+              <li><a href="#">Bookings Management</a></li>
             </ul>
           </aside>
         </div>
         <div class="col-lg-9">
           <section class="od-content">
-            <div class="section-heading">
-              <h6>| Room</h6>
-              <h2>Room Details</h2>
+            {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert alert-{% if 'error' in message.tags %}danger{% elif 'debug' in message.tags %}secondary{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert" style="border-radius: 10px;">
+                  {{ message }}
+                </div>
+              {% endfor %}
             </div>
-            <form id="room-form" method="post">
-              {% csrf_token %}
-              <div class="row od-form">
-                <div class="col-12">
-                  <div class="form-section">
-                    <h5>Basic Information</h5>
-                    <div class="row">
-                      <div class="col-md-6">
-                        <label class="form-label">Hotel</label>
-                        <select class="form-control">
-                          <option>Select Hotel</option>
-                        </select>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Room Name</label>
-                        <input type="text" class="form-control" placeholder="e.g., Deluxe King Room">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Room Type</label>
-                        <select class="form-control">
-                          <option>Standard</option>
-                          <option>Deluxe</option>
-                          <option>Suite</option>
-                          <option>Family</option>
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Capacity</label>
-                        <input type="number" class="form-control" placeholder="2">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Price per Night ($)</label>
-                        <input type="number" class="form-control" placeholder="199">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Beds</label>
-                        <input type="text" class="form-control" placeholder="1 King / 2 Twins">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Room Size (m²)</label>
-                        <input type="number" class="form-control" placeholder="35">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">View</label>
-                        <select class="form-control">
-                          <option>City</option>
-                          <option>Sea</option>
-                          <option>Garden</option>
-                          <option>Mountain</option>
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Floor</label>
-                        <input type="number" class="form-control" placeholder="3">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Smoking</label>
-                        <select class="form-control">
-                          <option>No</option>
-                          <option>Yes</option>
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Status</label>
-                        <select class="form-control">
-                          <option>Active</option>
-                          <option>Inactive</option>
-                        </select>
-                      </div>
+            {% endif %}
+
+            <div class="section-heading">
+              <h6>| Adding New Room</h6>
+              <h2>Register New Room by filling all below details.</h2>
+            </div>
+
+            <div class="od-card">
+              <form id="room-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="assign_hotel">Assign Room to Hotel/Property</label>
+                      <select id="assign_hotel" name="assign_hotel" required>
+                        <option value="">-- Select Hotel --</option>
+                        {% for hotel in owner_hotels %}
+                          <option value="{{ hotel.id }}">{{ hotel.name }}</option>
+                        {% empty %}
+                          <option disabled>No hotels found. Please add a hotel first.</option>
+                        {% endfor %}
+                      </select>
+                      <div class="help-text">Select which property this room will belong to.</div>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-6">
+                    <fieldset>
+                      <label for="room_name">Room Name</label>
+                      <input type="text" id="room_name" name="room_name" placeholder="e.g., Deluxe King Room" required>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="room_type">Room Type</label>
+                      <select id="room_type" name="room_type" required>
+                        <option value="">Select type</option>
+                        <option>Standard</option>
+                        <option>Deluxe</option>
+                        <option>Suite</option>
+                        <option>Family</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="capacity">Capacity (Guests)</label>
+                      <input type="number" id="capacity" name="capacity" min="1" placeholder="2" required>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="price">Price per Night ($)</label>
+                      <input type="number" id="price" name="price" min="0" step="0.01" placeholder="199" required>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="beds">Bed Configuration</label>
+                      <input type="text" id="beds" name="beds" placeholder="1 King / 2 Twins">
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="room_size">Room Size (m²)</label>
+                      <input type="number" id="room_size" name="room_size" min="0" placeholder="35">
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="view">View Type</label>
+                      <select id="view" name="view">
+                        <option value="">Select view</option>
+                        <option>City</option>
+                        <option>Sea</option>
+                        <option>Garden</option>
+                        <option>Mountain</option>
+                        <option>Pool</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="floor">Floor Number</label>
+                      <input type="number" id="floor" name="floor" min="0" placeholder="3">
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="smoking">Smoking Allowed</label>
+                      <select id="smoking" name="smoking">
+                        <option value="no">No</option>
+                        <option value="yes">Yes</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="status">Status</label>
+                      <select id="status" name="status" required>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="maintenance">Under Maintenance</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="amenities">Room Amenities</label>
+                      <select id="amenities" name="amenities" multiple style="height: auto; min-height: 110px; border-radius: 12px; padding: 10px 14px;">
+                        <option>Free Wi‑Fi</option>
+                        <option>Air Conditioning</option>
+                        <option>TV</option>
+                        <option>Mini Bar</option>
+                        <option>Coffee Maker</option>
+                        <option>Safe</option>
+                        <option>Hair Dryer</option>
+                        <option>Iron</option>
+                        <option>Balcony</option>
+                        <option>Work Desk</option>
+                      </select>
+                      <div class="help-text">Hold Ctrl (Cmd on Mac) to select multiple</div>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="refundable">Refundable Booking</label>
+                      <select id="refundable" name="refundable">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                      </select>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="rooms_available">Rooms Available</label>
+                      <input type="number" id="rooms_available" name="rooms_available" min="0" placeholder="5">
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-4">
+                    <fieldset>
+                      <label for="discount">Discount (%)</label>
+                      <input type="number" id="discount" name="discount" min="0" max="100" placeholder="0">
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="cancellation_policy">Cancellation Policy</label>
+                      <textarea id="cancellation_policy" name="cancellation_policy" placeholder="e.g., Free cancellation up to 24 hours before check-in."></textarea>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="description">Room Description</label>
+                      <textarea id="description" name="description" placeholder="Describe the room features, furnishings, and special amenities..."></textarea>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <fieldset>
+                      <label for="photos">Room Photos</label>
+                      <input type="file" id="photos" name="photos" multiple accept="image/*" style="height: auto; padding: 10px 14px;">
+                      <div class="help-text">You can upload multiple images. JPG or PNG, max 2MB each.</div>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <fieldset>
+                      <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                      <label for="agree_terms"> I confirm all information provided is accurate</label>
+                    </fieldset>
+                  </div>
+
+                  <div class="col-md-12">
+                    <div class="od-actions" style="justify-content: flex-end;">
+                      <div class="main-button"><button type="submit">Submit Room</button></div>
+                      <div class="main-button"><a href="{% url 'owner_dashboard' %}">Cancel</a></div>
                     </div>
                   </div>
                 </div>
-
-                <div class="col-12">
-                  <div class="form-section">
-                    <h5>Amenities</h5>
-                    <div class="row od-amenities">
-                      <div class="col-md-3"><label><input type="checkbox"> Free Wi‑Fi</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Air Conditioning</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> TV</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Mini Bar</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Coffee Maker</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Safe</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Hair Dryer</label></div>
-                      <div class="col-md-3"><label><input type="checkbox"> Iron</label></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <div class="form-section">
-                    <h5>Policies & Inventory</h5>
-                    <div class="row">
-                      <div class="col-md-4">
-                        <label class="form-label">Refundable</label>
-                        <select class="form-control">
-                          <option>Yes</option>
-                          <option>No</option>
-                        </select>
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Rooms Available</label>
-                        <input type="number" class="form-control" placeholder="5">
-                      </div>
-                      <div class="col-md-4">
-                        <label class="form-label">Discount (%)</label>
-                        <input type="number" class="form-control" placeholder="0">
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label">Cancellation Policy</label>
-                        <textarea class="form-control" rows="3" placeholder="e.g., Free cancellation up to 24 hours before check-in."></textarea>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <div class="form-section">
-                    <h5>Photos</h5>
-                    <div class="od-upload">
-                      <input type="file" class="form-control" multiple>
-                      <p class="note">You can upload multiple images. JPG or PNG, max 2MB each.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <div class="form-section">
-                    <h5>Description</h5>
-                    <textarea class="form-control" rows="4" placeholder="Describe the room..."></textarea>
-                  </div>
-                </div>
-
-                <div class="col-12">
-                  <div class="form-actions">
-                    <a href="{% url 'owner_dashboard' %}" class="btn btn-outline">Cancel</a>
-                    <div class="main-button"><button type="submit" class="btn" style="border:0;">Save Room</button></div>
-                  </div>
-                </div>
-              </div>
-            </form>
+              </form>
+            </div>
           </section>
         </div>
       </div>
@@ -182,5 +256,3 @@
   </div>
 
 {% endblock %}
-
-

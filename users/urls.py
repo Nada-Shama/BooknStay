@@ -23,5 +23,4 @@ urlpatterns = [
 
     #path('booking/', views.booking, name='booking'),
 
-    #path('owner/hotels/rooms/new/', views.owner_add_room, name='owner_add_room'),
 ]

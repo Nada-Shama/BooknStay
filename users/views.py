@@ -306,11 +306,3 @@ def account(request):
     })
 
 
-
-'''
-@login_required(login_url='login_register')
-@user_passes_test(_is_owner_or_admin, login_url='login_register')
-def owner_add_room(request):
-    
-    return render(request, 'hotels/owner-room-new.html')
-'''

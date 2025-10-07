@@ -34,7 +34,7 @@
               <li><a href="{% url 'owner_profile' %}">Profile</a></li>
               <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
               <li><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
-              <li><a href="#">Add New Room</a></li>
+              <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
               <li><a href="#">Bookings Management</a></li>
             </ul>
           </aside>
@@ -66,7 +66,7 @@
 
             <div class="od-actions">
               <div class="main-button"><a href="{% url 'owner-register' %}">Add New Hotel</a></div>
-              <div class="main-button"><a href="#">Add New Room</a></div>
+              <div class="main-button"><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></div>
             </div>
 
             <div class="section-heading" style="margin-top: 30px;">
