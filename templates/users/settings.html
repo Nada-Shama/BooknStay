@@ -39,13 +39,32 @@
         <div class="col-lg-9">
           <div class="account-content">
             <div class="section-heading">
+              <h6>| Profile</h6>
+              <h2>Account Information</h2>
+            </div>
+            <form method="post" class="mb-4">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="profile" />
+              <div class="row">
+                <div class="col-md-6">{{ profile_form.username.label_tag }} {{ profile_form.username }}</div>
+                <div class="col-md-6">{{ profile_form.email.label_tag }} {{ profile_form.email }}</div>
+                <div class="col-md-6">{{ profile_form.first_name.label_tag }} {{ profile_form.first_name }}</div>
+                <div class="col-md-6">{{ profile_form.last_name.label_tag }} {{ profile_form.last_name }}</div>
+                <div class="col-md-6">{{ profile_form.phone.label_tag }} {{ profile_form.phone }}</div>
+                <div class="col-md-6">{{ profile_form.nationality.label_tag }} {{ profile_form.nationality }}</div>
+              </div>
+              <button class="btn btn-primary" style="margin-top:12px;">Save Profile</button>
+            </form>
+
+            <div class="section-heading">
               <h6>| Security</h6>
               <h2>{% if needs_setup %}Set Your Password{% else %}Change Password{% endif %}</h2>
             </div>
             <form method="post">
               {% csrf_token %}
-              {{ form.as_p }}
-              <button class="btn btn-primary">Save</button>
+              <input type="hidden" name="action" value="password" />
+              {{ pwd_form.as_p }}
+              <button class="btn btn-primary">Save Password</button>
             </form>
           </div>
         </div>
