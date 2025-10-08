@@ -170,6 +170,7 @@
               <form method="post" id="passwordForm">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="password" />
+                <input type="text" name="username" value="{{ user.username }}" autocomplete="username" aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
                 <div class="row">
                   {% for field in pwd_form %}
                     <div class="col-lg-6">
