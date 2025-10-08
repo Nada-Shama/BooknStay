@@ -325,11 +325,38 @@ def account(request):
     user_bookings = []
     if request.user.is_authenticated:
         user_bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
-    return render(request, 'users/account.html', {
+
+    # Forms for profile and password on the same page
+    pwd_form_cls = SetPasswordForm if not request.user.is_authenticated or not request.user.has_usable_password() else PasswordChangeForm
+    pwd_form = None
+    profile_form = None
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            if action == 'profile':
+                profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+                if profile_form.is_valid():
+                    profile_form.save()
+                    messages.success(request, 'Profile updated successfully.')
+                    return redirect('account')
+            elif action == 'password':
+                pwd_form = pwd_form_cls(request.user, request.POST)
+                if pwd_form.is_valid():
+                    pwd_form.save()
+                    messages.success(request, 'Password updated successfully.')
+                    return redirect('account')
+        # GET or invalid POST
+        profile_form = profile_form or ProfileUpdateForm(instance=request.user)
+        pwd_form = pwd_form or pwd_form_cls(request.user)
+
+    context = {
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
         'bookings': user_bookings,
-    })
+        'profile_form': profile_form,
+        'pwd_form': pwd_form,
+    }
+    return render(request, 'users/account.html', context)
 
 
 @login_required(login_url='login_register')
@@ -361,27 +388,9 @@ def list_favorites(request):
 
 @login_required(login_url='login_register')
 def settings_view(request):
-    # If session flag set after guest booking, prompt for password setup
-    needs_setup = request.session.pop('needs_password_setup', False)
-    pwd_form_cls = SetPasswordForm if not request.user.has_usable_password() else PasswordChangeForm
-    pwd_form = pwd_form_cls(request.user, request.POST or None) if request.method == 'POST' and request.POST.get('action') == 'password' else pwd_form_cls(request.user)
-
-    profile_form = ProfileUpdateForm(request.POST or None, instance=request.user) if request.method == 'POST' and request.POST.get('action') == 'profile' else ProfileUpdateForm(instance=request.user)
-
-    if request.method == 'POST':
-        if request.POST.get('action') == 'password' and pwd_form.is_valid():
-            pwd_form.save()
-            messages.success(request, 'Password updated successfully.')
-            return redirect('settings')
-        if request.POST.get('action') == 'profile' and profile_form.is_valid():
-            profile_form.save()
-            messages.success(request, 'Profile updated successfully.')
-            return redirect('settings')
-
-    return render(request, 'users/settings.html', {
-        'pwd_form': pwd_form,
-        'profile_form': profile_form,
-        'needs_setup': needs_setup,
-    })
+    # Alias settings to account page; surface password-setup prompt via message
+    if request.session.pop('needs_password_setup', False):
+        messages.info(request, 'Welcome! Please set your password below.')
+    return redirect('account')
 
 
