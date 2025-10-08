@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
 from hotels.models import Hotel
+from bookings.models import Booking
 
 from django.http import JsonResponse
 from datetime import date
@@ -170,18 +171,28 @@ def owner_register(request):
             owner_user.role = 'owner'
             owner_user.save(update_fields=['role'])
 
-        # Create hotel with minimal fields present in model
-        location_parts = [p for p in [address, city, state, country] if p]
-        location = ', '.join(location_parts) or city or country or 'Unknown'
-        contact = phone or email
-        amenities_text = ', '.join(amenities) if amenities else ''
+        # Create hotel using valid fields on the Hotel model and set owner
+        try:
+            star_rating_int = int(star_rating) if star_rating else None
+        except ValueError:
+            star_rating_int = None
 
         Hotel.objects.create(
-            name=hotel_name,
-            description=description or f"{property_type} • {star_rating}".strip(' •'),
-            location=location,
-            contact=contact,
-            amenities=amenities_text,
+            owner=owner_user,
+            hotel_name=hotel_name,
+            property_type=property_type or None,
+            star_rating=star_rating_int,
+            address=address or None,
+            zipcode=zipcode or None,
+            city=city or None,
+            state=state or None,
+            country=country or None,
+            amenities=amenities or [],
+            description=description or '',
+            contact_preference='Email' if email else 'Phone',
+            business_name=None,
+            tax_id=None,
+            website=None,
         )
 
         messages.success(request, 'Thanks! Your owner account and hotel were submitted. You can log in and continue setup.')
@@ -192,10 +203,11 @@ def owner_register(request):
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_dashboard(request):
-
-
-
-    return render(request, 'users/owner-dashboard.html')
+    # Recent bookings for hotels owned by this user
+    recent_bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user')[:10]
+    return render(request, 'users/owner-dashboard.html', {
+        'recent_bookings': recent_bookings,
+    })
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
@@ -230,12 +242,20 @@ def owner_bookings_calendar_data(request):
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_hotels(request):
-    # For now, fetch all hotels. Later, filter by owner when ownership is modeled.
-    hotels = Hotel.objects.all().order_by('-created_at')
+    hotels = Hotel.objects.filter(owner=request.user).order_by('-created_at')
     context = {
         'hotels': hotels,
     }
     return render(request, 'users/owner-hotels.html', context)
+
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_bookings(request):
+    bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user').order_by('-created_at')
+    return render(request, 'users/owner-bookings.html', {
+        'bookings': bookings,
+    })
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')

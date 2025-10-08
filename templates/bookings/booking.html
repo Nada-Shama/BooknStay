@@ -45,9 +45,40 @@
         <div class="booking-content">
             <!-- Booking Form -->
             <div class="booking-form">
-                <form id="bookingForm">
+                <form id="bookingForm" method="post">
+                    {% csrf_token %}
                     <!-- Step 1: Guest Information -->
                     <div class="booking-step-content active" id="step-1">
+                        <div class="form-section">
+                            <h3><i class="fa fa-bed"></i> Booking Details</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="room_id">Room *</label>
+                                    <select id="room_id" name="room_id" required>
+                                        <option value="">Select a room</option>
+                                        {% for room in rooms %}
+                                          <option value="{{ room.id }}">{{ room.get_type_display }} - {{ room.room_number }} • ${{ room.price }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="num_guests">Guests *</label>
+                                    <input type="number" id="num_guests" name="num_guests" min="1" value="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="check_in">Check-in *</label>
+                                    <input type="date" id="check_in" name="check_in" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="check_out">Check-out *</label>
+                                    <input type="date" id="check_out" name="check_out" required>
+                                </div>
+                            </div>
+                        </div>
                         <div class="form-section">
                             <h3><i class="fa fa-user"></i> Guest Information</h3>
                             
@@ -488,21 +519,42 @@
                 // Show loading state
                 $('#completeBooking').html('<i class="fa fa-spinner fa-spin"></i> Processing...');
                 $('#completeBooking').prop('disabled', true);
-                
-                // Simulate booking process
-                setTimeout(function() {
-                    // Update confirmation email
+
+                const postUrl = '/bookings/{{ hotel.id }}/create/';
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const payload = new FormData();
+                payload.append('room_id', $('#room_id').val());
+                payload.append('check_in', $('#check_in').val());
+                payload.append('check_out', $('#check_out').val());
+                payload.append('num_guests', $('#num_guests').val());
+
+                fetch(postUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: payload
+                })
+                .then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })))
+                .then(({ ok, status, data }) => {
+                    if (!ok || !data.success) {
+                        const msg = (data && data.error) ? data.error : 'Unable to create booking.';
+                        alert(msg);
+                        throw new Error(msg);
+                    }
+
+                    // Update confirmation email and summary
                     const userEmail = $('#email').val();
                     $('#confirmationEmail').text(userEmail);
-                    
-                    // Move to confirmation step
+                    // You could also update dates/total using data from response
+
                     currentStep = 3;
                     showStep(currentStep);
-                    
-                    // Reset button
+                })
+                .catch(() => {})
+                .finally(() => {
                     $('#completeBooking').html('<i class="fa fa-check"></i> Complete Booking');
                     $('#completeBooking').prop('disabled', false);
-                }, 2000);
+                });
             }
             
             // Stripe card number formatting
@@ -533,6 +585,16 @@
             });
         });
         
+        // Preselect room from querystring if present
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const rid = params.get('room_id');
+            if (rid) {
+                const sel = document.getElementById('room_id');
+                if (sel) sel.value = rid;
+            }
+        })();
+
         // Copy reference number
         function copyReference() {
             const referenceNumber = document.querySelector('.reference-number').textContent;
