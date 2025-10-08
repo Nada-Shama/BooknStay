@@ -112,11 +112,17 @@ def create_booking(request, hotel_id):
             'success': True,
             'booking_id': booking.id,
             'hotel_id': hotel.id,
+            'hotel_name': hotel.hotel_name,
             'room_id': room.id,
+            'room_number': room.room_number,
+            'room_type': room.get_type_display() if hasattr(room, 'get_type_display') else (room.type or ''),
             'check_in': str(booking.check_in),
             'check_out': str(booking.check_out),
+            'nights': (booking.check_out - booking.check_in).days,
+            'num_guests': booking.num_guests,
             'total_price': float(booking.total_price),
             'status': booking.status,
+            'guest_email': booking.guest_email or (request.user.email if request.user.is_authenticated else ''),
         }, status=201)
 
     except ValueError as ve:

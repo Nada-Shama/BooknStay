@@ -579,13 +579,14 @@
                     }
 
                     // Update confirmation email and summary
-                    const userEmail = $('#email').val();
-                    $('#confirmationEmail').text(userEmail);
+                    const userEmail = data.guest_email || $('#email').val() || '{{ user.email|default:"" }}';
+                    $('#confirmationEmail').text(userEmail || '');
                     // Fill confirmation fields with real response
                     $('#confReference').text(`#BK-${data.booking_id}`);
+                    $('#confHotel').text(data.hotel_name || $('#confHotel').text());
                     $('#confCheckIn').text(data.check_in);
                     $('#confCheckOut').text(data.check_out);
-                    $('#confGuests').text(`${$('#num_guests').val()} Guests, 1 Room`);
+                    $('#confGuests').text(`${data.num_guests || $('#num_guests').val()} Guests, 1 Room`);
                     $('#confTotal').text(`$${data.total_price}`);
 
                     currentStep = 3;
