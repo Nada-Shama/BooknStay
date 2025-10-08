@@ -18,7 +18,6 @@ def booking(request, hotel_id):
     return render(request, 'bookings/booking.html', context)
 
 
-@login_required
 @require_http_methods(["POST"])
 def create_booking(request, hotel_id):
     """Create a booking with availability check; returns JSON."""
@@ -52,7 +51,7 @@ def create_booking(request, hotel_id):
             return JsonResponse({'success': False, 'error': 'Room not available for the selected dates.'}, status=409)
 
         booking = Booking(
-            user=request.user,
+            user=request.user if request.user.is_authenticated else None,
             hotel=hotel,
             room=room,
             check_in=check_in,
@@ -64,7 +63,7 @@ def create_booking(request, hotel_id):
             guest_email=guest_email or getattr(request.user, 'email', ''),
             guest_phone=guest_phone or getattr(request.user, 'phone', ''),
             guest_nationality=guest_nationality or getattr(request.user, 'nationality', ''),
-            guest_dob=guest_dob or getattr(request.user, 'date_of_birth', None),
+            guest_dob=(datetime.strptime(guest_dob, '%Y-%m-%d').date() if guest_dob else getattr(request.user, 'date_of_birth', None)),
             special_requests=special_requests,
         )
         booking.compute_total_price()
