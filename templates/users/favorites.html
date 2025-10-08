@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Favorites{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">My Favorites</h2>
+  {% if items %}
+  <div class="row">
+    {% for fav in items %}
+    <div class="col-md-4 mb-3">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ fav.room.hotel.hotel_name }} · Room {{ fav.room.room_number }}</h5>
+          <p class="card-text">{{ fav.room.get_type_display }} • ${{ fav.room.price }}</p>
+          <div class="d-flex gap-2">
+            <a href="{% url 'hotels:room_detail' fav.room.id %}" class="btn btn-primary btn-sm">View</a>
+            <form method="post" action="{% url 'remove_favorite_room' fav.room.id %}">
+              {% csrf_token %}
+              <button class="btn btn-outline-danger btn-sm">Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="text-muted">You have no favorites yet.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

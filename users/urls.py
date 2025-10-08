@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from hotels import views as hotel_views
+from . import views as user_views
 
 urlpatterns = [
     path('auth/', views.login_register, name='login_register'),
@@ -17,6 +18,11 @@ urlpatterns = [
     
     path('owner/bookings-calendar-data/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
     path('account/', views.account, name='account'),
+
+    # Favorites
+    path('favorites/add/<int:room_id>/', user_views.add_favorite_room, name='add_favorite_room'),
+    path('favorites/remove/<int:room_id>/', user_views.remove_favorite_room, name='remove_favorite_room'),
+    path('favorites/', user_views.list_favorites, name='list_favorites'),
 
 
     #path('search-hotels/', views.hotels_search_results, name='hotels_search_results'),

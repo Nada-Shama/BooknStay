@@ -5,7 +5,7 @@ from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
-from hotels.models import Hotel
+from hotels.models import Hotel, Room
 from bookings.models import Booking
 
 from django.http import JsonResponse
@@ -320,9 +320,38 @@ def owner_profile(request):
 
 @login_required(login_url='login_register')
 def account(request):
+    favorites = []
+    if request.user.is_authenticated:
+        favorites = getattr(request.user, 'favorite_rooms', []).all() if hasattr(request.user, 'favorite_rooms') else []
     return render(request, 'users/account.html', {
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
+        'favorites': favorites,
     })
+
+
+@login_required(login_url='login_register')
+def add_favorite_room(request, room_id):
+    from users.models import FavoriteRoom
+    room = get_object_or_404(Room, id=room_id)
+    FavoriteRoom.objects.get_or_create(user=request.user, room=room)
+    messages.success(request, 'Added to favorites.')
+    return redirect('hotels:room_detail', room_id=room.id)
+
+
+@login_required(login_url='login_register')
+def remove_favorite_room(request, room_id):
+    from users.models import FavoriteRoom
+    room = get_object_or_404(Room, id=room_id)
+    FavoriteRoom.objects.filter(user=request.user, room=room).delete()
+    messages.success(request, 'Removed from favorites.')
+    return redirect('hotels:room_detail', room_id=room.id)
+
+
+@login_required(login_url='login_register')
+def list_favorites(request):
+    from users.models import FavoriteRoom
+    items = FavoriteRoom.objects.filter(user=request.user).select_related('room', 'room__hotel')
+    return render(request, 'users/favorites.html', {'items': items})
 
 

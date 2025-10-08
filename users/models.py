@@ -35,3 +35,16 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.username
+
+
+class FavoriteRoom(models.Model):
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='favorite_rooms')
+    room = models.ForeignKey('hotels.Room', on_delete=models.CASCADE, related_name='favorited_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'room')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} ❤ Room {self.room_id}"

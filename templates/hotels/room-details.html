@@ -74,7 +74,13 @@
           <h4>About this Room</h4>
           <p>{{ room.description|default:"Comfortable room with essential amenities." }}</p>
           <div class="icon-button">
-            <a href="{% url 'booking' room.hotel.id %}?room_id={{ room.id }}"><i class="fa fa-calendar"></i> Book this room</a>
+            <a href="{% url 'booking' room.hotel.id %}?room_id={{ room.id }}" class="btn btn-primary"><i class="fa fa-calendar"></i> Book this room</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_favorite_room' room.id %}" style="display:inline-block; margin-left:8px;">
+              {% csrf_token %}
+              <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-heart"></i> Add to Favorites</button>
+            </form>
+            {% endif %}
           </div>
           <div class="price-card" style="margin-top:16px;">
             <div class="price">

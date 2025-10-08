@@ -28,6 +28,14 @@ def create_booking(request, hotel_id):
         check_in_str = request.POST.get('check_in')
         check_out_str = request.POST.get('check_out')
         num_guests = int(request.POST.get('num_guests') or 1)
+        # Guest details (optional)
+        guest_first_name = (request.POST.get('firstName') or '').strip()
+        guest_last_name = (request.POST.get('lastName') or '').strip()
+        guest_email = (request.POST.get('email') or '').strip()
+        guest_phone = (request.POST.get('phone') or '').strip()
+        guest_nationality = (request.POST.get('nationality') or '').strip()
+        guest_dob = (request.POST.get('dob') or '').strip()
+        special_requests = (request.POST.get('specialRequests') or '').strip()
 
         if not room_id or not check_in_str or not check_out_str:
             return JsonResponse({'success': False, 'error': 'room_id, check_in, check_out are required.'}, status=400)
@@ -51,6 +59,13 @@ def create_booking(request, hotel_id):
             check_out=check_out,
             num_guests=num_guests,
             status=Booking.STATUS_CONFIRMED,
+            guest_first_name=guest_first_name or getattr(request.user, 'first_name', ''),
+            guest_last_name=guest_last_name or getattr(request.user, 'last_name', ''),
+            guest_email=guest_email or getattr(request.user, 'email', ''),
+            guest_phone=guest_phone or getattr(request.user, 'phone', ''),
+            guest_nationality=guest_nationality or getattr(request.user, 'nationality', ''),
+            guest_dob=guest_dob or getattr(request.user, 'date_of_birth', None),
+            special_requests=special_requests,
         )
         booking.compute_total_price()
         booking.save()

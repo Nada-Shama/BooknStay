@@ -29,6 +29,15 @@ class Booking(models.Model):
     check_out = models.DateField()
     num_guests = models.IntegerField(default=1)
 
+    # Guest contact snapshot at booking time (so later profile changes don't lose history)
+    guest_first_name = models.CharField(max_length=150, blank=True, null=True)
+    guest_last_name = models.CharField(max_length=150, blank=True, null=True)
+    guest_email = models.EmailField(blank=True, null=True)
+    guest_phone = models.CharField(max_length=50, blank=True, null=True)
+    guest_nationality = models.CharField(max_length=100, blank=True, null=True)
+    guest_dob = models.DateField(blank=True, null=True)
+    special_requests = models.TextField(blank=True, null=True)
+
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
 
