@@ -42,6 +42,13 @@
               <h6>| Favorites</h6>
               <h2>Saved Rooms</h2>
             </div>
+            {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
             <div class="booking-cards">
               {% if items %}
                 {% for fav in items %}
@@ -56,6 +63,7 @@
                       <a href="{% url 'hotels:room_detail' fav.room.id %}" class="btn btn-outline">View</a>
                       <form method="post" action="{% url 'remove_favorite_room' fav.room.id %}" style="display:inline-block; margin-left:8px;">
                         {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}" />
                         <button class="btn">Remove</button>
                       </form>
                     </div>

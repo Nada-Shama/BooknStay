@@ -338,7 +338,8 @@ def add_favorite_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
     FavoriteRoom.objects.get_or_create(user=request.user, room=room)
     messages.success(request, 'Added to favorites.')
-    return redirect('hotels:room_detail', room_id=room.id)
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
+    return redirect(next_url)
 
 
 @login_required(login_url='login_register')
@@ -347,7 +348,8 @@ def remove_favorite_room(request, room_id):
     room = get_object_or_404(Room, id=room_id)
     FavoriteRoom.objects.filter(user=request.user, room=room).delete()
     messages.success(request, 'Removed from favorites.')
-    return redirect('hotels:room_detail', room_id=room.id)
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
+    return redirect(next_url)
 
 
 @login_required(login_url='login_register')
