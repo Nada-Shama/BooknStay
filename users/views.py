@@ -375,6 +375,14 @@ def account(request):
 
 
 @login_required(login_url='login_register')
+def reservations(request):
+    bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return render(request, 'users/reservations.html', { 'bookings': bookings })
+    return render(request, 'users/reservations.html', { 'bookings': bookings })
+
+
+@login_required(login_url='login_register')
 def add_favorite_room(request, room_id):
     from users.models import FavoriteRoom
     room = get_object_or_404(Room, id=room_id)

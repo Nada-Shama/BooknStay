@@ -29,9 +29,10 @@
                 <p>{{ user.email }}</p>
               </div>
             </div>
-            <ul class="account-nav">
-              <li class="active"><a href="#">My Account</a></li>
-              <li><a href="{% url 'list_favorites' %}">Favorites</a></li>
+            <ul class="account-nav js-account-nav">
+              <li class="active"><a href="{% url 'account' %}" data-target="account">My Account</a></li>
+              <li><a href="{% url 'reservations' %}" data-target="reservations">Reservations</a></li>
+              <li><a href="{% url 'list_favorites' %}" data-target="favorites">Favorites</a></li>
             </ul>
           </div>
         </div>
@@ -213,6 +214,26 @@
 {% block extra_js %}
 <script>
 (function(){
+  // AJAX sidebar nav (partial page loads)
+  const nav = document.querySelector('.js-account-nav');
+  if(nav){
+    nav.addEventListener('click', function(e){
+      const a = e.target.closest('a');
+      if(!a || !a.dataset.target) return;
+      e.preventDefault();
+      fetch(a.getAttribute('href'), { headers: { 'X-Requested-With':'XMLHttpRequest' } })
+        .then(r=>r.text()).then(html=>{
+          // naive replacement: extract .account-content from response
+          const temp = document.createElement('div'); temp.innerHTML = html;
+          const newContent = temp.querySelector('.account-content');
+          const cur = document.querySelector('.account-content');
+          if(newContent && cur){ cur.replaceWith(newContent); }
+          // update active link
+          nav.querySelectorAll('li').forEach(li=>li.classList.remove('active'));
+          a.parentElement.classList.add('active');
+        }).catch(()=>{});
+    });
+  }
   // Edit/Cancel logic
   const modal = document.getElementById('editModal');
   if(modal){

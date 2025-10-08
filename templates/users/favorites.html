@@ -29,9 +29,10 @@
                 <p>{{ user.email }}</p>
               </div>
             </div>
-            <ul class="account-nav">
-              <li><a href="{% url 'account' %}">My Account</a></li>
-              <li class="active"><a href="#">Favorites</a></li>
+            <ul class="account-nav js-account-nav">
+              <li><a href="{% url 'account' %}" data-target="account">My Account</a></li>
+              <li><a href="{% url 'reservations' %}" data-target="reservations">Reservations</a></li>
+              <li class="active"><a href="#" data-target="favorites">Favorites</a></li>
             </ul>
           </div>
         </div>

@@ -18,6 +18,7 @@ urlpatterns = [
     
     path('owner/bookings-calendar-data/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
     path('account/', views.account, name='account'),
+    path('reservations/', views.reservations, name='reservations'),
     path('settings/', views.settings_view, name='settings'),
 
     # Favorites
