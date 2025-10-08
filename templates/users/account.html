@@ -238,8 +238,12 @@
       payload.append('num_guests', document.getElementById('editGuests').value);
       fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload, credentials: 'same-origin' })
         .then(r=>r.json()).then(d=>{
-          if(d.success){ alert('Booking updated.'); location.reload(); }
-          else if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>'; }
+          if(d.success){
+            if(editMsg){ editMsg.innerHTML = '<div class="alert alert-success">Booking updated.</div>'; }
+            setTimeout(()=>{ closeModal(); location.reload(); }, 800);
+          } else if(editMsg){
+            editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>';
+          }
         }).catch(()=>{ if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">Network error.</div>'; }});
     });
   }
