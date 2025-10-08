@@ -176,7 +176,7 @@
                       <fieldset>
                         <label>{{ field.label }}</label>
                         {{ field }}
-                        {% if 'password' in field.name %}
+                        {% if field.name == 'new_password1' or field.name == 'new_password2' %}
                         <div class="password-hints text-muted small" data-for="{{ field.name }}"></div>
                         {% endif %}
                         {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
@@ -255,15 +255,19 @@
     for(let i=0;i<cookies.length;i++){let c=cookies[i].trim(); if(c.startsWith(name)) return c.substring(name.length);} return '';
   }
   const pwdInputs = document.querySelectorAll('#passwordForm input[type="password"]');
+  function renderHints(resp){
+    const n1 = document.querySelector('.password-hints[data-for="new_password1"]');
+    const n2 = document.querySelector('.password-hints[data-for="new_password2"]');
+    if(n1 && resp.new_password1){ n1.innerHTML = resp.new_password1.valid ? '<span class="text-success">Strong password</span>' : '<ul style="margin:6px 0 0 18px;">'+ (resp.new_password1.errors||[]).map(m=>'<li>'+m+'</li>').join('') +'</ul>'; }
+    if(n2 && resp.new_password2){ n2.innerHTML = resp.new_password2.valid ? '<span class="text-success">Matches</span>' : '<span class="text-danger">'+ ((resp.new_password2.errors||[])[0]||'') +'</span>'; }
+  }
   if(pwdInputs.length){
-    const validate = debounce(function(e){
-      const val = e.target.value || '';
-      const targetName = e.target.name;
-      fetch('/users/ajax/validate-password/', {method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'}, body:'password='+encodeURIComponent(val), credentials:'same-origin'})
-        .then(r=>r.json()).then(d=>{
-          document.querySelectorAll('.password-hints').forEach(el=>{ if(el.dataset.for===targetName){ el.innerHTML = d.valid ? '<span class="text-success">Strong password</span>' : '<ul style="margin:6px 0 0 18px;">'+ d.errors.map(m=>'<li>'+m+'</li>').join('') +'</ul>'; }});
-        }).catch(()=>{});
-    }, 250);
+    const validate = debounce(function(){
+      const f = document.getElementById('passwordForm');
+      const body = 'new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')+'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
+      fetch('/users/ajax/validate-password/', {method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'}, body, credentials:'same-origin'})
+        .then(r=>r.json()).then(renderHints).catch(()=>{});
+    }, 200);
     pwdInputs.forEach(inp=>{ inp.addEventListener('input', validate); });
   }
 })();
