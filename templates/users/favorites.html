@@ -2,31 +2,70 @@
 {% load static %}
 {% block title %}My Favorites{% endblock %}
 {% block content %}
-<div class="container py-4">
-  <h2 class="mb-4">My Favorites</h2>
-  {% if items %}
-  <div class="row">
-    {% for fav in items %}
-    <div class="col-md-4 mb-3">
-      <div class="card h-100">
-        <div class="card-body">
-          <h5 class="card-title">{{ fav.room.hotel.hotel_name }} · Room {{ fav.room.room_number }}</h5>
-          <p class="card-text">{{ fav.room.get_type_display }} • ${{ fav.room.price }}</p>
-          <div class="d-flex gap-2">
-            <a href="{% url 'hotels:room_detail' fav.room.id %}" class="btn btn-primary btn-sm">View</a>
-            <form method="post" action="{% url 'remove_favorite_room' fav.room.id %}">
-              {% csrf_token %}
-              <button class="btn btn-outline-danger btn-sm">Remove</button>
-            </form>
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Favorites</span>
+          <h3>My Favorites</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section account-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="account-sidebar">
+            <div class="account-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div class="details">
+                <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="account-nav">
+              <li><a href="{% url 'account' %}">Bookings</a></li>
+              <li class="active"><a href="#">Favorites</a></li>
+              <li><a href="#">Profile</a></li>
+              <li><a href="#">Settings</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="account-content">
+            <div class="section-heading">
+              <h6>| Favorites</h6>
+              <h2>Saved Rooms</h2>
+            </div>
+            <div class="row">
+              {% if items %}
+                {% for fav in items %}
+                <div class="col-md-4 mb-3">
+                  <div class="card h-100">
+                    <div class="card-body">
+                      <h5 class="card-title">{{ fav.room.hotel.hotel_name }} · Room {{ fav.room.room_number }}</h5>
+                      <p class="card-text">{{ fav.room.get_type_display }} • ${{ fav.room.price }}</p>
+                      <div class="d-flex gap-2">
+                        <a href="{% url 'hotels:room_detail' fav.room.id %}" class="btn btn-primary btn-sm">View</a>
+                        <form method="post" action="{% url 'remove_favorite_room' fav.room.id %}">
+                          {% csrf_token %}
+                          <button class="btn btn-outline-danger btn-sm">Remove</button>
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted">You have no favorites yet.</p>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
     </div>
-    {% endfor %}
   </div>
-  {% else %}
-    <p class="text-muted">You have no favorites yet.</p>
-  {% endif %}
-</div>
 {% endblock %}
 

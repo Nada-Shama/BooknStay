@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, authenticate, logout, get_user_model
@@ -320,13 +320,13 @@ def owner_profile(request):
 
 @login_required(login_url='login_register')
 def account(request):
-    favorites = []
+    user_bookings = []
     if request.user.is_authenticated:
-        favorites = getattr(request.user, 'favorite_rooms', []).all() if hasattr(request.user, 'favorite_rooms') else []
+        user_bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
     return render(request, 'users/account.html', {
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
-        'favorites': favorites,
+        'bookings': user_bookings,
     })
 
 

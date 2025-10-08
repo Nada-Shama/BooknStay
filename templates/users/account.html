@@ -44,45 +44,30 @@
               <h2>Recent Reservations</h2>
             </div>
             <div class="booking-cards">
-              <div class="booking-card">
-                <div class="image">
-                  <img src="{% static 'images/property-01.jpg' %}" alt="Hotel image">
-                </div>
-                <div class="info">
-                  <h4>Grand Miami Hotel</h4>
-                  <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
-                  <ul>
-                    <li><strong>Check-in:</strong> Dec 15, 2024</li>
-                    <li><strong>Check-out:</strong> Dec 18, 2024</li>
-                    <li><strong>Guests:</strong> 2 Adults</li>
-                    <li><strong>Total:</strong> $862.50</li>
-                  </ul>
-                  <div class="actions">
-                    <a class="btn btn-outline" href="#">View</a>
-                    <a class="btn" href="#">Invoice</a>
+              {% if bookings %}
+                {% for b in bookings %}
+                <div class="booking-card">
+                  <div class="image">
+                    <img src="{% if b.hotel.photo %}{{ b.hotel.photo.url }}{% else %}{% static 'images/property-01.jpg' %}{% endif %}" alt="Hotel image">
+                  </div>
+                  <div class="info">
+                    <h4>{{ b.hotel.hotel_name }}</h4>
+                    <p><i class="fa fa-home"></i> Room {{ b.room.room_number }} • {{ b.room.get_type_display }}</p>
+                    <ul>
+                      <li><strong>Check-in:</strong> {{ b.check_in }}</li>
+                      <li><strong>Check-out:</strong> {{ b.check_out }}</li>
+                      <li><strong>Guests:</strong> {{ b.num_guests }}</li>
+                      <li><strong>Total:</strong> ${{ b.total_price }}</li>
+                    </ul>
+                    <div class="actions">
+                      <span class="badge bg-secondary">{{ b.status }}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div class="booking-card">
-                <div class="image">
-                  <img src="{% static 'images/property-02.jpg' %}" alt="Hotel image">
-                </div>
-                <div class="info">
-                  <h4>Ocean View Resort</h4>
-                  <p><i class="fa fa-map-marker"></i> South Beach, FL</p>
-                  <ul>
-                    <li><strong>Check-in:</strong> Jan 05, 2025</li>
-                    <li><strong>Check-out:</strong> Jan 09, 2025</li>
-                    <li><strong>Guests:</strong> 2 Adults, 1 Child</li>
-                    <li><strong>Total:</strong> $1,295.00</li>
-                  </ul>
-                  <div class="actions">
-                    <a class="btn btn-outline" href="#">View</a>
-                    <a class="btn" href="#">Invoice</a>
-                  </div>
-                </div>
-              </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted">You have no bookings yet.</p>
+              {% endif %}
             </div>
 
             <div class="section-heading" style="margin-top: 40px;">
