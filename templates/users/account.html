@@ -116,12 +116,10 @@
                       <li><strong>Guests:</strong> {{ b.num_guests }}</li>
                       <li><strong>Total:</strong> ${{ b.total_price }}</li>
                     </ul>
-                    <div class="actions">
-                      <span class="badge bg-secondary">{{ b.status }}</span>
-                      <div class="btn-group" style="margin-left:8px;">
-                        <button class="btn btn-sm btn-outline-danger js-cancel" data-id="{{ b.id }}">Cancel</button>
-                        <button class="btn btn-sm btn-outline-primary js-edit" data-id="{{ b.id }}" data-check-in="{{ b.check_in|date:'Y-m-d' }}" data-check-out="{{ b.check_out|date:'Y-m-d' }}" data-guests="{{ b.num_guests }}">Edit</button>
-                      </div>
+                    <div class="actions d-flex align-items-center gap-2 flex-wrap" style="margin-top:10px;">
+                      <span class="badge {% if b.status == 'cancelled' %}bg-danger{% elif b.status == 'confirmed' %}bg-success{% else %}bg-secondary{% endif %}">{{ b.status|title }}</span>
+                      <button class="btn btn-sm btn-outline-danger js-cancel" data-id="{{ b.id }}">Cancel</button>
+                      <button class="btn btn-sm btn-outline-secondary js-edit" data-id="{{ b.id }}" data-check-in="{{ b.check_in|date:'Y-m-d' }}" data-check-out="{{ b.check_out|date:'Y-m-d' }}" data-guests="{{ b.num_guests }}">Edit</button>
                     </div>
                   </div>
                 </div>
