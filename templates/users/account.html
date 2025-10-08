@@ -70,11 +70,11 @@
               {% endif %}
             </div>
 
-            <div id="editModal" class="modal" tabindex="-1" style="display:none;">
-              <div class="modal-dialog">
-                <div class="modal-content">
-                  <div class="modal-header"><h5 class="modal-title">Edit Booking</h5></div>
-                  <div class="modal-body">
+            <div id="editModal" class="custom-modal" style="display:none;">
+              <div class="custom-modal__dialog">
+                <div class="custom-modal__content">
+                  <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
+                  <div class="custom-modal__body">
                     <div class="row g-2">
                       <div class="col">
                         <label class="form-label">Check-in</label>
@@ -91,9 +91,9 @@
                     </div>
                     <div id="editMsg" class="mt-2"></div>
                   </div>
-                  <div class="modal-footer">
-                    <button class="btn btn-secondary js-close">Close</button>
-                    <button class="btn btn-primary js-save">Save</button>
+                  <div class="custom-modal__footer">
+                    <button class="btn btn-outline js-close">Close</button>
+                    <button class="orange-button js-save">Save</button>
                   </div>
                 </div>
               </div>
@@ -206,7 +206,7 @@
   if(modal){
     const editMsg = document.getElementById('editMsg');
     let currentId = null;
-    function openModal() { modal.style.display = 'block'; }
+    function openModal() { modal.style.display = 'flex'; }
     function closeModal() { modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
     document.querySelectorAll('.js-cancel').forEach(btn => {
       btn.addEventListener('click', function(){

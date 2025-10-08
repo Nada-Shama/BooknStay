@@ -1,3 +1,13 @@
+/* Custom modal for account page */
+.custom-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1050; display:none; align-items:center; justify-content:center; }
+.custom-modal__dialog { width: 100%; max-width: 560px; padding: 10px; }
+.custom-modal__content { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+.custom-modal__header { padding: 16px 20px; border-bottom: 1px solid #eee; }
+.custom-modal__title { margin: 0; font-size: 18px; font-weight: 600; }
+.custom-modal__body { padding: 16px 20px; }
+.custom-modal__footer { padding: 12px 20px; border-top: 1px solid #eee; display:flex; gap:10px; justify-content:flex-end; }
+.custom-modal .btn.btn-outline { border: 1px solid #ccc; background: #fff; color: #333; padding: 8px 14px; border-radius: 6px; }
+.custom-modal .orange-button { padding: 8px 16px; }
 /*
 
 TemplateMo 591 villa agency
