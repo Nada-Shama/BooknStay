@@ -42,16 +42,24 @@
               <h6>| Profile</h6>
               <h2>Account Information</h2>
             </div>
+            {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
             <form method="post" class="mb-4">
               {% csrf_token %}
               <input type="hidden" name="action" value="profile" />
               <div class="row">
-                <div class="col-md-6">{{ profile_form.username.label_tag }} {{ profile_form.username }}</div>
-                <div class="col-md-6">{{ profile_form.email.label_tag }} {{ profile_form.email }}</div>
-                <div class="col-md-6">{{ profile_form.first_name.label_tag }} {{ profile_form.first_name }}</div>
-                <div class="col-md-6">{{ profile_form.last_name.label_tag }} {{ profile_form.last_name }}</div>
-                <div class="col-md-6">{{ profile_form.phone.label_tag }} {{ profile_form.phone }}</div>
-                <div class="col-md-6">{{ profile_form.nationality.label_tag }} {{ profile_form.nationality }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">Username</label>{{ profile_form.username }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">Email</label>{{ profile_form.email }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">First name</label>{{ profile_form.first_name }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">Last name</label>{{ profile_form.last_name }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">Phone</label>{{ profile_form.phone }}</div>
+                <div class="col-md-6 mb-3"><label class="form-label">Nationality</label>{{ profile_form.nationality }}</div>
               </div>
               <button class="btn btn-primary" style="margin-top:12px;">Save Profile</button>
             </form>
@@ -63,7 +71,16 @@
             <form method="post">
               {% csrf_token %}
               <input type="hidden" name="action" value="password" />
-              {{ pwd_form.as_p }}
+              <div class="row">
+                {% for field in pwd_form %}
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                  </div>
+                {% endfor %}
+              </div>
               <button class="btn btn-primary">Save Password</button>
             </form>
           </div>
