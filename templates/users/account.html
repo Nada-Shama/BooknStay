@@ -176,7 +176,7 @@
                       <fieldset>
                         <label>{{ field.label }}</label>
                         {{ field }}
-                        {% if field.name == 'new_password1' or field.name == 'new_password2' %}
+                        {% if field.name == 'old_password' or field.name == 'new_password1' or field.name == 'new_password2' %}
                         <div class="password-hints text-muted small" data-for="{{ field.name }}"></div>
                         {% endif %}
                         {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
@@ -258,17 +258,19 @@
   function renderHints(resp){
     const n1 = document.querySelector('.password-hints[data-for="new_password1"]');
     const n2 = document.querySelector('.password-hints[data-for="new_password2"]');
+    const n0 = document.querySelector('.password-hints[data-for="old_password"]');
     if(n1 && resp.new_password1){ n1.innerHTML = resp.new_password1.valid ? '<span class="text-success">Strong password</span>' : '<ul style="margin:6px 0 0 18px;">'+ (resp.new_password1.errors||[]).map(m=>'<li>'+m+'</li>').join('') +'</ul>'; }
     if(n2 && resp.new_password2){ n2.innerHTML = resp.new_password2.valid ? '<span class="text-success">Matches</span>' : '<span class="text-danger">'+ ((resp.new_password2.errors||[])[0]||'') +'</span>'; }
+    if(n0 && resp.current_password){ n0.innerHTML = resp.current_password.valid === true ? '<span class="text-success">Current password ok</span>' : (resp.current_password.valid===false ? '<span class="text-danger">'+ ((resp.current_password.errors||[])[0]||'') +'</span>' : ''); }
   }
   if(pwdInputs.length){
     const validate = debounce(function(){
       const f = document.getElementById('passwordForm');
-      const body = 'new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')+'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
+      const body = 'old_password='+encodeURIComponent((f.querySelector('[name="old_password"]')||{}).value||'')+'&new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')+'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
       fetch('/users/ajax/validate-password/', {method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'}, body, credentials:'same-origin'})
         .then(r=>r.json()).then(renderHints).catch(()=>{});
-    }, 200);
-    pwdInputs.forEach(inp=>{ inp.addEventListener('input', validate); });
+    }, 3000);
+    pwdInputs.forEach(inp=>{ inp.addEventListener('change', validate); inp.addEventListener('blur', validate); });
   }
 })();
 </script>

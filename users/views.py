@@ -406,11 +406,15 @@ def settings_view(request):
 
 @require_POST
 def validate_password_ajax(request):
-    """Validate new password and confirmation; return granular hints."""
+    """Validate current password (if provided), new password and confirmation; return granular hints."""
     pwd1 = (request.POST.get('new_password1') or '').strip()
     pwd2 = (request.POST.get('new_password2') or '').strip()
-    # Old password validity is handled server-side on submit; we don't expose it here for security
-    result = { 'new_password1': {'valid': False, 'errors': []}, 'new_password2': {'valid': False, 'errors': []} }
+    old = (request.POST.get('old_password') or '').strip()
+    result = {
+        'current_password': {'valid': None, 'errors': []},
+        'new_password1': {'valid': False, 'errors': []},
+        'new_password2': {'valid': False, 'errors': []},
+    }
     # Validate pwd1 by Django validators
     try:
         validate_password(pwd1, user=request.user if request.user.is_authenticated else None)
@@ -423,6 +427,13 @@ def validate_password_ajax(request):
             result['new_password2']['valid'] = True
         else:
             result['new_password2']['errors'] = ['Passwords do not match.']
+    # Check current password if provided and user is authenticated
+    if old:
+        if request.user.is_authenticated and request.user.check_password(old):
+            result['current_password']['valid'] = True
+        else:
+            result['current_password']['valid'] = False
+            result['current_password']['errors'] = ['Current password is incorrect.']
     return JsonResponse(result)
 
 
