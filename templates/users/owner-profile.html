@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Owner Profile{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Owner / Profile</span>
+          <h3>Owner Profile</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section owner-dashboard">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="od-nav">
+              <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li class="active"><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+              <li><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></li>
+              <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
+              <li><a href="#">Bookings Management</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            {% if messages %}
+            <div class="row">
+              <div class="col-12">
+                {% for message in messages %}
+                  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">{{ message }}</div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            <div class="section-heading">
+              <h6>| Profile</h6>
+              <h2>Account Details</h2>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="od-card">
+                <div class="row">
+                  <div class="col-md-4 mb-30">
+                    <div class="item" style="text-align:center">
+                      <img src="{% static 'images/single-property.jpg' %}" alt="Avatar">
+                      <span class="category">Profile Picture</span>
+                      <div class="main-button"><a href="#">Change Photo</a></div>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="row">
+                      <div class="col-sm-6 mb-30">
+                        <label for="first_name">First Name</label>
+                        <input type="text" id="first_name" name="first_name" class="form-control" value="{{ profile.first_name }}" autocomplete="given-name">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="last_name">Last Name</label>
+                        <input type="text" id="last_name" name="last_name" class="form-control" value="{{ profile.last_name }}" autocomplete="family-name">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" value="{{ profile.username }}" autocomplete="username">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ profile.email }}" autocomplete="email">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="phone">Phone</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" value="{{ profile.phone }}" autocomplete="tel">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="date_of_birth">Date of Birth</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" value="{{ profile.date_of_birth|date:'Y-m-d' }}">
+                      </div>
+                      <div class="col-sm-6 mb-30">
+                        <label for="nationality">Nationality</label>
+                        <input type="text" id="nationality" name="nationality" class="form-control" value="{{ profile.nationality }}">
+                      </div>
+                      <div class="col-12 mb-30">
+                        <label for="bio">Bio</label>
+                        <textarea id="bio" name="bio" class="form-control" rows="4" placeholder="Tell guests about you...">{{ profile.bio|default:'' }}</textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="od-card" style="margin-top: 24px;">
+                <div class="od-actions">
+                  <div class="main-button"><button type="submit">Save Changes</button></div>
+                  <div class="main-button"><a href="{% url 'owner_dashboard' %}">Cancel</a></div>
+                  <div class="main-button"><a href="#">Change Password</a></div>
+                </div>
+              </div>
+            </form>
+
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+

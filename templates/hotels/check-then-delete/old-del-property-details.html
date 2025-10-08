@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book & Stay - Hotel Room Details{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a>  /  <a href="{% url 'properties' %}">Properties</a>  /  Room Details</span>
+          <h3>Hotel Room Details</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="single-property section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8">
+          <div class="main-image">
+            <img src="{% static 'images/single-property.jpg' %}" alt="">
+          </div>
+          <div class="main-content">
+            <span class="category">Luxury Hotel Room</span>
+            <h4>24 New Street Miami, FL 33101</h4>
+            <p>Experience <strong>the finest hotel accommodation</strong> with our premium room booking system. Book & Stay provides you with the <a href="{% url 'properties' %}">best hotel rooms</a> in the world. Please share your experience with friends and family. Thank you. Our luxury rooms feature modern amenities, comfortable bedding, and stunning city views.
+            
+            <br><br>When you search for hotel bookings, you can simply visit Book & Stay website. In addition, you can explore our various room types, luxury suites, and resort accommodations. Our premium service includes 24/7 concierge, room service, and complimentary amenities for all guests.</p>
+          </div> 
+          <div class="accordion" id="accordionExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  What amenities are included ?
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  Our <strong>luxury hotel rooms</strong> include complimentary WiFi, flat-screen TV, mini-bar, room service, daily housekeeping, and access to our fitness center and spa facilities. All rooms feature <code>premium bedding</code> and modern bathroom amenities for your comfort.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingTwo">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  How does booking work ?
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  Booking is <strong>simple and secure</strong>. Select your dates, choose your room type, and complete the reservation online. You'll receive instant confirmation via email. Free cancellation is available up to 24 hours before check-in. Payment is processed securely through our <code>encrypted</code> booking system.
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header" id="headingThree">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Why choose Book & Stay ?
+                </button>
+              </h2>
+              <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  Book & Stay offers <strong>exceptional service</strong> with 24/7 customer support, best price guarantee, and exclusive member benefits. Our properties are carefully selected for quality and location. We provide <code>personalized</code> recommendations and special offers for returning guests.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="info-table">
+            <ul>
+              <li>
+                <img src="{% static 'images/info-icon-01.png' %}" alt="" style="max-width: 52px;">
+                <h4>45 m2<br><span>Room Size</span></h4>
+              </li>
+              <li>
+                <img src="{% static 'images/info-icon-02.png' %}" alt="" style="max-width: 52px;">
+                <h4>Booking<br><span>Instant Confirmation</span></h4>
+              </li>
+              <li>
+                <img src="{% static 'images/info-icon-03.png' %}" alt="" style="max-width: 52px;">
+                <h4>Payment<br><span>Secure Online</span></h4>
+              </li>
+              <li>
+                <img src="{% static 'images/info-icon-04.png' %}" alt="" style="max-width: 52px;">
+                <h4>Security<br><span>24/7 Hotel Security</span></h4>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section best-deal">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="section-heading">
+            <h6>| Best Deal</h6>
+            <h2>Find Your Best Hotel Deal Right Now!</h2>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="tabs-content">
+            <div class="row">
+              <div class="nav-wrapper ">
+                <ul class="nav nav-tabs" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="hotel-tab" data-bs-toggle="tab" data-bs-target="#hotel" type="button" role="tab" aria-controls="hotel" aria-selected="true">Hotel Room</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="resort-tab" data-bs-toggle="tab" data-bs-target="#resort" type="button" role="tab" aria-controls="resort" aria-selected="false">Resort Suite</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="luxury-tab" data-bs-toggle="tab" data-bs-target="#luxury" type="button" role="tab" aria-controls="luxury" aria-selected="false">Luxury Suite</button>
+                  </li>
+                </ul>
+              </div>              
+              <div class="tab-content" id="myTabContent">
+                <div class="tab-pane fade show active" id="hotel" role="tabpanel" aria-labelledby="hotel-tab">
+                  <div class="row">
+                    <div class="col-lg-3">
+                      <div class="info-table">
+                        <ul>
+                          <li>Room Size <span>45 m2</span></li>
+                          <li>Floor number <span>3rd</span></li>
+                          <li>Bedrooms <span>1</span></li>
+                          <li>Parking Available <span>Yes</span></li>
+                          <li>Payment Process <span>Online</span></li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <img src="{% static 'images/deal-01.jpg' %}" alt="">
+                    </div>
+                    <div class="col-lg-3">
+                      <h4>All Info About Hotel Room</h4>
+                      <p>Our standard hotel room offers modern comfort with city views, premium amenities, and 24/7 room service. Perfect for business travelers and short stays. <br><br>Features include complimentary WiFi, flat-screen TV, mini-bar, daily housekeeping, and access to hotel facilities. Book now for the best rates and instant confirmation.</p>
+                      <div class="icon-button">
+                        <a href="{% url 'properties' %}"><i class="fa fa-calendar"></i> Book Now</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="resort" role="tabpanel" aria-labelledby="resort-tab">
+                  <div class="row">
+                    <div class="col-lg-3">
+                      <div class="info-table">
+                        <ul>
+                          <li>Suite Size <span>75 m2</span></li>
+                          <li>Floor number <span>8th</span></li>
+                          <li>Bedrooms <span>2</span></li>
+                          <li>Parking Available <span>Yes</span></li>
+                          <li>Payment Process <span>Online</span></li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <img src="{% static 'images/deal-02.jpg' %}" alt="">
+                    </div>
+                    <div class="col-lg-3">
+                      <h4>Detail Info About Resort Suite</h4>
+                      <p>Our resort suite offers spacious accommodation with separate living area, premium amenities, and stunning views. Perfect for families and extended stays. <br><br>Features include private balcony, kitchenette, premium bedding, complimentary breakfast, and access to resort facilities including pool and spa. Book now for exclusive resort benefits.</p>
+                      <div class="icon-button">
+                        <a href="{% url 'properties' %}"><i class="fa fa-calendar"></i> Book Now</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="tab-pane fade" id="luxury" role="tabpanel" aria-labelledby="luxury-tab">
+                  <div class="row">
+                    <div class="col-lg-3">
+                      <div class="info-table">
+                        <ul>
+                          <li>Suite Size <span>120 m2</span></li>
+                          <li>Floor number <span>15th</span></li>
+                          <li>Bedrooms <span>3</span></li>
+                          <li>Parking Available <span>Yes</span></li>
+                          <li>Payment Process <span>Online</span></li>
+                        </ul>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <img src="{% static 'images/deal-03.jpg' %}" alt="">
+                    </div>
+                    <div class="col-lg-3">
+                      <h4>Extra Info About Luxury Suite</h4>
+                      <p>Our luxury suite offers the ultimate in comfort and elegance with panoramic city views, premium furnishings, and exclusive amenities. Perfect for special occasions and VIP guests. <br><br>Features include private dining area, butler service, premium minibar, complimentary spa access, and personalized concierge service. Book now for the ultimate luxury experience.</p>
+                      <div class="icon-button">
+                        <a href="{% url 'properties' %}"><i class="fa fa-calendar"></i> Book Now</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

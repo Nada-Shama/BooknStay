@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Hotel Booking System - Login{% endblock %}
+{% block content %}
+
+  <style>
+    /* Center text on small screens, restore left alignment from md and up */
+    .text-center-mobile { text-align: center; }
+    @media (min-width: 768px) {
+      .text-center-mobile { text-align: left; }
+    }
+  </style>
+
+  <div class="page-heading header-text">
+    <div class="container">
+  <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="#">Home</a>  /  Login</span>
+          <h3>Login</h3>
+        </div>
+        </div>
+      </div>
+    </div>
+
+  <div class="contact-page section">
+    <div class="container">
+      <div class="row justify-content-center responsive-gap mb-5">
+
+        {% if messages %}
+          <div class="mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{% if 'error' in message.tags %}danger{% elif 'debug' in message.tags %}secondary{% else %}{{ message.tags|default:'info' }}{% endif %}" role="alert" style="border-radius: 10px;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <div class="col-lg-6 col-md-9 col-sm-10">
+          <div class="auth-card text-center-mobile">
+            <div class="section-heading">
+              <h6>| Login</h6>
+              <h2>Welcome Back</h2>
+            </div>
+            <p>Sign in to your account to access your bookings, manage your profile, and enjoy our premium hotel booking services.</p>
+            <form id="login-form" method="post">
+              {% csrf_token %}
+              <div class="row">
+                <div class="col-lg-12">
+                  <fieldset>
+                  <label for="id_username">Email or Username</label>
+                  <input type="text" name="username" id="id_username" placeholder="Enter your email or username" autocomplete="username" required>
+                  </fieldset>
+                </div>
+                <div class="col-lg-12">
+                  <fieldset>
+                    <label for="id_password">Password</label>
+                    <input type="password" name="password" id="id_password" placeholder="Your Password..." autocomplete="current-password" required>
+                  </fieldset>
+                </div>
+                <div class="col-lg-12">
+                  <fieldset>
+                    <button type="submit" name="login_submit" id="login-submit" class="orange-button">Login</button>
+                  </fieldset>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="col-lg-5 col-md-8 col-sm-10">
+          <div class="auth-card text-center-mobile"> 
+            <div class="section-heading">
+              <h6>| New here?</h6>
+              <h2>Create an account</h2>
+            </div>
+            <p>If you don't have an account yet, create one now!</p>
+            <div class="main-button" style="margin-bottom: 10px;"><a href="{% url 'register' %}">Customer Registration</a></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 80px;">
+        <div class="col-lg-12">
+          <div class="auth-separator"><span>OR</span></div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top: 20px;">
+        <div class="col-lg-12 text-center">
+          <a href="{% url 'owner-register' %}" id="owner-registration-btn" class="orange-button" style="max-width: 320px;">Register as Hotel Owner</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Book & Stay - {{ hotel.hotel_name }} Details{% endblock %}
+
+{% block content %}
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb">
+          <a href="{% url 'home' %}">Home</a> / Hotel Details
+        </span>
+        <h3>{{ hotel.hotel_name }}</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="single-property section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <div class="main-image mb-4">
+          {% if hotel.photo %}
+            <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}" class="img-fluid rounded">
+          {% else %}
+            <img src="{% static 'images/single-property.jpg' %}" alt="{{ hotel.hotel_name }}" class="img-fluid rounded">
+          {% endif %}
+        </div>
+        <div class="main-content">
+          <span class="category text-muted">{{ hotel.property_type }}</span>
+          <h4 class="mt-2">{{ hotel.hotel_name }}</h4>
+          <p>{{ hotel.description }}</p>
+
+          <p><strong>Star Rating:</strong>
+            {% for i in "12345" %}
+              {% if forloop.counter <= hotel.star_rating %}
+                <i class="fa fa-star text-warning"></i>
+              {% else %}
+                <i class="fa fa-star text-secondary"></i>
+              {% endif %}
+            {% endfor %}
+          </p>
+
+          <p><strong>Address:</strong> {{ hotel.address }}, {{ hotel.city }}, {{ hotel.state }}, {{ hotel.country }} {{ hotel.zipcode }}</p>
+          <p><strong>Opening Date:</strong> {{ hotel.opening_date|date:"M d, Y" }}</p>
+          <p><strong>Number of Rooms:</strong> {{ hotel.num_rooms }}</p>
+          <p><strong>Contact Preference:</strong> {{ hotel.contact_preference }}</p>
+          {% if hotel.website %}
+            <p><strong>Website:</strong> <a href="{{ hotel.website }}" target="_blank">{{ hotel.website }}</a></p>
+          {% endif %}
+          <p><strong>Business Name:</strong> {{ hotel.business_name }}</p>
+          <p><strong>Tax ID:</strong> {{ hotel.tax_id }}</p>
+          <p><strong>Amenities:</strong>
+            {% if hotel.amenities %}
+              {{ hotel.amenities|join:", " }}
+            {% else %}
+              None listed
+            {% endif %}
+          </p>
+          <p><strong>Contact:</strong> {{ hotel.contact }}</p>
+        </div>
+      </div>
+
+      <div class="col-lg-4">
+        <div class="info-table p-3 bg-light rounded shadow-sm">
+          <ul class="list-unstyled">
+            <li class="mb-3">
+              <h5>Rooms <br><span class="text-muted">{{ hotel.rooms.count }}</span></h5>
+            </li>
+            <li class="mb-3">
+              <h5>Reviews <br><span class="text-muted">{{ hotel.reviews.count }}</span></h5>
+            </li>
+            <li class="mb-3">
+              <h5>Created <br><span class="text-muted">{{ hotel.created_at|date:"M d, Y" }}</span></h5>
+            </li>
+            <li class="mb-3">
+              <h5>Updated <br><span class="text-muted">{{ hotel.updated_at|date:"M d, Y" }}</span></h5>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="row mt-5">
+      <div class="col-lg-12">
+        <h4>Available Rooms</h4>
+        <hr>
+        {% if rooms %}
+          <div class="row">
+            {% for room in rooms %}
+              <div class="col-md-4 mb-3">
+                <div class="card p-3 h-100 shadow-sm">
+                  <h5>{{ room.get_type_display }} - Room {{ room.room_number }}</h5>
+                  <p><strong>Price:</strong> ${{ room.price }}</p>
+                  <p><strong>Status:</strong> {{ room.get_status_display }}</p>
+                  <p><strong>Capacity:</strong> {{ room.capacity }}</p>
+                  <a href="{% url 'hotels:room_detail' room.id %}" class="btn btn-outline-primary btn-sm mt-auto">View Details</a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p>No rooms available for this hotel.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="row mt-5">
+      <div class="col-lg-12">
+        <h4>Guest Reviews</h4>
+        <hr>
+
+        <div id="reviewsList">
+          {% for review in reviews %}
+          <div class="border p-3 mb-3 rounded">
+            <strong>{{ review.user.username }}</strong>
+            <div>
+              {% for i in "12345" %}
+                {% if forloop.counter <= review.rating %}
+                  <i class="fa fa-star text-warning"></i>
+                {% else %}
+                  <i class="fa fa-star text-secondary"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <p class="mb-1">{{ review.comment }}</p>
+            <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+          </div>
+          {% empty %}
+          <p>No reviews yet. Be the first to add one!</p>
+          {% endfor %}
+        </div>
+
+        <hr>
+        <h5 class="mt-4">Add Your Review</h5>
+        <form id="reviewForm" method="POST" action="{% url 'hotels:add_review' hotel.id %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Your Rating:</label><br>
+            <div class="rating">
+              {% for i in "54321" %}
+                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}">
+                <label for="star{{ i }}"><i class="fa fa-star"></i></label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="comment" class="form-label">Your Comment:</label>
+            <textarea class="form-control" name="comment" id="comment" rows="3" placeholder="Write your experience..."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit Review</button>
+        </form>
+
+        <div id="reviewMessage" class="mt-3"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.rating {
+  direction: rtl;
+  display: inline-flex;
+}
+.rating input {
+  display: none;
+}
+.rating label {
+  font-size: 1.8rem;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+  color: #ffc107;
+}
+.fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.querySelector("#reviewForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const formData = new FormData(this);
+  const url = this.action;
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  fetch(url, {
+    method: "POST",
+    body: formData,
+    headers: { "X-CSRFToken": csrfToken },
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      const starsHtml = Array.from({length: 5}, (_, i) => {
+        return i < data.rating ? '<i class="fa fa-star text-warning"></i>' : '<i class="fa fa-star text-secondary"></i>';
+      }).join('');
+
+      const newReview = `
+        <div class="border p-3 mb-3 rounded fade-in">
+          <strong>${data.username}</strong>
+          <div>${starsHtml}</div>
+          <p class="mb-1">${data.comment}</p>
+          <small class="text-muted">${data.created_at}</small>
+        </div>`;
+
+      document.querySelector("#reviewsList").insertAdjacentHTML('afterbegin', newReview);
+      document.querySelector("#reviewForm").reset();
+      document.querySelector("#reviewMessage").innerHTML = '<div class="alert alert-success">Review added!</div>';
+    } else {
+      document.querySelector("#reviewMessage").innerHTML = '<div class="alert alert-danger">' + data.error + '</div>';
+    }
+  })
+  .catch(() => {
+    document.querySelector("#reviewMessage").innerHTML = '<div class="alert alert-danger">Something went wrong. Please try again.</div>';
+  });
+});
+</script>
+
+
+{% endblock %}

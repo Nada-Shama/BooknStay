@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Add New Room - Owner{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-new-hotel.css' %}">
+{% endblock %}
+{% block content %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Add New Room</span>
+        <h3>Add New Room</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section owner-dashboard">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3">
+        <aside class="od-sidebar">
+          <div class="od-user">
+            <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+            <div>
+              <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+              <p>{{ user.email }}</p>
+            </div>
+          </div>
+          <ul class="od-nav">
+            <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+            <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+            <li><a href="{% url 'hotels:properties' %}">Add New Hotel</a></li>
+            <li class="active"><a href="#">Add New Room</a></li>
+            <li><a href="#">Bookings Management</a></li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="col-lg-9">
+        <section class="od-content">
+          {% if form.errors %}
+              <div class="alert alert-danger" style="border-radius: 10px;">
+                <strong>Please correct the errors below:</strong>
+                <ul class="mt-2 mb-0">
+                  {% for field in form %}
+                    {% if field.errors %}
+                      {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                      {% endfor %}
+                    {% endif %}
+                  {% endfor %}
+                  {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+
+
+          <div class="section-heading">
+            <h6>| Adding New Room</h6>
+            <h2>Register New Room by filling all below details.</h2>
+          </div>
+
+          <div class="od-card">
+            <form id="room-form" method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row">
+
+                <!-- Assign Hotel -->
+                <div class="col-md-6">
+                  <fieldset>
+                    <label for="assign_hotel">Assign Room to Hotel/Property</label>
+                    <select id="assign_hotel" name="assign_hotel" required>
+                      <option value="">-- Select Hotel --</option>
+                      {% if owner_hotels.exists %}
+                        {% for hotel in owner_hotels %}
+                          <option value="{{ hotel.id }}">{{ hotel.hotel_name }}</option>
+                        {% endfor %}
+                      {% else %}
+                        <option disabled>No hotels found. Please add a hotel first.</option>
+                      {% endif %}
+                    </select>
+                    <div class="help-text">Select which property this room will belong to.</div>
+                  </fieldset>
+                </div>
+
+                <!-- Room Name -->
+                <div class="col-md-6">
+                  <fieldset>
+                    <label for="room_name">Room Name</label>
+                    <input type="text" id="room_name" name="room_number" placeholder="e.g., Deluxe King Room" required>
+                  </fieldset>
+                </div>
+
+                <!-- Room Type -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="room_type">Room Type</label>
+                  <select id="room_type" name="type" required>
+                      <option value="">Select type</option>
+                      <option value="single">Single</option>
+                      <option value="double">Double</option>
+                      <option value="suite">Suite</option>
+                  </select>
+                  </fieldset>
+                </div>
+
+                <!-- Capacity -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="capacity">Capacity (Guests)</label>
+                    <input type="number" id="capacity" name="capacity" min="1" placeholder="2" required>
+                  </fieldset>
+                </div>
+
+                <!-- Price -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="price">Price per Night ($)</label>
+                    <input type="number" id="price" name="price" min="0" step="0.01" placeholder="199" required>
+                  </fieldset>
+                </div>
+
+                <!-- Beds -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="beds">Bed Configuration</label>
+                    <input type="text" id="beds" name="beds" placeholder="1 King / 2 Twins">
+                  </fieldset>
+                </div>
+
+                <!-- Room Size -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="room_size">Room Size (m²)</label>
+                    <input type="number" id="room_size" name="size" min="0" placeholder="35">
+                  </fieldset>
+                </div>
+
+                <!-- View -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="view">View Type</label>
+                    <select id="view" name="view">
+                      <option value="">Select view</option>
+                      <option>City</option>
+                      <option>Sea</option>
+                      <option>Garden</option>
+                      <option>Mountain</option>
+                      <option>Pool</option>
+                    </select>
+                  </fieldset>
+                </div>
+
+                <!-- Floor -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="floor">Floor Number</label>
+                    <input type="number" id="floor" name="floor" min="0" placeholder="3">
+                  </fieldset>
+                </div>
+
+                <!-- Smoking -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="smoking">Smoking Allowed</label>
+                    <select id="smoking" name="smoking">
+                      <option value="no">No</option>
+                      <option value="yes">Yes</option>
+                    </select>
+                  </fieldset>
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="status">Status</label>
+                    <select id="status" name="status" required>
+                        <option value="available">Available</option>
+                        <option value="booked">Booked</option>
+                    </select>
+
+                  </fieldset>
+                </div>
+
+                <!-- Amenities -->
+                <div class="col-md-12">
+                  <fieldset>
+                    <label for="amenities">Room Amenities</label>
+                    {{ form.amenities }}
+                    <div class="help-text">Select all amenities available in the room.</div>
+                  </fieldset>
+                </div>
+
+                <!-- Refundable -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="refundable">Refundable Booking</label>
+                    <select id="refundable" name="refundable">
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </fieldset>
+                </div>
+
+                <!-- Available Rooms -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="rooms_available">Rooms Available</label>
+                    <input type="number" id="rooms_available" name="available_rooms" min="0" placeholder="5">
+                  </fieldset>
+                </div>
+
+                <!-- Discount -->
+                <div class="col-md-4">
+                  <fieldset>
+                    <label for="discount">Discount (%)</label>
+                    <input type="number" id="discount" name="discount" min="0" max="100" placeholder="0">
+                  </fieldset>
+                </div>
+
+                <!-- Cancellation Policy -->
+                <div class="col-md-12">
+                  <fieldset>
+                    <label for="cancellation_policy">Cancellation Policy</label>
+                    {{ form.cancellation_policy }}
+                  </fieldset>
+                </div>
+
+                <!-- Description -->
+                <div class="col-md-12">
+                  <fieldset>
+                    <label for="description">Room Description</label>
+                    {{ form.description }}
+                  </fieldset>
+                </div>
+
+                <!-- Room Photos -->
+                <div class="col-md-12">
+                  <fieldset>
+                    <label for="photos">Room Photos</label>
+                    <input type="file" id="photos" name="images" multiple accept="image/*" style="height: auto; padding: 10px 14px;">
+                    <div class="help-text">You can upload multiple images. JPG or PNG, max 2MB each.</div>
+                  </fieldset>
+                </div>
+
+                <!-- Agreement -->
+                <div class="col-md-12">
+                  <fieldset>
+                    <input type="checkbox" id="agree_terms" name="agree_terms" required>
+                    <label for="agree_terms"> I confirm all information provided is accurate</label>
+                  </fieldset>
+                </div>
+
+                <!-- Actions -->
+                <div class="col-md-12">
+                  <div class="od-actions" style="justify-content: flex-end;">
+                    <div class="main-button"><button type="submit">Submit Room</button></div>
+                    <div class="main-button"><a href="{% url 'owner_dashboard' %}">Cancel</a></div>
+                  </div>
+                </div>
+
+              </div>
+            </form>
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
