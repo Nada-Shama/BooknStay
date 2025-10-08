@@ -17,7 +17,7 @@
   document.querySelectorAll('.js-cancel').forEach(btn => {
     btn.addEventListener('click', function(){
       const id = this.dataset.id;
-      fetch(`/bookings/cancel/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }})
+      fetch(`/bookings/cancel/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, credentials: 'same-origin' })
         .then(r=>r.json()).then(d=>{ if(d.success){ location.reload(); } else { alert(d.error||'Failed'); } });
     });
   });
@@ -31,7 +31,7 @@
     payload.append('check_in', document.getElementById('editCheckIn').value);
     payload.append('check_out', document.getElementById('editCheckOut').value);
     payload.append('num_guests', document.getElementById('editGuests').value);
-    fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload })
+    fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload, credentials: 'same-origin' })
       .then(r=>r.json()).then(d=>{
         if(d.success){ location.reload(); }
         else if(editMsg){ editMsg.innerHTML = `<div class="alert alert-danger">${d.error||'Failed'}</div>`; }
@@ -39,8 +39,13 @@
   });
 
   function getCsrf(){
-    const el = document.querySelector('[name=csrfmiddlewaretoken]');
-    return el ? el.value : '';
+    const name = 'csrftoken=';
+    const cookies = document.cookie ? document.cookie.split(';') : [];
+    for (let i=0; i<cookies.length; i++) {
+      let c = cookies[i].trim();
+      if (c.startsWith(name)) return c.substring(name.length);
+    }
+    return '';
   }
 })();
 </script>
