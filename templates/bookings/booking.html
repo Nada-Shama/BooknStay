@@ -242,14 +242,14 @@
                             <div class="confirmation-header">
                                 <i class="fa fa-check-circle success-icon"></i>
                                 <h3>Booking Confirmed!</h3>
-                                <p>Your hotel reservation has been successfully created.</p>
+                                <p id="confMessage">Your hotel reservation has been successfully created.</p>
                             </div>
 
                             <div class="confirmation-details">
                                 <div class="confirmation-section">
                                     <h4><i class="fa fa-receipt"></i> Booking Reference</h4>
                                     <div class="booking-reference">
-                                        <span class="reference-number">#BK-2024-001234</span>
+                                        <span class="reference-number" id="confReference">—</span>
                                         <button class="copy-btn" onclick="copyReference()">
                                             <i class="fa fa-copy"></i> Copy
                                         </button>
@@ -258,7 +258,7 @@
 
                                 <div class="confirmation-section">
                                     <h4><i class="fa fa-envelope"></i> Confirmation Email</h4>
-                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">your-email@example.com</strong></p>
+                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">—</strong></p>
                                     <p>Please check your inbox and spam folder.</p>
                                 </div>
 
@@ -267,23 +267,23 @@
                                     <div class="booking-summary-mini">
                                         <div class="summary-item">
                                             <span class="label">Hotel:</span>
-                                            <span class="value">Grand Miami Hotel</span>
+                                            <span class="value" id="confHotel">{{ hotel.hotel_name }}</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Check-in:</span>
-                                            <span class="value">Dec 15, 2024 at 3:00 PM</span>
+                                            <span class="value" id="confCheckIn">—</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Check-out:</span>
-                                            <span class="value">Dec 18, 2024 at 11:00 AM</span>
+                                            <span class="value" id="confCheckOut">—</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Guests:</span>
-                                            <span class="value">2 Adults, 1 Room</span>
+                                            <span class="value" id="confGuests">—</span>
                                         </div>
                                         <div class="summary-item total">
                                             <span class="label">Total Paid:</span>
-                                            <span class="value">$862.50</span>
+                                            <span class="value" id="confTotal">$0</span>
                                         </div>
                                     </div>
                                 </div>
@@ -581,7 +581,12 @@
                     // Update confirmation email and summary
                     const userEmail = $('#email').val();
                     $('#confirmationEmail').text(userEmail);
-                    // You could also update dates/total using data from response
+                    // Fill confirmation fields with real response
+                    $('#confReference').text(`#BK-${data.booking_id}`);
+                    $('#confCheckIn').text(data.check_in);
+                    $('#confCheckOut').text(data.check_out);
+                    $('#confGuests').text(`${$('#num_guests').val()} Guests, 1 Room`);
+                    $('#confTotal').text(`$${data.total_price}`);
 
                     currentStep = 3;
                     showStep(currentStep);
