@@ -9,6 +9,9 @@ from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
 from hotels.models import Hotel, Room
 from bookings.models import Booking
+from django.views.decorators.http import require_POST
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from django.http import JsonResponse
 from datetime import date
@@ -392,5 +395,16 @@ def settings_view(request):
     if request.session.pop('needs_password_setup', False):
         messages.info(request, 'Welcome! Please set your password below.')
     return redirect('account')
+
+
+@require_POST
+def validate_password_ajax(request):
+    """Validate password against Django validators and return messages."""
+    password = (request.POST.get('password') or '').strip()
+    try:
+        validate_password(password, user=request.user if request.user.is_authenticated else None)
+        return JsonResponse({'valid': True, 'errors': []})
+    except ValidationError as ve:
+        return JsonResponse({'valid': False, 'errors': list(ve.messages)})
 
 

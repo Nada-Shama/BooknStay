@@ -25,6 +25,9 @@ urlpatterns = [
     path('favorites/remove/<int:room_id>/', user_views.remove_favorite_room, name='remove_favorite_room'),
     path('favorites/', user_views.list_favorites, name='list_favorites'),
 
+    # AJAX password validation
+    path('ajax/validate-password/', user_views.validate_password_ajax, name='validate_password_ajax'),
+
 
     #path('search-hotels/', views.hotels_search_results, name='hotels_search_results'),
     #path('hotels/all/', views.all_hotels, name='all_hotels'),

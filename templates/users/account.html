@@ -226,7 +226,7 @@
                 <h2>{% if not user.has_usable_password %}Set Your Password{% else %}Change Password{% endif %}</h2>
               </div>
               {% if pwd_form %}
-              <form method="post">
+              <form method="post" id="passwordForm">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="password" />
                 <div class="row">
@@ -235,6 +235,9 @@
                       <fieldset>
                         <label>{{ field.label }}</label>
                         {{ field }}
+                        {% if field.name in ('new_password1','new_password2','password1','password2') %}
+                        <div class="password-hints text-muted small" data-for="{{ field.name }}"></div>
+                        {% endif %}
                         {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
                         {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                       </fieldset>
@@ -254,5 +257,27 @@
   </div>
 
 {% endblock %}
-
-
+{% block extra_js %}
+<script>
+(function(){
+  // Password AJAX validation
+  function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const args=arguments; t=setTimeout(()=>fn.apply(this,args), ms);} }
+  function getCsrf(){
+    const name='csrftoken='; const cookies=document.cookie?document.cookie.split(';'):[];
+    for(let i=0;i<cookies.length;i++){let c=cookies[i].trim(); if(c.startsWith(name)) return c.substring(name.length);} return '';
+  }
+  const pwdInputs = document.querySelectorAll('#passwordForm input[type="password"]');
+  if(pwdInputs.length){
+    const validate = debounce(function(e){
+      const val = e.target.value || '';
+      const targetName = e.target.name;
+      fetch('/users/ajax/validate-password/', {method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'}, body:'password='+encodeURIComponent(val), credentials:'same-origin'})
+        .then(r=>r.json()).then(d=>{
+          document.querySelectorAll('.password-hints').forEach(el=>{ if(el.dataset.for===targetName){ el.innerHTML = d.valid ? '<span class="text-success">Strong password</span>' : '<ul style="margin:6px 0 0 18px;">'+ d.errors.map(m=>'<li>'+m+'</li>').join('') +'</ul>'; }});
+        }).catch(()=>{});
+    }, 250);
+    pwdInputs.forEach(inp=>{ inp.addEventListener('input', validate); });
+  }
+})();
+</script>
+{% endblock %}
