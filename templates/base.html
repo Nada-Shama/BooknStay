@@ -30,6 +30,11 @@
 <body>
 
     {% include 'includes/header.html' %}
+    {% if request.user.is_authenticated and request.session.needs_password_setup %}
+    <div class="alert alert-warning text-center" role="alert" style="margin:0;">
+        Welcome! Please <a href="{% url 'settings' %}">set your password</a> to complete your account setup.
+    </div>
+    {% endif %}
     
     {% block content %}{% endblock %}
     
