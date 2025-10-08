@@ -198,6 +198,9 @@ def modify_booking(request, booking_id):
     booking.check_in = check_in
     booking.check_out = check_out
     booking.compute_total_price()
+    # If previously cancelled, move to under_review upon edit request
+    if booking.status == Booking.STATUS_CANCELLED:
+        booking.status = Booking.STATUS_UNDER_REVIEW
     booking.save()
 
     return JsonResponse({

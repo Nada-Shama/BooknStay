@@ -8,11 +8,13 @@ class Booking(models.Model):
     STATUS_PENDING = 'pending'
     STATUS_CONFIRMED = 'confirmed'
     STATUS_CANCELLED = 'cancelled'
+    STATUS_UNDER_REVIEW = 'under_review'
 
     STATUS_CHOICES = [
         (STATUS_PENDING, 'Pending'),
         (STATUS_CONFIRMED, 'Confirmed'),
         (STATUS_CANCELLED, 'Cancelled'),
+        (STATUS_UNDER_REVIEW, 'Under Review'),
     ]
 
     user = models.ForeignKey(
