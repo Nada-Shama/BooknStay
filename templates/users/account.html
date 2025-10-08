@@ -235,7 +235,7 @@
                       <fieldset>
                         <label>{{ field.label }}</label>
                         {{ field }}
-                        {% if field.name in ('new_password1','new_password2','password1','password2') %}
+                        {% if 'password' in field.name %}
                         <div class="password-hints text-muted small" data-for="{{ field.name }}"></div>
                         {% endif %}
                         {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
