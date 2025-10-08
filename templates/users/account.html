@@ -113,7 +113,7 @@
                 <h2>Account Information</h2>
               </div>
               {% if profile_form %}
-              <form method="post">
+              <form method="post" id="profileForm">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="profile" />
                 <div class="row">
@@ -154,6 +154,7 @@
                     </fieldset>
                   </div>
                   <div class="col-lg-12">
+                    <div id="profileMsg" class="mt-2"></div>
                     <button type="submit" class="orange-button">Save Profile</button>
                   </div>
                 </div>
@@ -273,6 +274,26 @@
     }, 3000);
     pwdInputs.forEach(inp=>{ inp.addEventListener('change', validate); inp.addEventListener('blur', validate); });
   }
+  // Profile AJAX submit
+  (function(){
+    const form = document.getElementById('profileForm');
+    if(!form) return;
+    const msg = document.getElementById('profileMsg');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const payload = new FormData(form);
+      fetch(window.location.href, { method:'POST', headers:{'X-CSRFToken':getCsrf(),'X-Requested-With':'XMLHttpRequest'}, body: payload, credentials:'same-origin'})
+        .then(r=>r.json()).then(d=>{
+          if(d.success){ msg.innerHTML = '<div class="alert alert-success">Profile updated successfully.</div>'; }
+          else { throw d; }
+        }).catch(err=>{
+          let html = '<div class="alert alert-danger"><ul style="margin:0 0 0 18px;">';
+          if(err && err.errors){ for(const k in err.errors){ html += '<li>'+k+': '+ err.errors[k].join(' ') +'</li>'; } }
+          html += '</ul></div>';
+          msg.innerHTML = html;
+        });
+    });
+  })();
 })();
 </script>
 {% endblock %}

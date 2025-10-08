@@ -341,7 +341,12 @@ def account(request):
                 if profile_form.is_valid():
                     profile_form.save()
                     messages.success(request, 'Profile updated successfully.')
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': True})
                     return redirect('account')
+                else:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': profile_form.errors}, status=400)
             elif action == 'password':
                 pwd_form = pwd_form_cls(request.user, request.POST)
                 if pwd_form.is_valid():
