@@ -348,9 +348,16 @@ def account(request):
                     pwd_form.save()
                     messages.success(request, 'Password updated successfully.')
                     return redirect('account')
+                # Remove autofocus that can auto-scroll on invalid submit
+                for f in pwd_form.fields.values():
+                    f.widget.attrs.pop('autofocus', None)
         # GET or invalid POST
         profile_form = profile_form or ProfileUpdateForm(instance=request.user)
         pwd_form = pwd_form or pwd_form_cls(request.user)
+        # Remove autofocus to avoid page auto-scrolling to password
+        if pwd_form:
+            for f in pwd_form.fields.values():
+                f.widget.attrs.pop('autofocus', None)
 
     context = {
         'user': request.user,
