@@ -3,65 +3,6 @@
 {% block title %}My Account - Book & Stay{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/account.css' %}">
-{% block extra_js %}
-<script>
-(function(){
-  const modal = document.getElementById('editModal');
-  if(!modal) return;
-  const editMsg = document.getElementById('editMsg');
-  let currentId = null;
-
-  function openModal() { modal.style.display = 'block'; }
-  function closeModal() { modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
-
-  document.querySelectorAll('.js-cancel').forEach(btn => {
-    btn.addEventListener('click', function(){
-      const id = this.dataset.id;
-      if(!confirm('Are you sure you want to cancel this booking?')) return;
-      fetch(`/bookings/cancel/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, credentials: 'same-origin' })
-        .then(r=>r.json())
-        .then(d=>{ if(d.success){ alert('Booking cancelled.'); location.reload(); } else { alert(d.error||'Failed'); } })
-        .catch(()=> alert('Network error. Please try again.'));
-    });
-  });
-
-  document.querySelectorAll('.js-edit').forEach(btn => {
-    btn.addEventListener('click', function(){
-      currentId=this.dataset.id;
-      const ci = this.dataset.checkIn || '';
-      const co = this.dataset.checkOut || '';
-      const g = this.dataset.guests || '1';
-      document.getElementById('editCheckIn').value = ci;
-      document.getElementById('editCheckOut').value = co;
-      document.getElementById('editGuests').value = g;
-      openModal();
-    });
-  });
-  modal.querySelector('.js-close').addEventListener('click', closeModal);
-  modal.querySelector('.js-save').addEventListener('click', function(){
-    const payload = new FormData();
-    payload.append('check_in', document.getElementById('editCheckIn').value);
-    payload.append('check_out', document.getElementById('editCheckOut').value);
-    payload.append('num_guests', document.getElementById('editGuests').value);
-    fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload, credentials: 'same-origin' })
-      .then(r=>r.json()).then(d=>{
-        if(d.success){ alert('Booking updated.'); location.reload(); }
-        else if(editMsg){ editMsg.innerHTML = `<div class="alert alert-danger">${d.error||'Failed'}</div>`; }
-      }).catch(()=>{ if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">Network error.</div>'; }});
-  });
-
-  function getCsrf(){
-    const name = 'csrftoken=';
-    const cookies = document.cookie ? document.cookie.split(';') : [];
-    for (let i=0; i<cookies.length; i++) {
-      let c = cookies[i].trim();
-      if (c.startsWith(name)) return c.substring(name.length);
-    }
-    return '';
-  }
-})();
-</script>
-{% endblock %}
 {% endblock %}
 {% block content %}
 
@@ -260,6 +201,49 @@
 {% block extra_js %}
 <script>
 (function(){
+  // Edit/Cancel logic
+  const modal = document.getElementById('editModal');
+  if(modal){
+    const editMsg = document.getElementById('editMsg');
+    let currentId = null;
+    function openModal() { modal.style.display = 'block'; }
+    function closeModal() { modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
+    document.querySelectorAll('.js-cancel').forEach(btn => {
+      btn.addEventListener('click', function(){
+        const id = this.dataset.id;
+        if(!confirm('Are you sure you want to cancel this booking?')) return;
+        fetch(`/bookings/cancel/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, credentials: 'same-origin' })
+          .then(r=>r.json())
+          .then(d=>{ if(d.success){ alert('Booking cancelled.'); location.reload(); } else { alert(d.error||'Failed'); } })
+          .catch(()=> alert('Network error. Please try again.'));
+      });
+    });
+    document.querySelectorAll('.js-edit').forEach(btn => {
+      btn.addEventListener('click', function(){
+        currentId=this.dataset.id;
+        const ci = this.dataset.checkIn || '';
+        const co = this.dataset.checkOut || '';
+        const g = this.dataset.guests || '1';
+        document.getElementById('editCheckIn').value = ci;
+        document.getElementById('editCheckOut').value = co;
+        document.getElementById('editGuests').value = g;
+        openModal();
+      });
+    });
+    modal.querySelector('.js-close').addEventListener('click', closeModal);
+    modal.querySelector('.js-save').addEventListener('click', function(){
+      const payload = new FormData();
+      payload.append('check_in', document.getElementById('editCheckIn').value);
+      payload.append('check_out', document.getElementById('editCheckOut').value);
+      payload.append('num_guests', document.getElementById('editGuests').value);
+      fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload, credentials: 'same-origin' })
+        .then(r=>r.json()).then(d=>{
+          if(d.success){ alert('Booking updated.'); location.reload(); }
+          else if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>'; }
+        }).catch(()=>{ if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">Network error.</div>'; }});
+    });
+  }
+
   // Password AJAX validation
   function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const args=arguments; t=setTimeout(()=>fn.apply(this,args), ms);} }
   function getCsrf(){
