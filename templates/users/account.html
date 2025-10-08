@@ -168,47 +168,87 @@
             </div>
             {% endif %}
 
-            <div class="section-heading" style="margin-top: 40px;">
-              <h6>| Profile</h6>
-              <h2>Account Information</h2>
-            </div>
-            {% if profile_form %}
-            <form method="post" class="mb-4">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="profile" />
-              <div class="row">
-                <div class="col-md-6 mb-3"><label class="form-label">Username</label>{{ profile_form.username }}</div>
-                <div class="col-md-6 mb-3"><label class="form-label">Email</label>{{ profile_form.email }}</div>
-                <div class="col-md-6 mb-3"><label class="form-label">First name</label>{{ profile_form.first_name }}</div>
-                <div class="col-md-6 mb-3"><label class="form-label">Last name</label>{{ profile_form.last_name }}</div>
-                <div class="col-md-6 mb-3"><label class="form-label">Phone</label>{{ profile_form.phone }}</div>
-                <div class="col-md-6 mb-3"><label class="form-label">Nationality</label>{{ profile_form.nationality }}</div>
+            <div class="form-card" style="margin-top: 30px;">
+              <div class="section-heading">
+                <h6>| Profile</h6>
+                <h2>Account Information</h2>
               </div>
-              <button class="btn btn-primary" style="margin-top:12px;">Save Profile</button>
-            </form>
-            {% endif %}
-
-            <div class="section-heading" style="margin-top: 20px;">
-              <h6>| Security</h6>
-              <h2>{% if not user.has_usable_password %}Set Your Password{% else %}Change Password{% endif %}</h2>
-            </div>
-            {% if pwd_form %}
-            <form method="post">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="password" />
-              <div class="row">
-                {% for field in pwd_form %}
-                  <div class="col-md-6 mb-3">
-                    <label class="form-label">{{ field.label }}</label>
-                    {{ field }}
-                    {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
-                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+              {% if profile_form %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="profile" />
+                <div class="row">
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Username</label>
+                      {{ profile_form.username }}
+                    </fieldset>
                   </div>
-                {% endfor %}
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Email</label>
+                      {{ profile_form.email }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>First name</label>
+                      {{ profile_form.first_name }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Last name</label>
+                      {{ profile_form.last_name }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Phone</label>
+                      {{ profile_form.phone }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Nationality</label>
+                      {{ profile_form.nationality }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-12">
+                    <button type="submit" class="orange-button">Save Profile</button>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+            </div>
+
+            <div class="form-card" style="margin-top: 20px;">
+              <div class="section-heading">
+                <h6>| Security</h6>
+                <h2>{% if not user.has_usable_password %}Set Your Password{% else %}Change Password{% endif %}</h2>
               </div>
-              <button class="btn btn-primary">Save Password</button>
-            </form>
-            {% endif %}
+              {% if pwd_form %}
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password" />
+                <div class="row">
+                  {% for field in pwd_form %}
+                    <div class="col-lg-6">
+                      <fieldset>
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                      </fieldset>
+                    </div>
+                  {% endfor %}
+                  <div class="col-lg-12">
+                    <button type="submit" class="orange-button">Save Password</button>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+            </div>
           </div>
         </div>
       </div>
