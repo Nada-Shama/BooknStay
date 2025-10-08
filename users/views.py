@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
@@ -353,5 +354,23 @@ def list_favorites(request):
     from users.models import FavoriteRoom
     items = FavoriteRoom.objects.filter(user=request.user).select_related('room', 'room__hotel')
     return render(request, 'users/favorites.html', {'items': items})
+
+
+@login_required(login_url='login_register')
+def settings_view(request):
+    # If session flag set after guest booking, prompt for password setup
+    needs_setup = request.session.pop('needs_password_setup', False)
+    FormClass = SetPasswordForm if not request.user.has_usable_password() else PasswordChangeForm
+    form = FormClass(request.user, request.POST or None) if FormClass is PasswordChangeForm else FormClass(request.user, request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, 'Password updated successfully.')
+        return redirect('settings')
+
+    return render(request, 'users/settings.html', {
+        'form': form,
+        'needs_setup': needs_setup,
+    })
 
 

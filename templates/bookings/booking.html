@@ -76,6 +76,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% if not user.is_authenticated %}
                         <div class="form-section">
                             <h3><i class="fa fa-user"></i> Guest Information</h3>
                             
@@ -111,6 +112,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
 
                         <div class="form-section">
                             <h3><i class="fa fa-concierge-bell"></i> Special Requests</h3>
@@ -340,43 +342,42 @@
                         <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
                     </div>
                     <div class="hotel-details">
-                        <h4>Grand Miami Hotel</h4>
-                        <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
-                        <p><i class="fa fa-star"></i> 5.0 (124 reviews)</p>
+                        <h4>{{ hotel.hotel_name }}</h4>
+                        <p><i class="fa fa-home"></i> Rooms: {{ rooms|length }}</p>
                     </div>
                 </div>
 
                 <div class="booking-dates">
                     <div class="date-item">
                         <span class="date-label">Check-in</span>
-                        <span class="date-value">Dec 15, 2024</span>
+                        <span class="date-value" id="sumCheckIn">—</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Check-out</span>
-                        <span class="date-value">Dec 18, 2024</span>
+                        <span class="date-value" id="sumCheckOut">—</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Nights</span>
-                        <span class="date-value">3</span>
+                        <span class="date-value" id="sumNights">0</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Guests</span>
-                        <span class="date-value">2 Adults</span>
+                        <span class="date-value" id="sumGuests">1</span>
                     </div>
                 </div>
 
                 <div class="price-breakdown">
                     <div class="price-item">
                         <span class="price-label">Room Rate</span>
-                        <span class="price-value">$250.00 x 3 nights</span>
+                        <span class="price-value" id="sumRoomRate">$0 x 0 nights</span>
                     </div>
                     <div class="price-item">
                         <span class="price-label">Taxes & Fees</span>
-                        <span class="price-value">$112.50</span>
+                        <span class="price-value" id="sumTaxes">$0</span>
                     </div>
                     <div class="price-item total">
                         <span class="price-label">Total</span>
-                        <span class="price-value">$862.50</span>
+                        <span class="price-value" id="sumTotal">$0</span>
                     </div>
                 </div>
 
@@ -414,6 +415,44 @@
             // Initialize with Stripe selected
             $('#stripePayment').show();
             
+            // Helpers for summary
+            function calcNights(ci, co) {
+                if (!ci || !co) return 0;
+                const d1 = new Date(ci);
+                const d2 = new Date(co);
+                const diff = (d2 - d1) / (1000*60*60*24);
+                return Math.max(0, Math.round(diff));
+            }
+
+            function roomPrice(roomId) {
+                const opt = $('#room_id option[value="'+roomId+'"]').text();
+                const match = opt.match(/• \$(\d+(?:\.\d+)?)/);
+                return match ? parseFloat(match[1]) : 0;
+            }
+
+            function updateSummary() {
+                const ci = $('#check_in').val();
+                const co = $('#check_out').val();
+                const nights = calcNights(ci, co);
+                const guests = parseInt($('#num_guests').val() || '1');
+                const rid = $('#room_id').val();
+                const price = roomPrice(rid);
+                const subtotal = price * nights;
+                const taxes = Math.round(subtotal * 0.15 * 100) / 100; // 15% demo
+                const total = Math.round((subtotal + taxes) * 100) / 100;
+
+                $('#sumCheckIn').text(ci || '—');
+                $('#sumCheckOut').text(co || '—');
+                $('#sumNights').text(nights);
+                $('#sumGuests').text(guests);
+                $('#sumRoomRate').text(`$${price} x ${nights} nights`);
+                $('#sumTaxes').text(`$${taxes}`);
+                $('#sumTotal').text(`$${total}`);
+            }
+
+            $('#room_id, #check_in, #check_out, #num_guests').on('change input', updateSummary);
+            updateSummary();
+
             // Next step button
             $('#nextStep').click(function() {
                 if (validateCurrentStep()) {

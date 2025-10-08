@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model, login
 from datetime import datetime
 from hotels.models import Hotel, Room
 from .models import Booking
@@ -50,8 +51,46 @@ def create_booking(request, hotel_id):
         if not Booking.is_room_available(room, check_in, check_out):
             return JsonResponse({'success': False, 'error': 'Room not available for the selected dates.'}, status=409)
 
+        # If guest booking, optionally create a user account and log them in
+        user_for_booking = request.user if request.user.is_authenticated else None
+        if user_for_booking is None and guest_email:
+            UserModel = get_user_model()
+            existing = UserModel.objects.filter(email=guest_email).first()
+            if existing:
+                user_for_booking = existing
+            else:
+                base_username = (guest_email.split('@')[0] if guest_email else 'guest')[:20] or 'guest'
+                candidate = base_username
+                idx = 1
+                while UserModel.objects.filter(username=candidate).exists():
+                    candidate = f"{base_username}{idx}"
+                    idx += 1
+                temp_password = UserModel.objects.make_random_password()
+                user_for_booking = UserModel.objects.create_user(
+                    username=candidate,
+                    email=guest_email,
+                    password=temp_password,
+                    first_name=guest_first_name,
+                    last_name=guest_last_name,
+                )
+                try:
+                    # Save optional extras if the custom user has these fields
+                    if hasattr(user_for_booking, 'phone'):
+                        user_for_booking.phone = guest_phone
+                    if hasattr(user_for_booking, 'nationality'):
+                        user_for_booking.nationality = guest_nationality
+                    if hasattr(user_for_booking, 'date_of_birth') and guest_dob:
+                        user_for_booking.date_of_birth = datetime.strptime(guest_dob, '%Y-%m-%d').date()
+                    user_for_booking.save()
+                except Exception:
+                    pass
+
+                # Log the new user in and set a session flag to prompt password setup
+                login(request, user_for_booking)
+                request.session['needs_password_setup'] = True
+
         booking = Booking(
-            user=request.user if request.user.is_authenticated else None,
+            user=user_for_booking,
             hotel=hotel,
             room=room,
             check_in=check_in,

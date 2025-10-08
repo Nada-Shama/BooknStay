@@ -18,6 +18,7 @@ urlpatterns = [
     
     path('owner/bookings-calendar-data/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
     path('account/', views.account, name='account'),
+    path('settings/', views.settings_view, name='settings'),
 
     # Favorites
     path('favorites/add/<int:room_id>/', user_views.add_favorite_room, name='add_favorite_room'),
