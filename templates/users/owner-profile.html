@@ -36,7 +36,10 @@
               <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
               <li><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></li>
               <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
-              <li><a href="#">Bookings Management</a></li>
+              <li><a href="{% url 'owner_bookings_management' %}">Bookings Management</a></li>
+              {% if user.is_superuser or user.is_staff %}
+              <li><a href="/admin/">Backend</a></li>
+              {% endif %}
             </ul>
           </aside>
         </div>
