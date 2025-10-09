@@ -81,35 +81,6 @@
               {% endif %}
             </div>
 
-            <div id="editModal" class="custom-modal" style="display:none;">
-              <div class="custom-modal__dialog">
-                <div class="custom-modal__content">
-                  <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
-                  <div class="custom-modal__body">
-                    <div class="row g-2">
-                      <div class="col">
-                        <label class="form-label">Check-in</label>
-                        <input type="date" id="editCheckIn" class="form-control">
-                      </div>
-                      <div class="col">
-                        <label class="form-label">Check-out</label>
-                        <input type="date" id="editCheckOut" class="form-control">
-                      </div>
-                    </div>
-                    <div class="mt-2">
-                      <label class="form-label">Guests</label>
-                      <input type="number" id="editGuests" class="form-control" min="1" value="1">
-                    </div>
-                    <div id="editMsg" class="mt-2"></div>
-                  </div>
-                  <div class="custom-modal__footer">
-                    <button class="btn btn-outline js-close">Close</button>
-                    <button class="orange-button js-save">Save</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
             {% if messages %}
             <div class="mb-3">
               {% for message in messages %}
@@ -210,11 +181,57 @@
     </div>
   </div>
 
+  <div id="editModal" class="custom-modal" style="display:none;">
+    <div class="custom-modal__dialog">
+      <div class="custom-modal__content">
+        <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
+        <div class="custom-modal__body">
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">Check-in</label>
+              <input type="date" id="editCheckIn" class="form-control">
+            </div>
+            <div class="col">
+              <label class="form-label">Check-out</label>
+              <input type="date" id="editCheckOut" class="form-control">
+            </div>
+          </div>
+          <div class="mt-2">
+            <label class="form-label">Guests</label>
+            <input type="number" id="editGuests" class="form-control" min="1" value="1">
+          </div>
+          <div id="editMsg" class="mt-2"></div>
+        </div>
+        <div class="custom-modal__footer">
+          <button class="btn btn-outline js-close">Close</button>
+          <button class="orange-button js-save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
 {% endblock %}
 {% block extra_js %}
 <script>
 (function(){
-  // AJAX sidebar nav (partial page loads)
+
+  /** Utility: Get CSRF token from cookies */
+  function getCsrf(){
+    const name='csrftoken=';
+    const cookies=document.cookie?document.cookie.split(';'):[];
+    for(let i=0;i<cookies.length;i++){
+      let c=cookies[i].trim();
+      if(c.startsWith(name)) return c.substring(name.length);
+    }
+    return '';
+  }
+
+  /** Utility: Debounce */
+  function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const args=arguments; t=setTimeout(()=>fn.apply(this,args), ms);} }
+
+  /** -----------------------------
+   *  AJAX Sidebar Navigation
+   * ----------------------------- */
   const nav = document.querySelector('.js-account-nav');
   if(nav){
     nav.addEventListener('click', function(e){
@@ -223,89 +240,157 @@
       e.preventDefault();
       fetch(a.getAttribute('href'), { headers: { 'X-Requested-With':'XMLHttpRequest' } })
         .then(r=>r.text()).then(html=>{
-          // naive replacement: extract .account-content from response
-          const temp = document.createElement('div'); temp.innerHTML = html;
+          const temp = document.createElement('div');
+          temp.innerHTML = html;
           const newContent = temp.querySelector('.account-content');
           const cur = document.querySelector('.account-content');
           if(newContent && cur){ cur.replaceWith(newContent); }
-          // update active link
           nav.querySelectorAll('li').forEach(li=>li.classList.remove('active'));
           a.parentElement.classList.add('active');
-        }).catch(()=>{});
+        })
+        .catch(()=>{ console.error('AJAX load failed'); });
     });
   }
-  // Edit/Cancel logic
+
+  /** -----------------------------
+   *  Edit / Cancel Event Delegation
+   * ----------------------------- */
   const modal = document.getElementById('editModal');
-  if(modal){
-    const editMsg = document.getElementById('editMsg');
-    let currentId = null;
-    function openModal() { modal.style.display = 'flex'; }
-    function closeModal() { modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
-    document.querySelectorAll('.js-cancel').forEach(btn => {
-      btn.addEventListener('click', function(){
-        const id = this.dataset.id;
-        if(!confirm('Are you sure you want to cancel this booking?')) return;
-        fetch(`/bookings/cancel/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, credentials: 'same-origin' })
-          .then(r=>r.json())
-          .then(d=>{ if(d.success){ alert('Booking cancelled.'); location.reload(); } else { alert(d.error||'Failed'); } })
-          .catch(()=> alert('Network error. Please try again.'));
-      });
-    });
-    document.querySelectorAll('.js-edit').forEach(btn => {
-      btn.addEventListener('click', function(){
-        currentId=this.dataset.id;
-        const ci = this.dataset.checkIn || '';
-        const co = this.dataset.checkOut || '';
-        const g = this.dataset.guests || '1';
-        document.getElementById('editCheckIn').value = ci;
-        document.getElementById('editCheckOut').value = co;
-        document.getElementById('editGuests').value = g;
-        openModal();
-      });
-    });
-    modal.querySelector('.js-close').addEventListener('click', closeModal);
-    modal.querySelector('.js-save').addEventListener('click', function(){
+  let currentId = null;
+  const editMsg = modal ? document.getElementById('editMsg') : null;
+
+  function openModal(){ if(modal) modal.style.display = 'flex'; }
+  function closeModal(){ if(modal) modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
+
+  document.addEventListener('click', function(e){
+    const cancelBtn = e.target.closest('.js-cancel');
+    const editBtn = e.target.closest('.js-edit');
+    const closeBtn = e.target.closest('.js-close');
+    const saveBtn = e.target.closest('.js-save');
+
+    /** Cancel booking */
+    if(cancelBtn){
+      const id = cancelBtn.dataset.id;
+      if(!confirm('Are you sure you want to cancel this booking?')) return;
+      fetch(`/bookings/cancel/${id}/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': getCsrf()},
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          // Re-trigger the Reservations tab load
+          const activeLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+          if (activeLink) activeLink.click();
+        }
+        else{ alert(d.error||'Failed'); }
+      })
+      .catch(()=> alert('Network error. Please try again.'));
+    }
+
+        /** Edit booking - Re-query modal elements after AJAX reload  */
+    if(editBtn){
+      currentId = editBtn.dataset.id;
+      const checkIn = document.getElementById('editCheckIn');
+      const checkOut = document.getElementById('editCheckOut');
+      const guests = document.getElementById('editGuests');
+      if (!checkIn || !checkOut || !guests) {
+        console.warn('Edit modal not found in DOM');
+        return;
+      }
+      checkIn.value = editBtn.dataset.checkIn || '';
+      checkOut.value = editBtn.dataset.checkOut || '';
+      guests.value = editBtn.dataset.guests || '1';
+      openModal();
+    }
+
+    /** Close modal */
+    if (closeBtn) {
+      closeModal(); // close modal
+      const resLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+      if (resLink) resLink.click(); // re-trigger AJAX Reservations tab
+    }
+
+    /** Save booking changes */
+    if(saveBtn){
       const payload = new FormData();
       payload.append('check_in', document.getElementById('editCheckIn').value);
       payload.append('check_out', document.getElementById('editCheckOut').value);
       payload.append('num_guests', document.getElementById('editGuests').value);
-      fetch(`/bookings/modify/${currentId}/`, { method: 'POST', headers: { 'X-CSRFToken': getCsrf() }, body: payload, credentials: 'same-origin' })
-        .then(r=>r.json()).then(d=>{
-          if(d.success){
-            if(editMsg){ editMsg.innerHTML = '<div class="alert alert-success">Booking updated.</div>'; }
-            setTimeout(()=>{ closeModal(); location.reload(); }, 800);
-          } else if(editMsg){
-            editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>';
-          }
-        }).catch(()=>{ if(editMsg){ editMsg.innerHTML = '<div class="alert alert-danger">Network error.</div>'; }});
-    });
-  }
 
-  // Password AJAX validation
-  function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const args=arguments; t=setTimeout(()=>fn.apply(this,args), ms);} }
-  function getCsrf(){
-    const name='csrftoken='; const cookies=document.cookie?document.cookie.split(';'):[];
-    for(let i=0;i<cookies.length;i++){let c=cookies[i].trim(); if(c.startsWith(name)) return c.substring(name.length);} return '';
-  }
+      fetch(`/bookings/modify/${currentId}/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': getCsrf()},
+        body: payload,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          if(editMsg){ editMsg.innerHTML = '<div class="alert alert-success">Booking updated.</div>'; }
+            setTimeout(() => {
+              closeModal();
+              const resLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+              if (resLink) resLink.click(); // reload reservations via AJAX
+            }, 800);
+        } else if(editMsg){
+          editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>';
+        }
+      })
+      .catch(()=>{ if(editMsg){ editMsg.innerHTML='<div class="alert alert-danger">Network error.</div>'; }});
+    }
+  });
+
+  /** -----------------------------
+   *  Password Live Validation (AJAX)
+   * ----------------------------- */
   const pwdInputs = document.querySelectorAll('#passwordForm input[type="password"]');
   function renderHints(resp){
     const n1 = document.querySelector('.password-hints[data-for="new_password1"]');
     const n2 = document.querySelector('.password-hints[data-for="new_password2"]');
     const n0 = document.querySelector('.password-hints[data-for="old_password"]');
-    if(n1 && resp.new_password1){ n1.innerHTML = resp.new_password1.valid ? '<span class="text-success">Strong password</span>' : '<ul style="margin:6px 0 0 18px;">'+ (resp.new_password1.errors||[]).map(m=>'<li>'+m+'</li>').join('') +'</ul>'; }
-    if(n2 && resp.new_password2){ n2.innerHTML = resp.new_password2.valid ? '<span class="text-success">Matches</span>' : '<span class="text-danger">'+ ((resp.new_password2.errors||[])[0]||'') +'</span>'; }
-    if(n0 && resp.current_password){ n0.innerHTML = resp.current_password.valid === true ? '<span class="text-success">Current password ok</span>' : (resp.current_password.valid===false ? '<span class="text-danger">'+ ((resp.current_password.errors||[])[0]||'') +'</span>' : ''); }
+    if(n1 && resp.new_password1){
+      n1.innerHTML = resp.new_password1.valid
+        ? '<span class="text-success">Strong password</span>'
+        : '<ul style="margin:6px 0 0 18px;">'+(resp.new_password1.errors||[]).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+    }
+    if(n2 && resp.new_password2){
+      n2.innerHTML = resp.new_password2.valid
+        ? '<span class="text-success">Matches</span>'
+        : '<span class="text-danger">'+((resp.new_password2.errors||[])[0]||'')+'</span>';
+    }
+    if(n0 && resp.current_password){
+      n0.innerHTML = resp.current_password.valid===true
+        ? '<span class="text-success">Current password ok</span>'
+        : (resp.current_password.valid===false ? '<span class="text-danger">'+((resp.current_password.errors||[])[0]||'')+'</span>' : '');
+    }
   }
+
   if(pwdInputs.length){
     const validate = debounce(function(){
       const f = document.getElementById('passwordForm');
-      const body = 'old_password='+encodeURIComponent((f.querySelector('[name="old_password"]')||{}).value||'')+'&new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')+'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
-      fetch('/users/ajax/validate-password/', {method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'}, body, credentials:'same-origin'})
-        .then(r=>r.json()).then(renderHints).catch(()=>{});
+      if(!f) return;
+      const body = 'old_password='+encodeURIComponent((f.querySelector('[name="old_password"]')||{}).value||'')
+        +'&new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')
+        +'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
+      fetch('/users/ajax/validate-password/', {
+        method:'POST',
+        headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
+        body,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json()).then(renderHints).catch(()=>{});
     }, 3000);
-    pwdInputs.forEach(inp=>{ inp.addEventListener('change', validate); inp.addEventListener('blur', validate); });
+    pwdInputs.forEach(inp=>{
+      inp.addEventListener('change', validate);
+      inp.addEventListener('blur', validate);
+    });
   }
-  // Profile AJAX submit
+
+  /** -----------------------------
+   *  Profile AJAX Submit
+   * ----------------------------- */
   (function(){
     const form = document.getElementById('profileForm');
     if(!form) return;
@@ -313,18 +398,28 @@
     form.addEventListener('submit', function(e){
       e.preventDefault();
       const payload = new FormData(form);
-      fetch(window.location.href, { method:'POST', headers:{'X-CSRFToken':getCsrf(),'X-Requested-With':'XMLHttpRequest'}, body: payload, credentials:'same-origin'})
-        .then(r=>r.json()).then(d=>{
-          if(d.success){ msg.innerHTML = '<div class="alert alert-success">Profile updated successfully.</div>'; }
-          else { throw d; }
-        }).catch(err=>{
-          let html = '<div class="alert alert-danger"><ul style="margin:0 0 0 18px;">';
-          if(err && err.errors){ for(const k in err.errors){ html += '<li>'+k+': '+ err.errors[k].join(' ') +'</li>'; } }
-          html += '</ul></div>';
-          msg.innerHTML = html;
-        });
+      fetch(window.location.href, {
+        method:'POST',
+        headers:{'X-CSRFToken':getCsrf(),'X-Requested-With':'XMLHttpRequest'},
+        body: payload,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          msg.innerHTML = '<div class="alert alert-success">Profile updated successfully.</div>';
+        } else { throw d; }
+      })
+      .catch(err=>{
+        let html = '<div class="alert alert-danger"><ul style="margin:0 0 0 18px;">';
+        if(err && err.errors){ for(const k in err.errors){ html += '<li>'+k+': '+ err.errors[k].join(' ') +'</li>'; } }
+        html += '</ul></div>';
+        msg.innerHTML = html;
+      });
     });
   })();
+
 })();
 </script>
+
 {% endblock %}
