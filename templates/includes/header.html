@@ -40,7 +40,7 @@
                         <!--
                         <li><a href="{% url 'contact' %}">Contact Us</a></li>
                         -->
-                        {% if user.is_authenticated and (user.is_superuser or user.is_staff) %}
+                        {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff %}
                             <li><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
                             <li><a href="/admin/"><i class="fa fa-cog"></i> Backend</a></li>
                             <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
@@ -59,7 +59,7 @@
 
                         {% if user.is_authenticated and user.is_owner %}
                         <li><a href="{% url 'owner_bookings_management' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
-                        {% elif user.is_authenticated and (user.is_superuser or user.is_staff) %}
+                        {% elif user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff %}
                         <li><a href="/admin/"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
                         {% else %}
                         <li><a href="{% url 'hotels:hotel_list' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
