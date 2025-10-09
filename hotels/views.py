@@ -27,12 +27,16 @@ def hotel_list(request):
 def hotel_detail(request, hotel_id):
     hotel = get_object_or_404(Hotel, id=hotel_id)
     rooms = hotel.rooms.all()
-    reviews = hotel.reviews.all().order_by('-created_at')  
+    reviews = hotel.reviews.all().order_by('-created_at')
+    user_has_review = False
+    if request.user.is_authenticated:
+        user_has_review = reviews.filter(user=request.user).exists()
 
     context = {
         'hotel': hotel,
         'rooms': rooms,
         'reviews': reviews,
+        'user_has_review': user_has_review,
     }
     return render(request, 'hotels/property-details.html', context)
 
@@ -51,13 +55,18 @@ def add_review(request, hotel_id):
     if not (1 <= rating <= 5):
         return JsonResponse({'success': False, 'error': 'Rating must be between 1 and 5.'})
 
-    review = Review.objects.create(
+    # Enforce one review per user per hotel (atomic)
+    review, created = Review.objects.get_or_create(
         user=request.user,
         hotel=hotel,
-        rating=rating,
-        comment=comment,
-        review_date=timezone.now().date(),
+        defaults={
+            'rating': rating,
+            'comment': comment,
+            'review_date': timezone.now().date(),
+        }
     )
+    if not created:
+        return JsonResponse({'success': False, 'error': 'You have already reviewed this hotel.'})
 
     return JsonResponse({
         'success': True,
