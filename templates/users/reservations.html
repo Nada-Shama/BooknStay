@@ -102,10 +102,8 @@
             {% for num in page_obj.paginator.page_range %}
               {% if num == page_obj.number %}
                 <span class="pagination-btn page-btn active">{{ num }}</span>
-              {% elif num <= 3 or num > page_obj.paginator.num_pages|add:-3 or (num >= page_obj.number|add:-1 and num <= page_obj.number|add:1) %}
+              {% else %}
                 <a class="pagination-btn page-btn" href="?page={{ num }}">{{ num }}</a>
-              {% elif forloop.first or forloop.last %}
-                <span class="pagination-dots">...</span>
               {% endif %}
             {% endfor %}
           </div>
