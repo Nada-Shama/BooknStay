@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Bookings Management{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Owner</span>
+          <h3>Bookings Management</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section owner-dashboard">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="od-nav">
+              <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'owner_hotels' %}">View my Hotels</a></li>
+              <li class="active"><a href="{% url 'owner_bookings_management' %}">Bookings Management</a></li>
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            <div class="section-heading">
+              <h6>| Manage</h6>
+              <h2>Room Calendar</h2>
+            </div>
+
+            <div class="row g-2 mb-3">
+              <div class="col-md-8">
+                <label class="form-label">Select Room</label>
+                <select id="roomSelect" class="form-control">
+                  {% for r in rooms %}
+                    <option value="{{ r.id }}">{{ r.hotel.hotel_name }} — Room {{ r.room_number }} ({{ r.get_type_display }})</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Month</label>
+                <select id="monthSelect" class="form-control">
+                  {% for m in "1,2,3,4,5,6,7,8,9,10,11,12".split(',') %}
+                  <option value="{{ m|trim }}" {% if m|add:'0' == now|date:'n' %}selected{% endif %}>{{ m }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Year</label>
+                <input id="yearInput" class="form-control" type="number" min="2000" max="2100" value="{{ now|default:None|date:'Y'|default:"" }}" placeholder="{{ now|date:'Y' }}" />
+              </div>
+            </div>
+
+            <div class="od-calendar">
+              <div class="od-calendar-header">
+                <strong id="calTitle"></strong>
+              </div>
+              <div class="od-calendar-grid" id="calGrid"></div>
+              <div class="note">Colors indicate current load per day.</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
+  function pad(n){ return (n<10?'0':'') + n; }
+  function renderGrid(year, month){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    const first = new Date(year, month-1, 1);
+    const firstDow = (first.getDay()+6)%7; // make Monday=0 if desired
+    const dim = daysInMonth(year, month);
+    title.textContent = first.toLocaleString('default', { month:'long', year:'numeric' });
+    const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    dows.forEach(d=>{ const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h); });
+    for(let i=0;i<firstDow;i++){ const padCell=document.createElement('div'); padCell.className='pad'; grid.appendChild(padCell); }
+    for(let d=1; d<=dim; d++){
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d;
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+d+'</div>';
+      grid.appendChild(cell);
+    }
+  }
+  function applyCounts(events){
+    const grid = document.getElementById('calGrid');
+    if(!grid) return;
+    grid.querySelectorAll('.res-count').forEach(n=>{ n.style.display='none'; n.textContent=''; });
+    (events||[]).forEach(ev=>{
+      const d = new Date(ev.start).getDate();
+      const cell = grid.querySelector('.day[data-day="'+d+'"]');
+      if(cell){
+        const badge = cell.querySelector('.res-count');
+        if(badge){ badge.style.display='inline-block'; badge.textContent=(ev.title||'').replace(/\D/g,'')||'1'; }
+        cell.style.boxShadow = '0 0 0 2px '+(ev.color||'#2ecc71')+' inset';
+      }
+    });
+  }
+  function fetchData(){
+    const roomId = document.getElementById('roomSelect').value;
+    const month = document.getElementById('monthSelect').value;
+    let year = parseInt(document.getElementById('yearInput').value,10);
+    if(!year || isNaN(year)){ year = new Date().getFullYear(); }
+    renderGrid(year, parseInt(month,10));
+    const url = `/users/owner/bookings-calendar-data/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`;
+    fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+      .then(r=>r.json())
+      .then(applyCounts)
+      .catch(()=>{});
+  }
+  document.addEventListener('change', function(e){
+    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput')){
+      fetchData();
+    }
+  });
+  // initial
+  const now = new Date();
+  document.getElementById('yearInput').value = now.getFullYear();
+  document.getElementById('monthSelect').value = (now.getMonth()+1);
+  fetchData();
+})();
+</script>
+{% endblock %}

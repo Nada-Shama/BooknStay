@@ -12,6 +12,7 @@ urlpatterns = [
     path('property-details/<int:hotel_id>/', hotel_views.hotel_detail, name='property-details'),
     path('owner/register/', views.owner_register, name='owner-register'),
     path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
+    path('owner/bookings-management/', views.owner_bookings_management, name='owner_bookings_management'),
     path('owner/profile/', views.owner_profile, name='owner_profile'),
     path('owner/hotels/', views.owner_hotels, name='owner_hotels'),
     path('owner/bookings/', views.owner_bookings, name='owner_bookings'),
@@ -28,6 +29,8 @@ urlpatterns = [
 
     # AJAX password validation
     path('ajax/validate-password/', user_views.validate_password_ajax, name='validate_password_ajax'),
+    # Owner calendar data for management page
+    path('owner/bookings-calendar-data/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
 
 
     #path('search-hotels/', views.hotels_search_results, name='hotels_search_results'),

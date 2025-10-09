@@ -15,6 +15,7 @@ from django.core.exceptions import ValidationError
 
 from django.http import JsonResponse
 from datetime import date
+from calendar import monthrange
 
 # Create your views here.
 def login_register(request):
@@ -214,31 +215,68 @@ def owner_dashboard(request):
         'recent_bookings': recent_bookings,
     })
 
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_bookings_management(request):
+    from hotels.models import Room
+    owner_rooms = Room.objects.filter(hotel__owner=request.user).select_related('hotel').order_by('hotel__hotel_name', 'room_number')
+    return render(request, 'users/owner-bookings-management.html', {'rooms': owner_rooms})
+
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_bookings_calendar_data(request):
+    """Return booking counts per day for a given room and month/year."""
+    from bookings.models import Booking
+    room_id = request.GET.get('room_id')
+    year = int(request.GET.get('year') or date.today().year)
+    month = int(request.GET.get('month') or date.today().month)
 
-    # Placeholder: mock reservation counts per day for current month (1..31)
+    # Validate room belongs to this owner
+    try:
+        room = Room.objects.select_related('hotel').get(id=room_id, hotel__owner=request.user)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
 
+    first_day = date(year, month, 1)
+    last_day = date(year, month, monthrange(year, month)[1])
 
+    # Count bookings per day that overlap each day
+    from django.db.models import Count
+    # Fetch bookings overlapping month range
+    bookings = Booking.objects.filter(
+        room=room,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
+        check_in__lte=last_day,
+        check_out__gte=first_day,
+    ).values('check_in', 'check_out')
 
-    # TODO: Replace with real Booking aggregation per date for this owner
-    # Example mocked data
-    sample = {1: 2, 3: 4, 5: 1, 7: 6, 9: 3, 12: 5, 15: 2, 18: 8, 20: 4, 22: 1, 24: 2, 27: 3, 30: 7, 31:12}
+    # Build per-day counts
+    counts = {d: 0 for d in range(1, monthrange(year, month)[1] + 1)}
+    for b in bookings:
+        start = max(b['check_in'], first_day)
+        end = min(b['check_out'], last_day)
+        cur = start
+        while cur <= end:
+            # Only count nights the guest stays; treat checkout as non-staying day
+            if cur < b['check_out']:
+                counts[cur.day] += 1
+            cur = date(cur.year, cur.month, cur.day) + (last_day - last_day.replace(day=last_day.day - 1))  # add 1 day safely
 
     def color_for(count: int) -> str:
         if count >= 10:
-            return '#e74c3c'  # red (busy)
+            return '#e74c3c'
         if count >= 5:
-            return '#f39c12'  # yellow (medium)
-        return '#2ecc71'      # green (light)
+            return '#f39c12'
+        return '#2ecc71'
 
-    today = date.today()
     events = []
-    for d, c in sample.items():
+    for d, c in counts.items():
+        if c <= 0:
+            continue
         events.append({
             'title': f'{c} bookings',
-            'start': f'{today.year}-{today.month:02d}-{d:02d}',
+            'start': f'{year}-{month:02d}-{d:02d}',
             'color': color_for(c),
             'allDay': True,
         })
