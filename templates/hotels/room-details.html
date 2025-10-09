@@ -88,10 +88,10 @@
               class="orange-button js-fav-toggle"
               data-room-id="{{ room.id }}"
               data-favorited="{{ is_favorited|yesno:'true,false' }}"
-              style="margin-left:8px;"
+              style="margin-left:8px; margin-top:8px;"
             >
               <i class="fa fa-heart" style="margin-right:6px;"></i>
-              <span class="js-fav-label">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
+              <span class="js-fav-label">{% if is_favorited %}Remove Favorite{% else %}Add to Favorites{% endif %}</span>
             </button>
             {% endif %}
           </div>
@@ -230,7 +230,7 @@
           if(d && d.success){
             const nowFav = !!d.favorited;
             this.dataset.favorited = nowFav ? 'true' : 'false';
-            if(labelEl){ labelEl.textContent = nowFav ? 'Remove from Favorites' : 'Add to Favorites'; }
+            if(labelEl){ labelEl.textContent = nowFav ? 'Remove Favorite' : 'Add to Favorites'; }
           }
         })
         .catch(()=>{
