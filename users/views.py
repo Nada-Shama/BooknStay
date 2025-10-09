@@ -327,7 +327,7 @@ def owner_profile(request):
 def account(request):
     user_bookings = []
     if request.user.is_authenticated:
-        user_bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
+        user_bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')[:2]
 
     # Forms for profile and password on the same page
     pwd_form_cls = SetPasswordForm if not request.user.is_authenticated or not request.user.has_usable_password() else PasswordChangeForm
@@ -376,10 +376,13 @@ def account(request):
 
 @login_required(login_url='login_register')
 def reservations(request):
-    bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return render(request, 'users/reservations.html', { 'bookings': bookings })
-    return render(request, 'users/reservations.html', { 'bookings': bookings })
+    from django.core.paginator import Paginator
+    bookings_qs = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
+    paginator = Paginator(bookings_qs, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = { 'bookings': page_obj.object_list, 'page_obj': page_obj }
+    return render(request, 'users/reservations.html', context)
 
 
 @login_required(login_url='login_register')
