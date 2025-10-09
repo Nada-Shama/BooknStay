@@ -34,28 +34,33 @@
                     <ul class="nav">
                         <li><a href="{% url 'home' %}">Home</a></li>
                         <li><a href="{% url 'hotels:hotel_list' %}">Hotels</a></li>
-                        {% if not user.is_authenticated or not user.is_owner %}
+                        {% if user.is_authenticated and user.is_owner %}
                         <li><a href="{% url 'hotels:properties' %}">Properties</a></li>
                         {% endif %}
                         <!--
                         <li><a href="{% url 'contact' %}">Contact Us</a></li>
                         -->
-                        {% if user.is_authenticated and user.is_customer %}
+                        {% if user.is_authenticated and (user.is_superuser or user.is_staff) %}
                             <li><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                            <li><a href="/admin/"><i class="fa fa-cog"></i> Backend</a></li>
                             <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
                         {% elif user.is_authenticated and user.is_owner %}
                             <li><a href="{% url 'owner_dashboard' %}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
                             <li><a href="{% url 'owner_bookings_management' %}"><i class="fa fa-calendar"></i> Bookings Management</a></li>
                             <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        {% elif user.is_authenticated and user.is_customer %}
+                            <li><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                            <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
                         {% else %}
                             <li><a href="{% url 'login_register' %}"><i class="fa fa-sign-in"></i> Login</a></li>
-                            <li><a href="{% url 'register' %}"><i class="fa fa-user-plus"></i> Register</a></li>
                         {% endif %}
                         
                         <!--<li><a href="{% url 'hotels:book_room' hotel_id=1 %}">Booking</a></li>-->
 
                         {% if user.is_authenticated and user.is_owner %}
                         <li><a href="{% url 'owner_bookings_management' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                        {% elif user.is_authenticated and (user.is_superuser or user.is_staff) %}
+                        <li><a href="/admin/"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
                         {% else %}
                         <li><a href="{% url 'hotels:hotel_list' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
                         {% endif %}
