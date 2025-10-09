@@ -385,21 +385,29 @@ def reservations(request):
     return render(request, 'users/reservations.html', context)
 
 
+@require_POST
 @login_required(login_url='login_register')
 def add_favorite_room(request, room_id):
     from users.models import FavoriteRoom
     room = get_object_or_404(Room, id=room_id)
     FavoriteRoom.objects.get_or_create(user=request.user, room=room)
+    # AJAX response for smoother UX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'favorited': True, 'message': 'Added to favorites.'})
     messages.success(request, 'Added to favorites.')
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
     return redirect(next_url)
 
 
+@require_POST
 @login_required(login_url='login_register')
 def remove_favorite_room(request, room_id):
     from users.models import FavoriteRoom
     room = get_object_or_404(Room, id=room_id)
     FavoriteRoom.objects.filter(user=request.user, room=room).delete()
+    # AJAX response for smoother UX
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True, 'favorited': False, 'message': 'Removed from favorites.'})
     messages.success(request, 'Removed from favorites.')
     next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
     return redirect(next_url)

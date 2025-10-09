@@ -83,11 +83,16 @@
           <div class="icon-button">
             <a href="{% url 'booking' room.hotel.id %}?room_id={{ room.id }}" class="btn btn-primary"><i class="fa fa-calendar"></i> Book this room</a>
             {% if user.is_authenticated %}
-            <form method="post" action="{% url 'add_favorite_room' room.id %}" style="display:inline-block; margin-left:8px;">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.path }}" />
-              <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-heart"></i> Add to Favorites</button>
-            </form>
+            <button
+              type="button"
+              class="orange-button js-fav-toggle"
+              data-room-id="{{ room.id }}"
+              data-favorited="{{ is_favorited|yesno:'true,false' }}"
+              style="margin-left:8px;"
+            >
+              <i class="fa fa-heart" style="margin-right:6px;"></i>
+              <span class="js-fav-label">{% if is_favorited %}Remove from Favorites{% else %}Add to Favorites{% endif %}</span>
+            </button>
             {% endif %}
           </div>
           <div class="price-card" style="margin-top:16px;">
@@ -188,6 +193,55 @@
         this.src = tmp;
       });
     });
+  })();
+  </script>
+<script>
+  (function(){
+    function getCsrf(){
+      const name='csrftoken=';
+      const cookies=document.cookie?document.cookie.split(';'):[];
+      for(let i=0;i<cookies.length;i++){
+        let c=cookies[i].trim();
+        if(c.startsWith(name)) return c.substring(name.length);
+      }
+      return '';
+    }
+
+    const favBtn = document.querySelector('.js-fav-toggle');
+    if(favBtn){
+      favBtn.addEventListener('click', function(){
+        const roomId = this.dataset.roomId;
+        const isFav = this.dataset.favorited === 'true';
+        const url = isFav ? `/users/favorites/remove/${roomId}/` : `/users/favorites/add/${roomId}/`;
+        const labelEl = this.querySelector('.js-fav-label');
+        const icon = this.querySelector('i');
+        const originalText = labelEl ? labelEl.textContent : '';
+
+        this.disabled = true;
+        if(icon){ icon.classList.add('fa-beat'); }
+
+        fetch(url, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCsrf(), 'X-Requested-With': 'XMLHttpRequest' },
+          credentials: 'same-origin'
+        })
+        .then(r=>r.json())
+        .then(d=>{
+          if(d && d.success){
+            const nowFav = !!d.favorited;
+            this.dataset.favorited = nowFav ? 'true' : 'false';
+            if(labelEl){ labelEl.textContent = nowFav ? 'Remove from Favorites' : 'Add to Favorites'; }
+          }
+        })
+        .catch(()=>{
+          if(labelEl){ labelEl.textContent = originalText; }
+        })
+        .finally(()=>{
+          this.disabled = false;
+          if(icon){ icon.classList.remove('fa-beat'); }
+        });
+      });
+    }
   })();
   </script>
 {% endblock %}

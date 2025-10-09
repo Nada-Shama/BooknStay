@@ -3,6 +3,7 @@ from .models import Hotel, Room, Review,RoomImage
 from django.db.models import Avg
 from django.contrib import messages
 from users.models import User
+from users.models import FavoriteRoom
 from users.views import _is_owner_or_admin
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
@@ -107,7 +108,10 @@ def all_rooms(request):
 
 def room_detail(request, room_id):
     room = get_object_or_404(Room, id=room_id)
-    return render(request, 'hotels/room-details.html', {'room': room})
+    is_favorited = False
+    if request.user.is_authenticated:
+        is_favorited = FavoriteRoom.objects.filter(user=request.user, room=room).exists()
+    return render(request, 'hotels/room-details.html', {'room': room, 'is_favorited': is_favorited})
 
 
 
