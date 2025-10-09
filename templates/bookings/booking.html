@@ -10,10 +10,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <!--
-                    <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'hotels_search_results' %}">Hotels</a> / Booking</span>
-                    <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'hotels' 1 %}">Hotels</a> / Booking</span>
-                    -->
+                    <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'hotels:hotel_list' %}">Hotels</a> / Booking</span>
                     <h3>Complete Your Booking</h3>
                 </div>
             </div>
@@ -45,9 +42,41 @@
         <div class="booking-content">
             <!-- Booking Form -->
             <div class="booking-form">
-                <form id="bookingForm">
+                <form id="bookingForm" method="post">
+                    {% csrf_token %}
                     <!-- Step 1: Guest Information -->
                     <div class="booking-step-content active" id="step-1">
+                        <div class="form-section">
+                            <h3><i class="fa fa-bed"></i> Booking Details</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="room_id">Room *</label>
+                                    <select id="room_id" name="room_id" required>
+                                        <option value="">Select a room</option>
+                                        {% for room in rooms %}
+                                          <option value="{{ room.id }}">{{ room.get_type_display }} - {{ room.room_number }} • ${{ room.price }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="num_guests">Guests *</label>
+                                    <input type="number" id="num_guests" name="num_guests" min="1" value="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="check_in">Check-in *</label>
+                                    <input type="date" id="check_in" name="check_in" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="check_out">Check-out *</label>
+                                    <input type="date" id="check_out" name="check_out" required>
+                                </div>
+                            </div>
+                        </div>
+                        {% if not user.is_authenticated %}
                         <div class="form-section">
                             <h3><i class="fa fa-user"></i> Guest Information</h3>
                             
@@ -83,6 +112,7 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
 
                         <div class="form-section">
                             <h3><i class="fa fa-concierge-bell"></i> Special Requests</h3>
@@ -212,14 +242,14 @@
                             <div class="confirmation-header">
                                 <i class="fa fa-check-circle success-icon"></i>
                                 <h3>Booking Confirmed!</h3>
-                                <p>Your hotel reservation has been successfully created.</p>
+                                <p id="confMessage">Your hotel reservation has been successfully created.</p>
                             </div>
 
                             <div class="confirmation-details">
                                 <div class="confirmation-section">
                                     <h4><i class="fa fa-receipt"></i> Booking Reference</h4>
                                     <div class="booking-reference">
-                                        <span class="reference-number">#BK-2024-001234</span>
+                                        <span class="reference-number" id="confReference">—</span>
                                         <button class="copy-btn" onclick="copyReference()">
                                             <i class="fa fa-copy"></i> Copy
                                         </button>
@@ -228,7 +258,7 @@
 
                                 <div class="confirmation-section">
                                     <h4><i class="fa fa-envelope"></i> Confirmation Email</h4>
-                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">your-email@example.com</strong></p>
+                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">—</strong></p>
                                     <p>Please check your inbox and spam folder.</p>
                                 </div>
 
@@ -237,23 +267,23 @@
                                     <div class="booking-summary-mini">
                                         <div class="summary-item">
                                             <span class="label">Hotel:</span>
-                                            <span class="value">Grand Miami Hotel</span>
+                                            <span class="value" id="confHotel">{{ hotel.hotel_name }}</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Check-in:</span>
-                                            <span class="value">Dec 15, 2024 at 3:00 PM</span>
+                                            <span class="value" id="confCheckIn">—</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Check-out:</span>
-                                            <span class="value">Dec 18, 2024 at 11:00 AM</span>
+                                            <span class="value" id="confCheckOut">—</span>
                                         </div>
                                         <div class="summary-item">
                                             <span class="label">Guests:</span>
-                                            <span class="value">2 Adults, 1 Room</span>
+                                            <span class="value" id="confGuests">—</span>
                                         </div>
                                         <div class="summary-item total">
                                             <span class="label">Total Paid:</span>
-                                            <span class="value">$862.50</span>
+                                            <span class="value" id="confTotal">$0</span>
                                         </div>
                                     </div>
                                 </div>
@@ -312,43 +342,42 @@
                         <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
                     </div>
                     <div class="hotel-details">
-                        <h4>Grand Miami Hotel</h4>
-                        <p><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
-                        <p><i class="fa fa-star"></i> 5.0 (124 reviews)</p>
+                        <h4>{{ hotel.hotel_name }}</h4>
+                        <p><i class="fa fa-home"></i> Rooms: {{ rooms|length }}</p>
                     </div>
                 </div>
 
                 <div class="booking-dates">
                     <div class="date-item">
                         <span class="date-label">Check-in</span>
-                        <span class="date-value">Dec 15, 2024</span>
+                        <span class="date-value" id="sumCheckIn">—</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Check-out</span>
-                        <span class="date-value">Dec 18, 2024</span>
+                        <span class="date-value" id="sumCheckOut">—</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Nights</span>
-                        <span class="date-value">3</span>
+                        <span class="date-value" id="sumNights">0</span>
                     </div>
                     <div class="date-item">
                         <span class="date-label">Guests</span>
-                        <span class="date-value">2 Adults</span>
+                        <span class="date-value" id="sumGuests">1</span>
                     </div>
                 </div>
 
                 <div class="price-breakdown">
                     <div class="price-item">
                         <span class="price-label">Room Rate</span>
-                        <span class="price-value">$250.00 x 3 nights</span>
+                        <span class="price-value" id="sumRoomRate">$0 x 0 nights</span>
                     </div>
                     <div class="price-item">
                         <span class="price-label">Taxes & Fees</span>
-                        <span class="price-value">$112.50</span>
+                        <span class="price-value" id="sumTaxes">$0</span>
                     </div>
                     <div class="price-item total">
                         <span class="price-label">Total</span>
-                        <span class="price-value">$862.50</span>
+                        <span class="price-value" id="sumTotal">$0</span>
                     </div>
                 </div>
 
@@ -386,6 +415,44 @@
             // Initialize with Stripe selected
             $('#stripePayment').show();
             
+            // Helpers for summary
+            function calcNights(ci, co) {
+                if (!ci || !co) return 0;
+                const d1 = new Date(ci);
+                const d2 = new Date(co);
+                const diff = (d2 - d1) / (1000*60*60*24);
+                return Math.max(0, Math.round(diff));
+            }
+
+            function roomPrice(roomId) {
+                const opt = $('#room_id option[value="'+roomId+'"]').text();
+                const match = opt.match(/• \$(\d+(?:\.\d+)?)/);
+                return match ? parseFloat(match[1]) : 0;
+            }
+
+            function updateSummary() {
+                const ci = $('#check_in').val();
+                const co = $('#check_out').val();
+                const nights = calcNights(ci, co);
+                const guests = parseInt($('#num_guests').val() || '1');
+                const rid = $('#room_id').val();
+                const price = roomPrice(rid);
+                const subtotal = price * nights;
+                const taxes = Math.round(subtotal * 0.15 * 100) / 100; // 15% demo
+                const total = Math.round((subtotal + taxes) * 100) / 100;
+
+                $('#sumCheckIn').text(ci || '—');
+                $('#sumCheckOut').text(co || '—');
+                $('#sumNights').text(nights);
+                $('#sumGuests').text(guests);
+                $('#sumRoomRate').text(`$${price} x ${nights} nights`);
+                $('#sumTaxes').text(`$${taxes}`);
+                $('#sumTotal').text(`$${total}`);
+            }
+
+            $('#room_id, #check_in, #check_out, #num_guests').on('change input', updateSummary);
+            updateSummary();
+
             // Next step button
             $('#nextStep').click(function() {
                 if (validateCurrentStep()) {
@@ -488,21 +555,48 @@
                 // Show loading state
                 $('#completeBooking').html('<i class="fa fa-spinner fa-spin"></i> Processing...');
                 $('#completeBooking').prop('disabled', true);
-                
-                // Simulate booking process
-                setTimeout(function() {
-                    // Update confirmation email
-                    const userEmail = $('#email').val();
-                    $('#confirmationEmail').text(userEmail);
-                    
-                    // Move to confirmation step
+
+                const postUrl = '/bookings/{{ hotel.id }}/create/';
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const payload = new FormData();
+                payload.append('room_id', $('#room_id').val());
+                payload.append('check_in', $('#check_in').val());
+                payload.append('check_out', $('#check_out').val());
+                payload.append('num_guests', $('#num_guests').val());
+
+                fetch(postUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: payload
+                })
+                .then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })))
+                .then(({ ok, status, data }) => {
+                    if (!ok || !data.success) {
+                        const msg = (data && data.error) ? data.error : 'Unable to create booking.';
+                        alert(msg);
+                        throw new Error(msg);
+                    }
+
+                    // Update confirmation email and summary
+                    const userEmail = data.guest_email || $('#email').val() || '{{ user.email|default:"" }}';
+                    $('#confirmationEmail').text(userEmail || '');
+                    // Fill confirmation fields with real response
+                    $('#confReference').text(`#BK-${data.booking_id}`);
+                    $('#confHotel').text(data.hotel_name || $('#confHotel').text());
+                    $('#confCheckIn').text(data.check_in);
+                    $('#confCheckOut').text(data.check_out);
+                    $('#confGuests').text(`${data.num_guests || $('#num_guests').val()} Guests, 1 Room`);
+                    $('#confTotal').text(`$${data.total_price}`);
+
                     currentStep = 3;
                     showStep(currentStep);
-                    
-                    // Reset button
+                })
+                .catch(() => {})
+                .finally(() => {
                     $('#completeBooking').html('<i class="fa fa-check"></i> Complete Booking');
                     $('#completeBooking').prop('disabled', false);
-                }, 2000);
+                });
             }
             
             // Stripe card number formatting
@@ -533,6 +627,16 @@
             });
         });
         
+        // Preselect room from querystring if present
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const rid = params.get('room_id');
+            if (rid) {
+                const sel = document.getElementById('room_id');
+                if (sel) sel.value = rid;
+            }
+        })();
+
         // Copy reference number
         function copyReference() {
             const referenceNumber = document.querySelector('.reference-number').textContent;

@@ -27,108 +27,66 @@ def hotel_list(request):
 def hotel_detail(request, hotel_id):
     hotel = get_object_or_404(Hotel, id=hotel_id)
     rooms = hotel.rooms.all()
-    reviews = hotel.reviews.all().order_by('-created_at')  
+    reviews = hotel.reviews.all().order_by('-created_at')
+    user_has_review = False
+    if request.user.is_authenticated:
+        user_has_review = reviews.filter(user=request.user).exists()
 
     context = {
         'hotel': hotel,
         'rooms': rooms,
         'reviews': reviews,
+        'user_has_review': user_has_review,
     }
     return render(request, 'hotels/property-details.html', context)
 
 @require_POST
 @login_required
 def add_review(request, hotel_id):
+    hotel = get_object_or_404(Hotel, id=hotel_id)
+    rating_str = request.POST.get('rating')
+    comment = (request.POST.get('comment') or '').strip()
+
     try:
-        hotel = get_object_or_404(Hotel, id=hotel_id)
-        rating = int(request.POST.get('rating', 0))
-        comment = request.POST.get('comment', '').strip()
+        rating = int(rating_str)
+    except (TypeError, ValueError):
+        return JsonResponse({'success': False, 'error': 'Invalid rating value.'})
 
-        if not (1 <= rating <= 5):
-            return JsonResponse({'success': False, 'error': 'Invalid rating value.'})
+    if not (1 <= rating <= 5):
+        return JsonResponse({'success': False, 'error': 'Rating must be between 1 and 5.'})
 
-        review = Review.objects.create(
-            hotel=hotel,
-            user=request.user,
-            rating=rating,
-            comment=comment
-        )
-
-        return JsonResponse({
-            'success': True,
-            'username': request.user.username,
-            'rating': review.rating,
-            'comment': review.comment,
-            'created_at': review.created_at.strftime("%b %d, %Y")
-        })
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)})
-
-
-
-
-def book_room(request, hotel_id):
-    hotel = get_object_or_404(Hotel, id=hotel_id)
-    rooms = Room.objects.filter(hotel=hotel, status='available')
-
-    context = {
-        'hotel': hotel,
-        'rooms': rooms,
-    }
-    return render(request, 'bookings/booking.html', context)
-
-
-
-def book_room(request, hotel_id):
-    hotel = get_object_or_404(Hotel, id=hotel_id)
-    rooms = Room.objects.filter(hotel=hotel, status='available')
-
-    context = {
-        'hotel': hotel,
-        'rooms': rooms,
-    }
-    return render(request, 'bookings/booking.html', context)
-
-
-def add_review(request, hotel_id):
-    hotel = get_object_or_404(Hotel, id=hotel_id)
-
-    if request.method == 'POST':
-        rating = request.POST.get('rating')
-        comment = request.POST.get('comment')
-
-        if not rating or not comment:
-            return JsonResponse({'success': False, 'error': 'Rating and comment are required.'})
-
-        try:
-            rating = int(rating)
-        except ValueError:
-            return JsonResponse({'success': False, 'error': 'Invalid rating value.'})
-
-        user = request.user if request.user.is_authenticated else User.objects.first()
-
-        review = Review.objects.create(
-            user=user,
-            hotel=hotel,
-            rating=rating,
-            comment=comment,
-            review_date=timezone.now()
-        )
-
-        avg_rating = Review.objects.filter(hotel=hotel).aggregate(Avg('rating'))['rating__avg'] or 0
-        hotel.average_review = round(avg_rating, 1)
-        hotel.save()
-
-        return JsonResponse({
-            'success': True,
-            'username': user.username,
+    # Enforce one review per user per hotel (atomic)
+    review, created = Review.objects.get_or_create(
+        user=request.user,
+        hotel=hotel,
+        defaults={
             'rating': rating,
             'comment': comment,
-            'created_at': review.created_at.strftime("%b %d, %Y"),
-        })
+            'review_date': timezone.now().date(),
+        }
+    )
+    if not created:
+        return JsonResponse({'success': False, 'error': 'You have already reviewed this hotel.'})
 
-    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+    return JsonResponse({
+        'success': True,
+        'username': request.user.username,
+        'rating': review.rating,
+        'comment': review.comment,
+        'created_at': review.created_at.strftime("%b %d, %Y"),
+    })
+
+
+
+
+def book_room(request, hotel_id):
+    hotel = get_object_or_404(Hotel, id=hotel_id)
+    rooms = Room.objects.filter(hotel=hotel, status='available')
+    context = {'hotel': hotel, 'rooms': rooms}
+    return render(request, 'bookings/booking.html', context)
+
+
+    # Note: duplicate add_review definition removed; using the login-required JSON endpoint above.
 
 def owner_register(request):
     return render(request, 'users/owner-register.html')
@@ -142,7 +100,8 @@ def all_hotels(request):
     return render(request, 'hotels/all-hotels.html')
 
 def all_rooms(request):
-    return render(request, 'hotels/all-rooms.html')
+    rooms = Room.objects.select_related('hotel').prefetch_related('images').order_by('-created_at')
+    return render(request, 'hotels/all-rooms.html', { 'rooms': rooms })
 
 
 

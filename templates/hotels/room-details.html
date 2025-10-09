@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Room Details{% endblock %}
+{% block title %}Room {{ room.room_number }} · {{ room.hotel.hotel_name }}{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/room-details.css' %}">
 {% endblock %}
@@ -10,9 +10,9 @@
     <div class="container">
       <div class="row">
         <div class="col-lg-12">
-          <span class="breadcrumb"><a href="{% url 'hotels' 1 %}">Hotels</a> / <a href="#">Sample Hotel</a> / Room #{{ room_id }}</span>
-          <h3>Deluxe King Room</h3>
-          <p class="text-muted">Under: Sample Hotel • City Center • 5 km from airport</p>
+          <span class="breadcrumb"><a href="{% url 'hotels:hotel_list' %}">Hotels</a> / <a href="{% url 'hotels:hotel_detail' room.hotel.id %}">{{ room.hotel.hotel_name }}</a> / Room #{{ room.id }}</span>
+          <h3>{{ room.get_type_display }} · Room {{ room.room_number }}</h3>
+          <p class="text-muted">Under: {{ room.hotel.hotel_name }}</p>
         </div>
       </div>
     </div>
@@ -20,6 +20,13 @@
 
   <section class="section best-deal room-details">
     <div class="container">
+      {% if messages %}
+      <div class="mb-3">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
       <div class="row">
         <div class="col-lg-3">
           <div class="info-table">
@@ -72,13 +79,20 @@
         </div>
         <div class="col-lg-3">
           <h4>About this Room</h4>
-          <p>Spacious king room with premium linens, modern bathroom, and work desk. Complimentary high-speed Wi‑Fi and smart TV included.</p>
+          <p>{{ room.description|default:"Comfortable room with essential amenities." }}</p>
           <div class="icon-button">
-            <a href="{% url 'booking' 1 %}"><i class="fa fa-calendar"></i> Book this room</a>
+            <a href="{% url 'booking' room.hotel.id %}?room_id={{ room.id }}" class="btn btn-primary"><i class="fa fa-calendar"></i> Book this room</a>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_favorite_room' room.id %}" style="display:inline-block; margin-left:8px;">
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}" />
+              <button class="btn btn-outline-secondary" type="submit"><i class="fa fa-heart"></i> Add to Favorites</button>
+            </form>
+            {% endif %}
           </div>
           <div class="price-card" style="margin-top:16px;">
             <div class="price">
-              <h4>$189 <small>/ night</small></h4>
+              <h4>${{ room.price }} <small>/ night</small></h4>
               <p class="tax-incl">Taxes & fees included</p>
             </div>
           </div>
@@ -117,7 +131,7 @@
               123 Main Street, City Center<br>
               ★★★★ 4.5 (1,240 reviews)
             </p>
-            <a href="{% url 'property-details'  1 %}" class="btn-secondary">View Hotel</a>
+            <a href="{% url 'hotels:hotel_detail' room.hotel.id %}" class="btn-secondary">View Hotel</a>
           </div>
         </div>
       </div>

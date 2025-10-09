@@ -1,11 +1,17 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login, authenticate, logout, get_user_model
+from django.contrib.auth.forms import PasswordChangeForm, SetPasswordForm
+from .forms import ProfileUpdateForm
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm
 from django.utils.crypto import get_random_string
-from hotels.models import Hotel
+from hotels.models import Hotel, Room
+from bookings.models import Booking
+from django.views.decorators.http import require_POST
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 from django.http import JsonResponse
 from datetime import date
@@ -170,18 +176,28 @@ def owner_register(request):
             owner_user.role = 'owner'
             owner_user.save(update_fields=['role'])
 
-        # Create hotel with minimal fields present in model
-        location_parts = [p for p in [address, city, state, country] if p]
-        location = ', '.join(location_parts) or city or country or 'Unknown'
-        contact = phone or email
-        amenities_text = ', '.join(amenities) if amenities else ''
+        # Create hotel using valid fields on the Hotel model and set owner
+        try:
+            star_rating_int = int(star_rating) if star_rating else None
+        except ValueError:
+            star_rating_int = None
 
         Hotel.objects.create(
-            name=hotel_name,
-            description=description or f"{property_type} • {star_rating}".strip(' •'),
-            location=location,
-            contact=contact,
-            amenities=amenities_text,
+            owner=owner_user,
+            hotel_name=hotel_name,
+            property_type=property_type or None,
+            star_rating=star_rating_int,
+            address=address or None,
+            zipcode=zipcode or None,
+            city=city or None,
+            state=state or None,
+            country=country or None,
+            amenities=amenities or [],
+            description=description or '',
+            contact_preference='Email' if email else 'Phone',
+            business_name=None,
+            tax_id=None,
+            website=None,
         )
 
         messages.success(request, 'Thanks! Your owner account and hotel were submitted. You can log in and continue setup.')
@@ -192,10 +208,11 @@ def owner_register(request):
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_dashboard(request):
-
-
-
-    return render(request, 'users/owner-dashboard.html')
+    # Recent bookings for hotels owned by this user
+    recent_bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user')[:10]
+    return render(request, 'users/owner-dashboard.html', {
+        'recent_bookings': recent_bookings,
+    })
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
@@ -230,12 +247,20 @@ def owner_bookings_calendar_data(request):
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
 def owner_hotels(request):
-    # For now, fetch all hotels. Later, filter by owner when ownership is modeled.
-    hotels = Hotel.objects.all().order_by('-created_at')
+    hotels = Hotel.objects.filter(owner=request.user).order_by('-created_at')
     context = {
         'hotels': hotels,
     }
     return render(request, 'users/owner-hotels.html', context)
+
+
+@login_required(login_url='login_register')
+@user_passes_test(_is_owner_or_admin, login_url='login_register')
+def owner_bookings(request):
+    bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user').order_by('-created_at')
+    return render(request, 'users/owner-bookings.html', {
+        'bookings': bookings,
+    })
 
 @login_required(login_url='login_register')
 @user_passes_test(_is_owner_or_admin, login_url='login_register')
@@ -300,9 +325,131 @@ def owner_profile(request):
 
 @login_required(login_url='login_register')
 def account(request):
-    return render(request, 'users/account.html', {
+    user_bookings = []
+    if request.user.is_authenticated:
+        user_bookings = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')[:2]
+
+    # Forms for profile and password on the same page
+    pwd_form_cls = SetPasswordForm if not request.user.is_authenticated or not request.user.has_usable_password() else PasswordChangeForm
+    pwd_form = None
+    profile_form = None
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            action = request.POST.get('action')
+            if action == 'profile':
+                profile_form = ProfileUpdateForm(request.POST, instance=request.user)
+                if profile_form.is_valid():
+                    profile_form.save()
+                    messages.success(request, 'Profile updated successfully.')
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': True})
+                    return redirect('account')
+                else:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({'success': False, 'errors': profile_form.errors}, status=400)
+            elif action == 'password':
+                pwd_form = pwd_form_cls(request.user, request.POST)
+                if pwd_form.is_valid():
+                    pwd_form.save()
+                    messages.success(request, 'Password updated successfully.')
+                    return redirect('account')
+                # Remove autofocus that can auto-scroll on invalid submit
+                for f in pwd_form.fields.values():
+                    f.widget.attrs.pop('autofocus', None)
+        # GET or invalid POST
+        profile_form = profile_form or ProfileUpdateForm(instance=request.user)
+        pwd_form = pwd_form or pwd_form_cls(request.user)
+        # Remove autofocus to avoid page auto-scrolling to password
+        if pwd_form:
+            for f in pwd_form.fields.values():
+                f.widget.attrs.pop('autofocus', None)
+
+    context = {
         'user': request.user,
         'is_authenticated': request.user.is_authenticated,
-    })
+        'bookings': user_bookings,
+        'profile_form': profile_form,
+        'pwd_form': pwd_form,
+    }
+    return render(request, 'users/account.html', context)
+
+
+@login_required(login_url='login_register')
+def reservations(request):
+    from django.core.paginator import Paginator
+    bookings_qs = Booking.objects.filter(user=request.user).select_related('hotel', 'room').order_by('-created_at')
+    paginator = Paginator(bookings_qs, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = { 'bookings': page_obj.object_list, 'page_obj': page_obj }
+    return render(request, 'users/reservations.html', context)
+
+
+@login_required(login_url='login_register')
+def add_favorite_room(request, room_id):
+    from users.models import FavoriteRoom
+    room = get_object_or_404(Room, id=room_id)
+    FavoriteRoom.objects.get_or_create(user=request.user, room=room)
+    messages.success(request, 'Added to favorites.')
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
+    return redirect(next_url)
+
+
+@login_required(login_url='login_register')
+def remove_favorite_room(request, room_id):
+    from users.models import FavoriteRoom
+    room = get_object_or_404(Room, id=room_id)
+    FavoriteRoom.objects.filter(user=request.user, room=room).delete()
+    messages.success(request, 'Removed from favorites.')
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or 'list_favorites'
+    return redirect(next_url)
+
+
+@login_required(login_url='login_register')
+def list_favorites(request):
+    from users.models import FavoriteRoom
+    items = FavoriteRoom.objects.filter(user=request.user).select_related('room', 'room__hotel')
+    return render(request, 'users/favorites.html', {'items': items})
+
+
+@login_required(login_url='login_register')
+def settings_view(request):
+    # Alias settings to account page; surface password-setup prompt via message
+    if request.session.pop('needs_password_setup', False):
+        messages.info(request, 'Welcome! Please set your password below.')
+    return redirect('account')
+
+
+@require_POST
+def validate_password_ajax(request):
+    """Validate current password (if provided), new password and confirmation; return granular hints."""
+    pwd1 = (request.POST.get('new_password1') or '').strip()
+    pwd2 = (request.POST.get('new_password2') or '').strip()
+    old = (request.POST.get('old_password') or '').strip()
+    result = {
+        'current_password': {'valid': None, 'errors': []},
+        'new_password1': {'valid': False, 'errors': []},
+        'new_password2': {'valid': False, 'errors': []},
+    }
+    # Validate pwd1 by Django validators
+    try:
+        validate_password(pwd1, user=request.user if request.user.is_authenticated else None)
+        result['new_password1']['valid'] = True
+    except ValidationError as ve:
+        result['new_password1']['errors'] = list(ve.messages)
+    # Confirm match
+    if pwd2:
+        if pwd1 == pwd2:
+            result['new_password2']['valid'] = True
+        else:
+            result['new_password2']['errors'] = ['Passwords do not match.']
+    # Check current password if provided and user is authenticated
+    if old:
+        if request.user.is_authenticated and request.user.check_password(old):
+            result['current_password']['valid'] = True
+        else:
+            result['current_password']['valid'] = False
+            result['current_password']['errors'] = ['Current password is incorrect.']
+    return JsonResponse(result)
 
 

@@ -20,86 +20,39 @@
         <div class="col-lg-12">
           <div class="hotels-grid">
             <div class="row">
-              <!-- Room Card 1 -->
+              {% for room in rooms %}
               <div class="col-lg-4 col-md-6">
                 <div class="hotel-card">
                   <div class="hotel-image">
-                    <img src="{% static 'images/room1/ex1.jpg' %}" alt="Room Image">
-                    <div class="hotel-badge">Popular</div>
+                    {% with img=room.images.first %}
+                      {% if img %}
+                        <img src="{{ img.image.url }}" alt="Room Image">
+                      {% else %}
+                        <img src="{% static 'images/room1/ex1.jpg' %}" alt="Room Image">
+                      {% endif %}
+                    {% endwith %}
+                    <div class="hotel-badge">{{ room.get_type_display }}</div>
                   </div>
                   <div class="hotel-content">
-                    <h4>Deluxe King Room</h4>
-                    <p class="hotel-location"><i class="fa fa-building"></i> Grand Miami Hotel</p>
+                    <h4>{{ room.hotel.hotel_name }} · Room {{ room.room_number }}</h4>
+                    <p class="hotel-location"><i class="fa fa-building"></i> {{ room.hotel.city|default:room.hotel.country }}</p>
                     <div class="hotel-amenities">
-                      <span><i class="fa fa-user"></i> 2 Adults + 1 Child</span>
-                      <span><i class="fa fa-bed"></i> King Bed</span>
+                      <span><i class="fa fa-user"></i> {{ room.capacity }} Guests</span>
+                      <span><i class="fa fa-bed"></i> {{ room.get_type_display }}</span>
                     </div>
                     <div class="hotel-price">
                       <div class="price">
-                        <span class="current-price">$189</span>
+                        <span class="current-price">${{ room.price }}</span>
                         <span class="price-period">/night</span>
                       </div>
                     </div>
                     <div class="main-button">
-                      <a href="{% url 'room_details' 2 %}">View Details</a>
+                      <a href="{% url 'hotels:room_detail' room.id %}">View Details</a>
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- Room Card 2 -->
-              <div class="col-lg-4 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/room1/ex2.jpg' %}" alt="Room Image">
-                    <div class="hotel-badge">Best Value</div>
-                  </div>
-                  <div class="hotel-content">
-                    <h4>Ocean Suite</h4>
-                    <p class="hotel-location"><i class="fa fa-building"></i> Ocean View Resort</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-user"></i> 3 Guests</span>
-                      <span><i class="fa fa-bed"></i> Suite</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$299</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                    </div>
-                    <div class="main-button">
-                      <a href="{% url 'room_details' 202 %}">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Room Card 3 -->
-              <div class="col-lg-4 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/room1/ex3.jpg' %}" alt="Room Image">
-                    <div class="hotel-badge">Business</div>
-                  </div>
-                  <div class="hotel-content">
-                    <h4>Standard Single</h4>
-                    <p class="hotel-location"><i class="fa fa-building"></i> Business Center Hotel</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-user"></i> 1 Adult</span>
-                      <span><i class="fa fa-bed"></i> Single</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$149</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                    </div>
-                    <div class="main-button">
-                      <a href="{% url 'room_details' 303 %}">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {% endfor %}
             </div>
           </div>
 

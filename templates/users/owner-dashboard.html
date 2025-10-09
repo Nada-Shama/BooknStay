@@ -110,35 +110,49 @@
 
             <div class="section-heading" style="margin-top: 30px;">
               <h6>| Bookings</h6>
-              <h2>Calendar Overview.</h2>
-              <p style="color: #666;">For total bookings per day.</p>
+              <h2>Recent Bookings</h2>
+              <p style="color: #666;">Latest reservations across your hotels.</p>
             </div>
             <div class="od-card">
-              <div id="owner-calendar"></div>
+              {% if recent_bookings %}
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Hotel</th>
+                      <th>Room</th>
+                      <th>Guest</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for b in recent_bookings %}
+                    <tr>
+                      <td>#{{ b.id }}</td>
+                      <td>{{ b.hotel.hotel_name }}</td>
+                      <td>{{ b.room.room_number }}</td>
+                      <td>{% if b.user %}{{ b.user.username }}{% else %}-{% endif %}</td>
+                      <td>{{ b.check_in }}</td>
+                      <td>{{ b.check_out }}</td>
+                      <td>{{ b.status }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+                <p class="text-muted mb-0">No recent bookings.</p>
+              {% endif %}
             </div>
           </section>
         </div>
       </div>
     </div>
   </div>
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const el = document.getElementById('owner-calendar');
-  if (!el) return;
-  const calendar = new FullCalendar.Calendar(el, {
-
-    initialView: 'dayGridMonth',
-    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' },
-    height: 'auto',
-    events: '{% url "owner_bookings_calendar_data" %}',
-    
-  });
-  calendar.render();
-});
-</script>
-{% endblock %}
+{% block extra_js %}{% endblock %}
 {% endblock %}
 
 
