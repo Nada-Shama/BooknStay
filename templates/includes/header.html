@@ -34,7 +34,7 @@
                     <ul class="nav">
                         <li><a href="{% url 'home' %}">Home</a></li>
                         <li><a href="{% url 'hotels:hotel_list' %}">Hotels</a></li>
-                        {% if not (user.is_authenticated and user.is_owner) %}
+                        {% if not user.is_authenticated or not user.is_owner %}
                         <li><a href="{% url 'hotels:properties' %}">Properties</a></li>
                         {% endif %}
                         <!--
