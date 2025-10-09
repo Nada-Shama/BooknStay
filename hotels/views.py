@@ -91,7 +91,8 @@ def all_hotels(request):
     return render(request, 'hotels/all-hotels.html')
 
 def all_rooms(request):
-    return render(request, 'hotels/all-rooms.html')
+    rooms = Room.objects.select_related('hotel').prefetch_related('images').order_by('-created_at')
+    return render(request, 'hotels/all-rooms.html', { 'rooms': rooms })
 
 
 
