@@ -1,0 +1,98 @@
+{% load static %}
+<style>
+    .main-nav .nav a {
+        font-size: 14px; /* adjust to your preference */
+    }
+    .logo-heading {
+    margin: 0; /* Adjust margin as needed */
+    font-family: inherit; /* Keeps original font */
+    font-size: 2rem; /* Adjust size if needed */
+    
+}
+
+.logo {
+    color: black; /* Makes text black */
+    text-decoration: none; /* Removes underline */
+    display: inline; /* Makes link just around text */
+    padding-top:25px;
+}
+
+</style>
+<div class="sub-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-8">
+                <ul class="info">
+                <li><i class="fa fa-envelope"></i> info@hotelbooking.com</li>
+                <li><i class="fa fa-map"></i> Hotel Booking System</li>
+                </ul>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <ul class="social-links">
+                    <li><a href="#"><i class="fab fa-facebook"></i></a></li>
+                    <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                    <li><a href="#"><i class="fab fa-linkedin"></i></a></li>
+                    <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<header class="header-area header-sticky">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav class="main-nav">
+                    <!-- ***** Logo Start ***** -->
+                    <h1>
+                        <a href="{% url 'home' %}" class="logo">Book & Stay</a>
+                    </h1>
+
+                    <!-- ***** Logo End ***** -->
+                    <!-- ***** Menu Start ***** -->
+                    <ul class="nav">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'hotels:hotel_list' %}">Hotels</a></li>
+                        {% if user.is_authenticated and user.is_owner %}
+                        {% endif %}
+                        <!--
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                        -->
+                        {% if user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff %}
+                            <li ><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                            <li><a href="/admin/"><i class="fa fa-cog"></i> Backend</a></li>
+                            <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        {% elif user.is_authenticated and user.is_owner %}
+                            <li ><a href="{% url 'owner_dashboard' %}"><i class="fa fa-dashboard"></i> Dashboard</a></li>
+                            <li><a href="{% url 'owner_bookings_management' %}"><i class="fa fa-calendar"></i> Bookings </a></li>
+                            <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        {% elif user.is_authenticated and user.is_customer %}
+                            <li><a href="{% url 'account' %}"><i class="fa fa-user"></i> {{ user.username }}</a></li>
+                            <li><a href="/users/logout/"><i class="fa fa-sign-out"></i> Logout</a></li>
+                        {% else %}
+                            <li><a href="{% url 'login_register' %}"><i class="fa fa-sign-in"></i> Login</a></li>
+                        {% endif %}
+                        
+                        <!--<li><a href="{% url 'hotels:book_room' hotel_id=1 %}">Booking</a></li>-->
+
+                        {% if user.is_authenticated and user.is_owner %}
+                        <li><a href="{% url 'owner_bookings_management' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                        {% elif user.is_authenticated and user.is_superuser or user.is_authenticated and user.is_staff %}
+                        <li><a href="/admin/"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                        {% else %}
+                        <li><a href="{% url 'hotels:hotel_list' %}"><i class="fa fa-calendar"></i> Schedule a visit</a></li>
+                        {% endif %}
+
+
+                    </ul>   
+                    <a class='menu-trigger'>
+                        <span>Menu</span>
+                    </a>
+                    <!-- ***** Menu End ***** -->
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+

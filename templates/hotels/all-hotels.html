@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}All Hotels{% endblock %}
+{% block content %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Hotels</span>
+        <h3>All Hotels</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section hotels-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="hotels-grid">
+          <div class="row">
+            {% for hotel in hotels %}
+            <div class="col-lg-4 col-md-6">
+              <div class="hotel-card">
+                <div class="hotel-image">
+                  {% if hotel.photo %}
+                    <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
+                  {% else %}
+                    <img src="{% static 'images/default-hotel.jpg' %}" alt="Default Hotel Image">
+                  {% endif %}
+                  <div class="hotel-badge">
+                    {% if hotel.property_type %}
+                      {{ hotel.property_type }}
+                    {% else %}
+                      New
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div class="hotel-content">
+                  <div class="hotel-rating">
+                    {% if hotel.star_rating %}
+                      <div class="stars">
+                        {% for i in "12345"|slice:":hotel.star_rating"|make_list %}
+                          <i class="fa fa-star"></i>
+                        {% endfor %}
+                        {% for i in "12345"|slice:"hotel.star_rating:"|make_list %}
+                          <i class="fa fa-star-o"></i>
+                        {% endfor %}
+                      </div>
+                      <span class="rating-number">{{ hotel.star_rating }}★</span>
+                    {% else %}
+                      <span class="rating-number">No Rating</span>
+                    {% endif %}
+                  </div>
+
+                  <h4>{{ hotel.hotel_name }}</h4>
+
+                  {% if hotel.address %}
+                    <p class="hotel-location"><i class="fa fa-map-marker"></i> {{ hotel.address }}</p>
+                  {% elif hotel.city %}
+                    <p class="hotel-location"><i class="fa fa-map-marker"></i> {{ hotel.city }}, {{ hotel.country }}</p>
+                  {% endif %}
+
+                  <div class="hotel-amenities">
+                    {% if hotel.amenities %}
+                      {% for amenity in hotel.amenities %}
+                        <span><i class="fa fa-check"></i> {{ amenity }}</span>
+                      {% endfor %}
+                    {% else %}
+                      <span>No amenities listed</span>
+                    {% endif %}
+                  </div>
+
+                  <div class="main-button mt-3">
+                    <a href="{% url 'hotels:hotel_detail' hotel.id %}">View Details</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+              <p>No hotels available.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

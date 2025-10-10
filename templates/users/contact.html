@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book & Stay - Contact Us{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a>  /  Contact Us</span>
+          <h3>Contact Us</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-page section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="section-heading">
+            <h6>| Contact Us</h6>
+            <h2>Get In Touch With Our Hotel Team</h2>
+          </div>
+          <p>Need help with your hotel booking or have questions about our services? Our dedicated customer support team is here to assist you 24/7. Whether you need help with reservations, modifications, or general inquiries, we're committed to providing exceptional service for your hotel booking needs.</p>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="item phone">
+                <img src="{% static 'images/phone-icon.png' %}" alt="" style="max-width: 52px;">
+                <h6>1-800-BOOK-STAY<br><span>24/7 Support Line</span></h6>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <div class="item email">
+                <img src="{% static 'images/email-icon.png' %}" alt="" style="max-width: 52px;">
+                <h6>support@book.com<br><span>Customer Support</span></h6>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <form id="contact-form" action="" method="post">
+            <div class="row">
+              <div class="col-lg-12">
+                <fieldset>
+                  <label for="name">Full Name</label>
+                  <input type="name" name="name" id="name" placeholder="Your Name..." autocomplete="on" required>
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <label for="email">Email Address</label>
+                  <input type="text" name="email" id="email" pattern="[^ @]*@[^ @]*" placeholder="Your E-mail..." required="">
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <label for="subject">Subject</label>
+                  <select name="subject" id="subject" required>
+                    <option value="">Select a topic...</option>
+                    <option value="booking">Hotel Booking Inquiry</option>
+                    <option value="modification">Reservation Modification</option>
+                    <option value="cancellation">Cancellation Request</option>
+                    <option value="complaint">Complaint or Issue</option>
+                    <option value="feedback">Feedback & Suggestions</option>
+                    <option value="other">Other</option>
+                  </select>
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <label for="message">Message</label>
+                  <textarea name="message" id="message" placeholder="Please describe your inquiry or concern in detail..."></textarea>
+                </fieldset>
+              </div>
+              <div class="col-lg-12">
+                <fieldset>
+                  <button type="submit" id="form-submit" class="orange-button">Send Message</button>
+                </fieldset>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="col-lg-12">
+          <div id="map">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.9663095343008!2d-74.00425878459418!3d40.74844097932681!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c259a9b3117469%3A0xd134e199a405a163!2sEmpire%20State%20Building!5e0!3m2!1sen!2sus!4v1642869952544!5m2!1sen!2sus" width="100%" height="500px" frameborder="0" style="border:0; border-radius: 10px; box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.15);" allowfullscreen=""></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}

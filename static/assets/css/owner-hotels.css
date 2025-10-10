@@ -1,0 +1,117 @@
+.owner-dashboard .od-content .item {
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    padding: 20px;
+}
+
+.owner-dashboard .od-content .item a {
+    color: #1e1e1e;
+    text-decoration: none;
+}
+
+.owner-dashboard .od-content .item a:hover {
+    color: #f35525;
+}
+
+.owner-dashboard .od-content .item img {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.owner-dashboard .od-content .item .category {
+    display: inline-block;
+    background: #fbd9cf;
+    color: #1e1e1e;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+}
+
+.owner-dashboard .od-content .item h6 {
+    font-weight: 600;
+    color: #f35525;
+    margin-bottom: 6px;
+}
+
+.owner-dashboard .od-content .item h4 {
+    font-size: 20px;
+    margin-bottom: 12px;
+}
+
+.owner-dashboard .od-content .item ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px 0;
+}
+
+.owner-dashboard .od-content .item ul li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #eee;
+    padding: 6px 0;
+    font-size: 14px;
+}
+
+.owner-dashboard .od-content .item .main-button a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    line-height: normal;
+    padding: 0 18px;
+    color: #fff;
+}
+
+/* Reset default button look and match theme main-button anchor */
+.owner-dashboard .od-content .main-button button,
+.owner-dashboard .od-content .main-button input[type="button"],
+.owner-dashboard .od-content .main-button input[type="submit"],
+.owner-dashboard .od-content .main-button input[type="reset"] {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.owner-dashboard .od-content .main-button button {
+    background-color: #f35525;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 18px;
+    border-radius: 22px;
+}
+
+.owner-dashboard .od-content .main-button button:hover {
+    background-color: #1e1e1e;
+}
+
+.owner-dashboard .od-card {
+    border-radius: 15px;
+    background: #fff;
+    padding: 0 24px;
+    box-shadow: none;
+}
+
+.owner-dashboard .mb-30 {
+    margin-bottom: 30px;
+}
+
+/* Mobile tweaks */
+@media (max-width: 767.98px) {
+    .owner-dashboard .od-content {
+        margin-top: 16px;
+    }
+}

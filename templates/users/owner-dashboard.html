@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Owner Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+{% endblock %}
+{% block content %}
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Owner Dashboard</span>
+          <h3>Owner Dashboard</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section owner-dashboard">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <aside class="od-sidebar">
+            <div class="od-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div>
+                <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="od-nav">
+              <li class="active"><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+              <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+              <li><a href="{% url 'hotels:owner_hotels' %}">View my Hotels</a></li>
+              <li><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></li>
+              <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
+              <li><a href="{% url 'owner_bookings_management' %}">Bookings Management</a></li>
+              {% if user.is_superuser or user.is_staff %}
+              <li><a href="/admin/">Backend</a></li>
+              {% endif %}
+            </ul>
+          </aside>
+        </div>
+        <div class="col-lg-9">
+          <section class="od-content">
+            <div class="section-heading">
+              <h6>| Overview</h6>
+              <h2>Your Properties at a Glance</h2>
+            </div>
+            <div class="od-stats">
+              <div class="od-stat">
+                <h3>4</h3>
+                <p>Total Hotels</p>
+              </div>
+              <div class="od-stat">
+                <h3>36</h3>
+                <p>Total Rooms</p>
+              </div>
+              <div class="od-stat">
+                <h3>12</h3>
+                <p>Active Bookings</p>
+              </div>
+              <div class="od-stat">
+                <h3>92%</h3>
+                <p>Avg. Occupancy</p>
+              </div>
+            </div>
+
+            <div class="od-actions">
+              <div class="main-button"><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></div>
+              <div class="main-button"><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 30px;">
+              <h6>| Quick View</h6>
+              <h2>Latest Hotels</h2>
+            </div>
+            <div class="od-card">
+              <div class="row">
+                <div class="col-lg-6 col-md-6 mb-30">
+                  <div class="item">
+                    <a href="#"><img src="{% static 'images/property-01.jpg' %}" alt="Grand Miami Hotel"></a>
+                    <span class="category">Hotel</span>
+                    <h6>Downtown Miami, FL</h6>
+                    <h4><a href="#">Grand Miami Hotel</a></h4>
+                    <ul>
+                      <li>Amenities: <span>WiFi, Parking, Pool, Spa</span></li>
+                      <li>Rating: <span>4.8</span></li>
+                    </ul>
+                    <div class="main-button">
+                      <a href="#">View</a>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6 col-md-6 mb-30">
+                  <div class="item">
+                    <a href="#"><img src="{% static 'images/property-02.jpg' %}" alt="Ocean View Resort"></a>
+                    <span class="category">Hotel</span>
+                    <h6>South Beach, FL</h6>
+                    <h4><a href="#">Ocean View Resort</a></h4>
+                    <ul>
+                      <li>Amenities: <span>WiFi, Pool, Spa</span></li>
+                      <li>Rating: <span>4.5</span></li>
+                    </ul>
+                    <div class="main-button">
+                      <a href="#">View</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-heading" style="margin-top: 30px;">
+              <h6>| Bookings</h6>
+              <h2>Recent Bookings</h2>
+              <p style="color: #666;">Latest reservations across your hotels.</p>
+            </div>
+            <div class="od-card">
+              {% if recent_bookings %}
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Hotel</th>
+                      <th>Room</th>
+                      <th>Guest</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for b in recent_bookings %}
+                    <tr>
+                      <td>#{{ b.id }}</td>
+                      <td>{{ b.hotel.hotel_name }}</td>
+                      <td>{{ b.room.room_number }}</td>
+                      <td>{% if b.user %}{{ b.user.username }}{% else %}-{% endif %}</td>
+                      <td>{{ b.check_in }}</td>
+                      <td>{{ b.check_out }}</td>
+                      <td>{{ b.status }}</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              {% else %}
+                <p class="text-muted mb-0">No recent bookings.</p>
+              {% endif %}
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+{% block extra_js %}{% endblock %}
+{% endblock %}
+
+

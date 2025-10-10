@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}All Bookings{% endblock %}
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">All Bookings</h2>
+  {% if bookings %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Hotel</th>
+          <th>Room</th>
+          <th>Guest</th>
+          <th>Check-in</th>
+          <th>Check-out</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>#{{ b.id }}</td>
+          <td>{{ b.hotel.hotel_name }}</td>
+          <td>{{ b.room.room_number }}</td>
+          <td>{% if b.user %}{{ b.user.username }}{% else %}-{% endif %}</td>
+          <td>{{ b.check_in }}</td>
+          <td>{{ b.check_out }}</td>
+          <td>${{ b.total_price }}</td>
+          <td>{{ b.status }}</td>
+          <td>
+            {% if b.status != 'cancelled' %}
+            <form method="post" action="{% url 'cancel_booking' b.id %}" style="display:inline;">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-outline-danger">Cancel</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-muted">No bookings found.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

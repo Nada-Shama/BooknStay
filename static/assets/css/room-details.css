@@ -1,0 +1,173 @@
+.room-details {
+    font-size: .95rem
+}
+
+.room-details h3 {
+    font-size: 28px
+}
+
+.room-details h4 {
+    font-size: 18px
+}
+
+.room-details .info-table li span {
+    font-weight: 400
+}
+
+.room-details .left-image img {
+    width: 100%;
+    border-radius: 10px
+}
+
+.room-details .section-heading {
+    margin-bottom: 28px
+}
+
+/* Reduce global section spacing on this page only */
+.section.room-details {
+    /* margin: auto 0px;*/
+
+}
+
+.room-details .thumb-gallery {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px
+}
+
+.room-details .thumb-gallery img {
+    width: 23%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform .2s ease
+}
+
+.room-details .thumb-gallery img:hover {
+    transform: scale(1.03)
+}
+
+.room-details .info-table ul {
+    display: block
+}
+
+.room-details .info-table li span {
+    font-size: .99rem !important;
+    line-height: 1.2 !important;
+}
+
+.room-details .info-table li span:last-child {
+    font-size: .7rem !important;
+    text-align: right;
+    color: #777;
+}
+
+.room-details .price-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    margin-top: 16px
+}
+
+.room-details .price-card .price h4 {
+    margin: 0
+}
+
+.room-details .price-card .tax-incl {
+    margin: 0;
+    color: #777;
+    font-size: .9rem
+}
+
+.room-details .amenities-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 8px
+}
+
+.room-details .amenities {
+    margin-top: 16px
+}
+
+.room-details .hotel-summary {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 16px
+}
+
+.room-details .availability-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px
+}
+
+.room-details .availability-grid .day {
+    border: 1px solid #eee;
+    border-radius: 10px;
+    padding: 10px
+}
+
+.room-details .availability-grid .day-header {
+    font-weight: 600;
+    margin-bottom: 8px
+}
+
+.room-details .availability-grid .slots {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px
+}
+
+.room-details .slot {
+    padding: 6px 10px;
+    border-radius: 20px;
+    font-size: .85rem
+}
+
+.room-details .slot.available {
+    background: #e8fff1;
+    color: #138f5b
+}
+
+.room-details .slot.limited {
+    background: #fff4e5;
+    color: #a56700
+}
+
+.room-details .slot.soldout {
+    background: #ffe8e8;
+    color: #b60000;
+    text-decoration: line-through
+}
+
+.room-details .mt-40 {
+    margin-top: 40px
+}
+
+.room-details .policies {
+    margin-bottom: 24px
+}
+
+.room-details h4 {
+    margin-bottom: 10px
+}
+
+/* Book this room button hover: dark background, white text */
+.room-details .icon-button a.btn.btn-primary:hover {
+    background-color: #1e1e1e !important;
+    border-color: #1e1e1e !important;
+    color: #fff !important;
+}
+
+@media (max-width: 991px) {
+    .room-details .availability-grid {
+        grid-template-columns: repeat(2, 1fr)
+    }
+
+    .room-details .amenities-list {
+        grid-template-columns: 1fr
+    }
+}

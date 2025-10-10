@@ -1,0 +1,290 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Owner - {{ hotel.hotel_name }} Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb">
+          <a href="{% url 'home' %}">Home</a> / Owner / Hotel Details
+        </span>
+        <h3>{{ hotel.hotel_name }} - Edit Details</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section owner-dashboard">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-3">
+        <aside class="od-sidebar">
+          <div class="od-user">
+            <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+            <div>
+              <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+              <p>{{ user.email }}</p>
+            </div>
+          </div>
+          <ul class="od-nav">
+            <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+            <li class="active"><a href="{% url 'hotels:owner_hotels' %}">View my Hotels</a></li>
+            <li><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></li>
+            <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
+            <li><a href="{% url 'owner_bookings_management' %}">Bookings Management</a></li>
+          </ul>
+        </aside>
+      </div>
+
+      <div class="col-lg-9">
+        <section class="od-content">
+          {% if messages %}
+            <div class="row">
+              <div class="col-12">
+                {% for message in messages %}
+                  <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                    {{ message }}
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+
+         <form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <!-- Hotel Image Above Form -->
+      <!-- Hotel Image Above Form -->
+<div class="od-card text-center mb-4">
+  {% if hotel.photo %}
+    <img id="hotel-photo-preview"
+         src="{{ hotel.photo.url }}?{{ hotel.updated_at|date:'U' }}"
+         alt="{{ hotel.hotel_name }}"
+         class="img-fluid rounded"
+         style="max-height:250px; width:auto;">
+  {% else %}
+    <img id="hotel-photo-preview"
+         src="{% static 'images/default-hotel.jpg' %}"
+         alt="Default Hotel Image"
+         class="img-fluid rounded"
+         style="max-height:250px; width:auto;">
+  {% endif %}
+
+  <div class="w-100 text-center mt-2">
+    <input type="file"
+           id="photo-input"
+           name="photo"
+           accept="image/*"
+           style="display:none;"
+           onchange="previewPhoto(event)">
+    <button type="button"
+            class="btn btn-sm mt-2 mb-3"
+            style="background-color:black;"
+            onclick="document.getElementById('photo-input').click();">
+      Change Photo
+    </button>
+  </div>
+</div>
+
+
+
+
+  <!-- Form Fields -->
+  <div class="od-card">
+    <div class="row">
+      <div class="col-12">
+        <div class="row">
+          <div class="col-sm-6 mb-30">
+            <label for="hotel_name">Hotel Name</label>
+            <input type="text" id="hotel_name" name="hotel_name" class="form-control" value="{{ hotel.hotel_name }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="property_type">Property Type</label>
+            <input type="text" id="property_type" name="property_type" class="form-control" value="{{ hotel.property_type }}">
+          </div>
+          <div class="col-sm-12 mb-30">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="4">{{ hotel.description }}</textarea>
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="address">Address</label>
+            <input type="text" id="address" name="address" class="form-control" value="{{ hotel.address }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" class="form-control" value="{{ hotel.city }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="state">State</label>
+            <input type="text" id="state" name="state" class="form-control" value="{{ hotel.state }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" class="form-control" value="{{ hotel.country }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="zipcode">Zipcode</label>
+            <input type="text" id="zipcode" name="zipcode" class="form-control" value="{{ hotel.zipcode }}">
+          </div>
+          <div class="col-sm-6 mb-30">
+            <label for="star_rating">Star Rating</label>
+            <input type="number" id="star_rating" name="star_rating" class="form-control" value="{{ hotel.star_rating }}">
+          </div>
+          <div class="col-sm-12 mb-30">
+            <label for="amenities">Amenities (comma separated)</label>
+            <input type="text" id="amenities" name="amenities" class="form-control" value="{{ hotel.amenities|join:', ' }}">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Buttons -->
+  <div class="od-card mt-4">
+    <div class="od-actions d-flex justify-content-start gap-2">
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+      <a href="{% url 'hotels:owner_hotels' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </div>
+</form>
+
+
+<!-- Rooms Section -->
+<div class="mt-5">
+  <h4 class="fw-bold mb-4" style="color: #f35525;">Available Rooms</h4>
+  <hr>
+
+  {# DEBUG: show number of rooms (remove after testing) #}
+  <p class="text-muted small">Rooms found: {{ rooms|length }}</p>
+
+  {% if rooms %}
+    <div class="row g-4">
+      {% for room in rooms %}
+        <div class="col-md-6 col-lg-4 d-flex">
+          <div class="card h-100 shadow-sm border-0 rounded-4 overflow-hidden hover-shadow w-100" style="max-width: 320px;">
+
+            {# --- robust image selection --- #}
+            {% with imgs=room.images.all %}
+              {% if imgs|length %}
+                {% with first=imgs.0 %}
+                  {% if first.image %}
+                    <img src="{{ first.image.url }}" class="card-img-top" alt="{{ room.get_type_display }}" style="height: 180px; object-fit: cover;">
+                  {% elif first.photo %}
+                    <img src="{{ first.photo.url }}" class="card-img-top" alt="{{ room.get_type_display }}" style="height: 180px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'assets/images/default-room.jpg' %}" class="card-img-top" alt="Default room" style="height: 180px; object-fit: cover;">
+                  {% endif %}
+                {% endwith %}
+              {% else %}
+                {# fallback to Django's default related_name convention if different #}
+                {% with imgs2=room.roomimage_set.all %}
+                  {% if imgs2|length %}
+                    <img src="{{ imgs2.0.image.url }}" class="card-img-top" alt="{{ room.get_type_display }}" style="height: 180px; object-fit: cover;">
+                  {% else %}
+                    <img src="{% static 'assets/images/default-room.jpg' %}" class="card-img-top" alt="Default room" style="height: 180px; object-fit: cover;">
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
+            {% endwith %}
+            {# --- end image selection --- #}
+
+            <div class="card-body d-flex flex-column p-3">
+              <h5 class="card-title text-dark mb-2 fs-6">{{ room.get_type_display }} - Room {{ room.room_number }}</h5>
+              <div class="d-flex justify-content-between mb-3">
+                <p class="mb-0 small"><strong>Price:</strong> ${{ room.price }}</p>
+                <p class="mb-0 small"><strong>Capacity:</strong> {{ room.capacity }}</p>
+              </div>
+              <div class="mt-auto">
+                <a href="{% url 'hotels:owner_room_detail' room.id %}" class="btn btn-sm w-100 rounded-pill" style="background-color: #f35525; color:white; font-size:0.85rem;">
+                  Edit Room
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <p class="text-muted fs-5">No rooms available for this hotel.</p>
+    </div>
+  {% endif %}
+</div>
+
+          <!-- Reviews Section (Read-Only) -->
+          <div class="mt-5">
+            <h4>Guest Reviews</h4>
+            <hr>
+            {% if reviews %}
+              {% for review in reviews %}
+                <div class="border p-3 mb-3 rounded">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong>{{ review.user.username }}</strong>
+                      <div>
+                        {% for i in "12345" %}
+                          {% if forloop.counter <= review.rating %}
+                            <i class="fa fa-star text-warning"></i>
+                          {% else %}
+                            <i class="fa fa-star text-secondary"></i>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                    </div>
+                  </div>
+                  <p class="mb-1">{{ review.comment }}</p>
+                  <small class="text-muted">{{ review.created_at|date:"M d, Y" }}</small>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p>No reviews yet.</p>
+            {% endif %}
+          </div>
+
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function previewPhoto(event) {
+  const reader = new FileReader();
+  reader.onload = function(){
+    document.getElementById('hotel-photo-preview').src = reader.result;
+  };
+  reader.readAsDataURL(event.target.files[0]);
+
+  const file = event.target.files[0];
+  const formData = new FormData();
+  formData.append("photo", file);
+
+  fetch("{% url 'hotels:owner_hotel_photo_upload' hotel.id %}", {
+    method: "POST",
+    headers: {"X-CSRFToken": "{{ csrf_token }}"},
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.photo_url) {
+      document.getElementById('hotel-photo-preview').src = data.photo_url + "?" + new Date().getTime();
+    }
+  })
+  .catch(error => console.error("Photo upload failed:", error));
+}
+</script>
+
+
+
+
+{% endblock %}

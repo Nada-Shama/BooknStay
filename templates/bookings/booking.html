@@ -1,0 +1,654 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Book & Stay - Hotel Booking{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/booking.css' %}">
+{% endblock %}
+{% block content %}
+
+    <div class="page-heading header-text">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / <a href="{% url 'hotels:hotel_list' %}">Hotels</a> / Booking</span>
+                    <h3>Complete Your Booking</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="booking-container">
+        <div class="booking-header">
+            <h1>Secure Your Stay</h1>
+            <p>Please fill in your details to complete the reservation process.</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="booking-progress-steps">
+            <div class="booking-step active" data-step="1">
+                <div class="booking-step-number">1</div>
+                <div class="booking-step-label">Guest Details</div>
+            </div>
+            <div class="booking-step" data-step="2">
+                <div class="booking-step-number">2</div>
+                <div class="booking-step-label">Payment</div>
+            </div>
+            <div class="booking-step" data-step="3">
+                <div class="booking-step-number">3</div>
+                <div class="booking-step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="booking-content">
+            <!-- Booking Form -->
+            <div class="booking-form">
+                <form id="bookingForm" method="post">
+                    {% csrf_token %}
+                    <!-- Step 1: Guest Information -->
+                    <div class="booking-step-content active" id="step-1">
+                        <div class="form-section">
+                            <h3><i class="fa fa-bed"></i> Booking Details</h3>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="room_id">Room *</label>
+                                    <select id="room_id" name="room_id" required>
+                                        <option value="">Select a room</option>
+                                        {% for room in rooms %}
+                                          <option value="{{ room.id }}">{{ room.get_type_display }} - {{ room.room_number }} • ${{ room.price }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="num_guests">Guests *</label>
+                                    <input type="number" id="num_guests" name="num_guests" min="1" value="1" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="check_in">Check-in *</label>
+                                    <input type="date" id="check_in" name="check_in" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="check_out">Check-out *</label>
+                                    <input type="date" id="check_out" name="check_out" required>
+                                </div>
+                            </div>
+                        </div>
+                        {% if not user.is_authenticated %}
+                        <div class="form-section">
+                            <h3><i class="fa fa-user"></i> Guest Information</h3>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name *</label>
+                                    <input type="text" id="firstName" name="firstName" value="{{ user_first_name|default:'' }}" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name *</label>
+                                    <input type="text" id="lastName" name="lastName" value="{{ user_last_name|default:'' }}" required>
+                                </div>                                
+                            </div>                
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address *</label>
+                                <input type="email" id="email" name="email" value="{{ user_email|default:'' }}" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="phone">Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" value="{{ user.phone|default:'' }}" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="dob">Date of Birth</label>
+                                    <input type="date" id="dob" name="dob" value="{{ user.date_of_birth|date:'Y-m-d' }}">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nationality">Nationality</label>
+                                    <input type="text" id="nationality" name="nationality" placeholder="ex; Armenian" value="{{ user.nationality|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-section">
+                            <h3><i class="fa fa-concierge-bell"></i> Special Requests</h3>
+                            
+                            <div class="form-group">
+                                <label for="arrivalTime">Estimated Arrival Time</label>
+                                <input type="time" id="arrivalTime" name="arrivalTime">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="dietary">Dietary Requirements</label>
+                                <select id="dietary" name="dietary">
+                                    <option value="">None</option>
+                                    <option value="vegetarian">Vegetarian</option>
+                                    <option value="vegan">Vegan</option>
+                                    <option value="gluten-free">Gluten-free</option>
+                                    <option value="halal">Halal</option>
+                                    <option value="kosher">Kosher</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="specialRequests">Special Requests</label>
+                                <textarea id="specialRequests" name="specialRequests" rows="4" placeholder="Any special requests or notes for your stay..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Payment Information -->
+                    <div class="booking-step-content" id="step-2">
+                        <div class="form-section">
+                            <h3><i class="fa fa-credit-card"></i> Payment Information</h3>
+                            
+                            <div class="payment-methods">
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="stripe" checked>
+                                    <span><i class="fab fa-stripe"></i> Stripe (Recommended)</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="card">
+                                    <span><i class="fa fa-credit-card"></i> Credit/Debit Card</span>
+                                </label>
+                                <label class="payment-option">
+                                    <input type="radio" name="paymentMethod" value="paypal">
+                                    <span><i class="fab fa-paypal"></i> PayPal</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Stripe Payment Section -->
+                            <div class="stripe-payment" id="stripePayment">
+                                <div class="stripe-info">
+                                    <div class="stripe-logo">
+                                        <i class="fab fa-stripe"></i>
+                                        <span>Stripe</span>
+                                    </div>
+                                    <p>Secure payment processing by Stripe. Your payment information is encrypted and secure.</p>
+                                </div>
+                                
+                                <div class="stripe-form">
+                                    <div class="form-group">
+                                        <label for="stripeEmail">Email Address *</label>
+                                        <input type="email" id="stripeEmail" name="stripeEmail" placeholder="your-email@example.com" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardNumber">Card Number *</label>
+                                        <div class="stripe-card-input">
+                                            <input type="text" id="stripeCardNumber" name="stripeCardNumber" placeholder="4242 4242 4242 4242" required>
+                                            <div class="card-icons">
+                                                <i class="fab fa-cc-visa"></i>
+                                                <i class="fab fa-cc-mastercard"></i>
+                                                <i class="fab fa-cc-amex"></i>
+                                                <i class="fab fa-cc-discover"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="stripeExpiry">Expiry Date *</label>
+                                            <input type="text" id="stripeExpiry" name="stripeExpiry" placeholder="12/25" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="stripeCvv">CVV *</label>
+                                            <input type="text" id="stripeCvv" name="stripeCvv" placeholder="123" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="stripeCardholderName">Cardholder Name *</label>
+                                        <input type="text" id="stripeCardholderName" name="stripeCardholderName" placeholder="John Doe" required>
+                                    </div>
+                                    
+                                    <div class="stripe-security">
+                                        <div class="security-badges">
+                                            <span class="security-badge"><i class="fa fa-shield-alt"></i> SSL Encrypted</span>
+                                            <span class="security-badge"><i class="fa fa-lock"></i> PCI Compliant</span>
+                                            <span class="security-badge"><i class="fa fa-check-circle"></i> 3D Secure</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PayPal Section -->
+                            <div class="paypal-payment" id="paypalPayment">
+                                <div class="paypal-info">
+                                    <div class="paypal-logo">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>PayPal</span>
+                                    </div>
+                                    <p>Pay securely with your PayPal account. You'll be redirected to PayPal to complete your payment.</p>
+                                </div>
+                                
+                                <div class="paypal-button">
+                                    <button type="button" class="paypal-btn">
+                                        <i class="fab fa-paypal"></i>
+                                        <span>Pay with PayPal</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Confirmation -->
+                    <div class="booking-step-content" id="step-3">
+                        <div class="booking-confirmation">
+                            <div class="confirmation-header">
+                                <i class="fa fa-check-circle success-icon"></i>
+                                <h3>Booking Confirmed!</h3>
+                                <p id="confMessage">Your hotel reservation has been successfully created.</p>
+                            </div>
+
+                            <div class="confirmation-details">
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-receipt"></i> Booking Reference</h4>
+                                    <div class="booking-reference">
+                                        <span class="reference-number" id="confReference">—</span>
+                                        <button class="copy-btn" onclick="copyReference()">
+                                            <i class="fa fa-copy"></i> Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-envelope"></i> Confirmation Email</h4>
+                                    <p>We've sent a confirmation email to <strong id="confirmationEmail">—</strong></p>
+                                    <p>Please check your inbox and spam folder.</p>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-calendar"></i> Booking Summary</h4>
+                                    <div class="booking-summary-mini">
+                                        <div class="summary-item">
+                                            <span class="label">Hotel:</span>
+                                            <span class="value" id="confHotel">{{ hotel.hotel_name }}</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Check-in:</span>
+                                            <span class="value" id="confCheckIn">—</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Check-out:</span>
+                                            <span class="value" id="confCheckOut">—</span>
+                                        </div>
+                                        <div class="summary-item">
+                                            <span class="label">Guests:</span>
+                                            <span class="value" id="confGuests">—</span>
+                                        </div>
+                                        <div class="summary-item total">
+                                            <span class="label">Total Paid:</span>
+                                            <span class="value" id="confTotal">$0</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="confirmation-section">
+                                    <h4><i class="fa fa-info-circle"></i> Important Information</h4>
+                                    <ul class="info-list">
+                                        <li><i class="fa fa-check"></i> Free cancellation until Dec 10, 2024</li>
+                                        <li><i class="fa fa-check"></i> Check-in time: 3:00 PM - 11:00 PM</li>
+                                        <li><i class="fa fa-check"></i> Check-out time: 11:00 AM</li>
+                                        <li><i class="fa fa-check"></i> Contact hotel directly for special requests</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="terms" name="terms" required>
+                                <span>I agree to the <a href="#" target="_blank">Terms and Conditions</a> and <a href="#" target="_blank">Privacy Policy</a> *</span>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="newsletter" name="newsletter">
+                                <span>Subscribe to our newsletter for special offers and updates</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step Navigation Buttons -->
+                    <div class="booking-step-navigation">
+                        <button type="button" class="btn-secondary" id="prevStep" style="display: none;">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </button>
+                        <button type="button" class="main-button" id="nextStep">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </button>
+                        <button type="button" class="main-button" id="completeBooking" style="display: none;">
+                            <i class="fa fa-check"></i> Complete Booking
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="booking-summary">
+                <h4 class="mb-4">Booking Summary</h4>
+                
+                <div class="hotel-info">
+                    <div class="hotel-image">
+                        <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
+                    </div>
+                    <div class="hotel-details">
+                        <h4>{{ hotel.hotel_name }}</h4>
+                        <p><i class="fa fa-home"></i> Rooms: {{ rooms|length }}</p>
+                    </div>
+                </div>
+
+                <div class="booking-dates">
+                    <div class="date-item">
+                        <span class="date-label">Check-in</span>
+                        <span class="date-value" id="sumCheckIn">—</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Check-out</span>
+                        <span class="date-value" id="sumCheckOut">—</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Nights</span>
+                        <span class="date-value" id="sumNights">0</span>
+                    </div>
+                    <div class="date-item">
+                        <span class="date-label">Guests</span>
+                        <span class="date-value" id="sumGuests">1</span>
+                    </div>
+                </div>
+
+                <div class="price-breakdown">
+                    <div class="price-item">
+                        <span class="price-label">Room Rate</span>
+                        <span class="price-value" id="sumRoomRate">$0 x 0 nights</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="price-label">Taxes & Fees</span>
+                        <span class="price-value" id="sumTaxes">$0</span>
+                    </div>
+                    <div class="price-item total">
+                        <span class="price-label">Total</span>
+                        <span class="price-value" id="sumTotal">$0</span>
+                    </div>
+                </div>
+
+                <div class="security-badges">
+                    <span class="security-badge"><i class="fa fa-lock"></i> Secure Payment</span>
+                    <span class="security-badge"><i class="fa fa-shield-alt"></i> SSL Protected</span>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+        $(document).ready(function() {
+            let currentStep = 1;
+            const totalSteps = 3;
+            
+            // Payment method toggle
+            $('input[name="paymentMethod"]').change(function() {
+                const paymentMethod = $(this).val();
+                
+                // Hide all payment sections
+                $('#stripePayment, #cardDetails, #paypalPayment').hide();
+                
+                // Show selected payment section
+                if (paymentMethod === 'stripe') {
+                    $('#stripePayment').show();
+                } else if (paymentMethod === 'card') {
+                    $('#cardDetails').show();
+                } else if (paymentMethod === 'paypal') {
+                    $('#paypalPayment').show();
+                }
+            });
+
+            // Initialize with Stripe selected
+            $('#stripePayment').show();
+            
+            // Helpers for summary
+            function calcNights(ci, co) {
+                if (!ci || !co) return 0;
+                const d1 = new Date(ci);
+                const d2 = new Date(co);
+                const diff = (d2 - d1) / (1000*60*60*24);
+                return Math.max(0, Math.round(diff));
+            }
+
+            function roomPrice(roomId) {
+                const opt = $('#room_id option[value="'+roomId+'"]').text();
+                const match = opt.match(/• \$(\d+(?:\.\d+)?)/);
+                return match ? parseFloat(match[1]) : 0;
+            }
+
+            function updateSummary() {
+                const ci = $('#check_in').val();
+                const co = $('#check_out').val();
+                const nights = calcNights(ci, co);
+                const guests = parseInt($('#num_guests').val() || '1');
+                const rid = $('#room_id').val();
+                const price = roomPrice(rid);
+                const subtotal = price * nights;
+                const taxes = Math.round(subtotal * 0.15 * 100) / 100; // 15% demo
+                const total = Math.round((subtotal + taxes) * 100) / 100;
+
+                $('#sumCheckIn').text(ci || '—');
+                $('#sumCheckOut').text(co || '—');
+                $('#sumNights').text(nights);
+                $('#sumGuests').text(guests);
+                $('#sumRoomRate').text(`$${price} x ${nights} nights`);
+                $('#sumTaxes').text(`$${taxes}`);
+                $('#sumTotal').text(`$${total}`);
+            }
+
+            $('#room_id, #check_in, #check_out, #num_guests').on('change input', updateSummary);
+            updateSummary();
+
+            // Next step button
+            $('#nextStep').click(function() {
+                if (validateCurrentStep()) {
+                    if (currentStep < totalSteps) {
+                        currentStep++;
+                        showStep(currentStep);
+                    }
+                }
+            });
+            
+            // Previous step button
+            $('#prevStep').click(function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+            
+            // Complete booking button
+            $('#completeBooking').click(function() {
+                if (validateCurrentStep()) {
+                    completeBooking();
+                }
+            });
+            
+            function showStep(stepNumber) {
+                // Hide all step content
+                $('.booking-step-content').removeClass('active');
+                
+                // Show current step content
+                $('#step-' + stepNumber).addClass('active');
+                
+                // Update progress steps
+                $('.booking-step').removeClass('active completed');
+                $('.booking-step[data-step="' + stepNumber + '"]').addClass('active');
+                
+                // Mark previous steps as completed
+                for (let i = 1; i < stepNumber; i++) {
+                    $('.booking-step[data-step="' + i + '"]').addClass('completed');
+                }
+                
+                // Update navigation buttons
+                updateNavigationButtons();
+                
+                // Scroll to top
+                $('html, body').animate({scrollTop: 0}, 500);
+            }
+            
+            function updateNavigationButtons() {
+                if (currentStep === 1) {
+                    $('#prevStep').hide();
+                    $('#nextStep').show();
+                    $('#completeBooking').hide();
+                } else if (currentStep === totalSteps) {
+                    $('#prevStep').show();
+                    $('#nextStep').hide();
+                    $('#completeBooking').show();
+                } else {
+                    $('#prevStep').show();
+                    $('#nextStep').show();
+                    $('#completeBooking').hide();
+                }
+            }
+            
+            function validateCurrentStep() {
+                let isValid = true;
+                const currentStepContent = $('.booking-step-content.active');
+                
+                // Clear previous errors
+                currentStepContent.find('.error').removeClass('error');
+                
+                // Validate required fields in current step
+                currentStepContent.find('input[required], select[required]').each(function() {
+                    if (!$(this).val()) {
+                        $(this).addClass('error');
+                        isValid = false;
+                    }
+                });
+                
+                // Special validation for payment step
+                if (currentStep === 2) {
+                    const paymentMethod = $('input[name="paymentMethod"]:checked').val();
+                    if (paymentMethod === 'card') {
+                        const cardNumber = $('#stripeCardNumber').val();
+                        const expiryDate = $('#stripeExpiry').val();
+                        const cvv = $('#stripeCvv').val();
+                        const cardholderName = $('#stripeCardholderName').val();
+                        
+                        if (!cardNumber || !expiryDate || !cvv || !cardholderName) {
+                            isValid = false;
+                            $('#stripePayment input').addClass('error');
+                        }
+                    }
+                }
+                
+                return isValid;
+            }
+            
+            function completeBooking() {
+                // Show loading state
+                $('#completeBooking').html('<i class="fa fa-spinner fa-spin"></i> Processing...');
+                $('#completeBooking').prop('disabled', true);
+
+                const postUrl = '/bookings/{{ hotel.id }}/create/';
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                const payload = new FormData();
+                payload.append('room_id', $('#room_id').val());
+                payload.append('check_in', $('#check_in').val());
+                payload.append('check_out', $('#check_out').val());
+                payload.append('num_guests', $('#num_guests').val());
+
+                fetch(postUrl, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': csrfToken },
+                    body: payload
+                })
+                .then(r => r.json().then(data => ({ ok: r.ok, status: r.status, data })))
+                .then(({ ok, status, data }) => {
+                    if (!ok || !data.success) {
+                        const msg = (data && data.error) ? data.error : 'Unable to create booking.';
+                        alert(msg);
+                        throw new Error(msg);
+                    }
+
+                    // Update confirmation email and summary
+                    const userEmail = data.guest_email || $('#email').val() || '{{ user.email|default:"" }}';
+                    $('#confirmationEmail').text(userEmail || '');
+                    // Fill confirmation fields with real response
+                    $('#confReference').text(`#BK-${data.booking_id}`);
+                    $('#confHotel').text(data.hotel_name || $('#confHotel').text());
+                    $('#confCheckIn').text(data.check_in);
+                    $('#confCheckOut').text(data.check_out);
+                    $('#confGuests').text(`${data.num_guests || $('#num_guests').val()} Guests, 1 Room`);
+                    $('#confTotal').text(`$${data.total_price}`);
+
+                    currentStep = 3;
+                    showStep(currentStep);
+                })
+                .catch(() => {})
+                .finally(() => {
+                    $('#completeBooking').html('<i class="fa fa-check"></i> Complete Booking');
+                    $('#completeBooking').prop('disabled', false);
+                });
+            }
+            
+            // Stripe card number formatting
+            $('#stripeCardNumber').on('input', function() {
+                var value = $(this).val().replace(/\s/g, '');
+                var formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+                $(this).val(formattedValue);
+            });
+            
+            // Stripe expiry date formatting
+            $('#stripeExpiry').on('input', function() {
+                var value = $(this).val().replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                $(this).val(value);
+            });
+            
+            // Stripe CVV formatting
+            $('#stripeCvv').on('input', function() {
+                $(this).val($(this).val().replace(/\D/g, ''));
+            });
+
+            // PayPal button click
+            $('.paypal-btn').click(function() {
+                // Simulate PayPal redirect
+                alert('Redirecting to PayPal... (This is a demo)');
+            });
+        });
+        
+        // Preselect room from querystring if present
+        (function() {
+            const params = new URLSearchParams(window.location.search);
+            const rid = params.get('room_id');
+            if (rid) {
+                const sel = document.getElementById('room_id');
+                if (sel) sel.value = rid;
+            }
+        })();
+
+        // Copy reference number
+        function copyReference() {
+            const referenceNumber = document.querySelector('.reference-number').textContent;
+            navigator.clipboard.writeText(referenceNumber).then(function() {
+                // Show copied message
+                const copyBtn = document.querySelector('.copy-btn');
+                const originalText = copyBtn.innerHTML;
+                copyBtn.innerHTML = '<i class="fa fa-check"></i> Copied!';
+                setTimeout(function() {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+    </script>
+{% endblock %}

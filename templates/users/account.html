@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Account - Book & Stay{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/account.css' %}">
+{% endblock %}
+{% block content %}
+
+  <div class="page-heading header-text">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / My Account</span>
+          <h3>My Account</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section account-section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="account-sidebar">
+            <div class="account-user">
+              <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+              <div class="details">
+                <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                <p>{{ user.email }}</p>
+              </div>
+            </div>
+            <ul class="account-nav js-account-nav">
+              <li class="active"><a href="{% url 'account' %}" data-target="account">My Account</a></li>
+              <li><a href="{% url 'reservations' %}" data-target="reservations">Reservations</a></li>
+              <li><a href="{% url 'list_favorites' %}" data-target="favorites">Favorites</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-9">
+          <div class="account-content">
+            <div class="section-heading">
+              <h6>| My Bookings</h6>
+              <h2>Recent Reservations</h2>
+            </div>
+            <div class="booking-cards">
+              {% if bookings %}
+                {% for b in bookings %}
+                <div class="booking-card">
+                  <div class="image">
+                    <img src="{% if b.hotel.photo %}{{ b.hotel.photo.url }}{% else %}{% static 'images/property-01.jpg' %}{% endif %}" alt="Hotel image">
+                  </div>
+                  <div class="info">
+                    <h4>{{ b.hotel.hotel_name }}</h4>
+                    <p><i class="fa fa-home"></i> Room {{ b.room.room_number }} • {{ b.room.get_type_display }}</p>
+                    <ul>
+                      <li><strong>Check-in:</strong> {{ b.check_in }}</li>
+                      <li><strong>Check-out:</strong> {{ b.check_out }}</li>
+                      <li><strong>Guests:</strong> {{ b.num_guests }}</li>
+                      <li><strong>Total:</strong> ${{ b.total_price }}</li>
+                    </ul>
+                    <div class="d-flex align-items-center" style="margin:8px 0 6px 0;">
+                      {% if b.status == 'cancelled' %}
+                        <span class="badge bg-danger">Cancelled</span>
+                      {% elif b.status == 'confirmed' %}
+                        <span class="badge bg-success">Confirmed</span>
+                      {% elif b.status == 'under_review' %}
+                        <span class="badge bg-warning text-dark">Under Review</span>
+                      {% else %}
+                        <span class="badge bg-secondary">{{ b.status|title }}</span>
+                      {% endif %}
+                    </div>
+                    <div class="actions d-flex align-items-center gap-2 flex-wrap">
+                      <button class="btn btn-sm btn-outline-danger js-cancel" data-id="{{ b.id }}">Cancel</button>
+                      <button class="btn btn-sm btn-outline-secondary js-edit" data-id="{{ b.id }}" data-check-in="{{ b.check_in|date:'Y-m-d' }}" data-check-out="{{ b.check_out|date:'Y-m-d' }}" data-guests="{{ b.num_guests }}">Edit</button>
+                    </div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <p class="text-muted">You have no bookings yet.</p>
+              {% endif %}
+            </div>
+
+            {% if messages %}
+            <div class="mb-3">
+              {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">{{ message }}</div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="form-card" style="margin-top: 30px;">
+              <div class="section-heading">
+                <h6>| Profile</h6>
+                <h2>Account Information</h2>
+              </div>
+              {% if profile_form %}
+              <form method="post" id="profileForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="profile" />
+                <div class="row">
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Username</label>
+                      {{ profile_form.username }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Email</label>
+                      {{ profile_form.email }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>First name</label>
+                      {{ profile_form.first_name }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Last name</label>
+                      {{ profile_form.last_name }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Phone</label>
+                      {{ profile_form.phone }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-6">
+                    <fieldset>
+                      <label>Nationality</label>
+                      {{ profile_form.nationality }}
+                    </fieldset>
+                  </div>
+                  <div class="col-lg-12">
+                    <div id="profileMsg" class="mt-2"></div>
+                    <button type="submit" class="orange-button">Save Profile</button>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+            </div>
+
+            <div class="form-card" style="margin-top: 20px;">
+              <div class="section-heading">
+                <h6>| Security</h6>
+                <h2>{% if not user.has_usable_password %}Set Your Password{% else %}Change Password{% endif %}</h2>
+              </div>
+              {% if pwd_form %}
+              <form method="post" id="passwordForm">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="password" />
+                <input type="text" name="username" value="{{ user.username }}" autocomplete="username" aria-hidden="true" tabindex="-1" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" />
+                <div class="row">
+                  {% for field in pwd_form %}
+                    <div class="col-lg-6">
+                      <fieldset>
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.name == 'old_password' or field.name == 'new_password1' or field.name == 'new_password2' %}
+                        <div class="password-hints text-muted small" data-for="{{ field.name }}"></div>
+                        {% endif %}
+                        
+                        {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                      </fieldset>
+                    </div>
+                  {% endfor %}
+                  <div class="col-lg-12">
+                    <button type="submit" class="orange-button">Save Password</button>
+                  </div>
+                </div>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="custom-modal" style="display:none;">
+    <div class="custom-modal__dialog">
+      <div class="custom-modal__content">
+        <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
+        <div class="custom-modal__body">
+          <div class="row g-2">
+            <div class="col">
+              <label class="form-label">Check-in</label>
+              <input type="date" id="editCheckIn" class="form-control">
+            </div>
+            <div class="col">
+              <label class="form-label">Check-out</label>
+              <input type="date" id="editCheckOut" class="form-control">
+            </div>
+          </div>
+          <div class="mt-2">
+            <label class="form-label">Guests</label>
+            <input type="number" id="editGuests" class="form-control" min="1" value="1">
+          </div>
+          <div id="editMsg" class="mt-2"></div>
+        </div>
+        <div class="custom-modal__footer">
+          <button class="btn btn-outline js-close">Close</button>
+          <button class="orange-button js-save">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+{% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+
+  /** Utility: Get CSRF token from cookies */
+  function getCsrf(){
+    const name='csrftoken=';
+    const cookies=document.cookie?document.cookie.split(';'):[];
+    for(let i=0;i<cookies.length;i++){
+      let c=cookies[i].trim();
+      if(c.startsWith(name)) return c.substring(name.length);
+    }
+    return '';
+  }
+
+  /** Utility: Debounce */
+  function debounce(fn, ms){ let t; return function(){ clearTimeout(t); const args=arguments; t=setTimeout(()=>fn.apply(this,args), ms);} }
+
+  /** -----------------------------
+   *  AJAX Sidebar Navigation
+   * ----------------------------- */
+  const nav = document.querySelector('.js-account-nav');
+  if(nav){
+    nav.addEventListener('click', function(e){
+      const a = e.target.closest('a');
+      if(!a || !a.dataset.target) return;
+      e.preventDefault();
+      fetch(a.getAttribute('href'), { headers: { 'X-Requested-With':'XMLHttpRequest' } })
+        .then(r=>r.text()).then(html=>{
+          const temp = document.createElement('div');
+          temp.innerHTML = html;
+          const newContent = temp.querySelector('.account-content');
+          const cur = document.querySelector('.account-content');
+          if(newContent && cur){ cur.replaceWith(newContent); }
+          nav.querySelectorAll('li').forEach(li=>li.classList.remove('active'));
+          a.parentElement.classList.add('active');
+        })
+        .catch(()=>{ console.error('AJAX load failed'); });
+    });
+  }
+
+  /** -----------------------------
+   *  Edit / Cancel Event Delegation
+   * ----------------------------- */
+  const modal = document.getElementById('editModal');
+  let currentId = null;
+  const editMsg = modal ? document.getElementById('editMsg') : null;
+
+  function openModal(){ if(modal) modal.style.display = 'flex'; }
+  function closeModal(){ if(modal) modal.style.display = 'none'; if(editMsg) editMsg.innerHTML=''; }
+
+  document.addEventListener('click', function(e){
+    const cancelBtn = e.target.closest('.js-cancel');
+    const editBtn = e.target.closest('.js-edit');
+    const closeBtn = e.target.closest('.js-close');
+    const saveBtn = e.target.closest('.js-save');
+
+    /** Cancel booking */
+    if(cancelBtn){
+      const id = cancelBtn.dataset.id;
+      if(!confirm('Are you sure you want to cancel this booking?')) return;
+      fetch(`/bookings/cancel/${id}/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': getCsrf()},
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          // Re-trigger the Reservations tab load
+          const activeLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+          if (activeLink) activeLink.click();
+        }
+        else{ alert(d.error||'Failed'); }
+      })
+      .catch(()=> alert('Network error. Please try again.'));
+    }
+
+        /** Edit booking - Re-query modal elements after AJAX reload  */
+    if(editBtn){
+      currentId = editBtn.dataset.id;
+      const checkIn = document.getElementById('editCheckIn');
+      const checkOut = document.getElementById('editCheckOut');
+      const guests = document.getElementById('editGuests');
+      if (!checkIn || !checkOut || !guests) {
+        console.warn('Edit modal not found in DOM');
+        return;
+      }
+      checkIn.value = editBtn.dataset.checkIn || '';
+      checkOut.value = editBtn.dataset.checkOut || '';
+      guests.value = editBtn.dataset.guests || '1';
+      openModal();
+    }
+
+    /** Close modal */
+    if (closeBtn) {
+      closeModal(); // close modal
+      const resLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+      if (resLink) resLink.click(); // re-trigger AJAX Reservations tab
+    }
+
+    /** Save booking changes */
+    if(saveBtn){
+      const payload = new FormData();
+      payload.append('check_in', document.getElementById('editCheckIn').value);
+      payload.append('check_out', document.getElementById('editCheckOut').value);
+      payload.append('num_guests', document.getElementById('editGuests').value);
+
+      fetch(`/bookings/modify/${currentId}/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': getCsrf()},
+        body: payload,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          if(editMsg){ editMsg.innerHTML = '<div class="alert alert-success">Booking updated.</div>'; }
+            setTimeout(() => {
+              closeModal();
+              const resLink = document.querySelector('.js-account-nav a[data-target="reservations"]');
+              if (resLink) resLink.click(); // reload reservations via AJAX
+            }, 800);
+        } else if(editMsg){
+          editMsg.innerHTML = '<div class="alert alert-danger">'+(d.error||'Failed')+'</div>';
+        }
+      })
+      .catch(()=>{ if(editMsg){ editMsg.innerHTML='<div class="alert alert-danger">Network error.</div>'; }});
+    }
+  });
+
+  /** -----------------------------
+   *  Password Live Validation (AJAX)
+   * ----------------------------- */
+  const pwdInputs = document.querySelectorAll('#passwordForm input[type="password"]');
+  function renderHints(resp){
+    const n1 = document.querySelector('.password-hints[data-for="new_password1"]');
+    const n2 = document.querySelector('.password-hints[data-for="new_password2"]');
+    const n0 = document.querySelector('.password-hints[data-for="old_password"]');
+    if(n1 && resp.new_password1){
+      n1.innerHTML = resp.new_password1.valid
+        ? '<span class="text-success">Strong password</span>'
+        : '<ul style="margin:6px 0 0 18px;">'+(resp.new_password1.errors||[]).map(m=>'<li>'+m+'</li>').join('')+'</ul>';
+    }
+    if(n2 && resp.new_password2){
+      n2.innerHTML = resp.new_password2.valid
+        ? '<span class="text-success">Matches</span>'
+        : '<span class="text-danger">'+((resp.new_password2.errors||[])[0]||'')+'</span>';
+    }
+    if(n0 && resp.current_password){
+      n0.innerHTML = resp.current_password.valid===true
+        ? '<span class="text-success">Current password ok</span>'
+        : (resp.current_password.valid===false ? '<span class="text-danger">'+((resp.current_password.errors||[])[0]||'')+'</span>' : '');
+    }
+  }
+
+  if(pwdInputs.length){
+    const validate = debounce(function(){
+      const f = document.getElementById('passwordForm');
+      if(!f) return;
+      const body = 'old_password='+encodeURIComponent((f.querySelector('[name="old_password"]')||{}).value||'')
+        +'&new_password1='+encodeURIComponent(f.querySelector('[name="new_password1"]').value||'')
+        +'&new_password2='+encodeURIComponent(f.querySelector('[name="new_password2"]').value||'');
+      fetch('/users/ajax/validate-password/', {
+        method:'POST',
+        headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
+        body,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json()).then(renderHints).catch(()=>{});
+    }, 3000);
+    pwdInputs.forEach(inp=>{
+      inp.addEventListener('change', validate);
+      inp.addEventListener('blur', validate);
+    });
+  }
+
+  /** -----------------------------
+   *  Profile AJAX Submit
+   * ----------------------------- */
+  (function(){
+    const form = document.getElementById('profileForm');
+    if(!form) return;
+    const msg = document.getElementById('profileMsg');
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const payload = new FormData(form);
+      fetch(window.location.href, {
+        method:'POST',
+        headers:{'X-CSRFToken':getCsrf(),'X-Requested-With':'XMLHttpRequest'},
+        body: payload,
+        credentials:'same-origin'
+      })
+      .then(r=>r.json())
+      .then(d=>{
+        if(d.success){
+          msg.innerHTML = '<div class="alert alert-success">Profile updated successfully.</div>';
+        } else { throw d; }
+      })
+      .catch(err=>{
+        let html = '<div class="alert alert-danger"><ul style="margin:0 0 0 18px;">';
+        if(err && err.errors){ for(const k in err.errors){ html += '<li>'+k+': '+ err.errors[k].join(' ') +'</li>'; } }
+        html += '</ul></div>';
+        msg.innerHTML = html;
+      });
+    });
+  })();
+
+})();
+</script>
+
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}View My Hotels{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Owner / My Hotels</span>
+        <h3>My Hotels</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section owner-dashboard">
+  <div class="container">
+    <div class="row">
+
+      <!-- Sidebar -->
+      <div class="col-lg-3">
+        <aside class="od-sidebar">
+          <div class="od-user">
+            <div class="avatar">{{ user.first_name|default:user.username|slice:":1" }}</div>
+            <div>
+              <h5>{{ user.first_name|default:user.username }} {{ user.last_name }}</h5>
+              <p>{{ user.email }}</p>
+            </div>
+          </div>
+          <ul class="od-nav">
+            <li><a href="{% url 'owner_dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'owner_profile' %}">Profile</a></li>
+            <li class="active"><a href="{% url 'hotels:owner_hotels' %}">View My Hotels</a></li>
+            <li><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></li>
+            <li><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></li>
+            <li><a href="{% url 'owner_bookings_management' %}">Bookings Management</a></li>
+            {% if user.is_superuser or user.is_staff %}
+            <li><a href="/admin/">Backend</a></li>
+            {% endif %}
+          </ul>
+        </aside>
+      </div>
+
+      <!-- Hotels Section -->
+      <div class="col-lg-9">
+        <section class="od-content">
+          <div class="section-heading">
+            <h6>| My Properties</h6>
+            <h2>Hotels You Manage</h2>
+          </div>
+
+          <div class="od-card">
+            {% if hotels %}
+            <div class="row">
+              {% for hotel in hotels %}
+              <div class="col-lg-6 col-md-6 mb-30">
+                <div class="item">
+                  <a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">
+                    <div class="image-wrapper" style='height:200px'>
+                      {% if hotel.photo %}
+                        <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
+                      {% else %}
+                        <img src="{% static 'images/default-hotel.jpg' %}" alt="Hotel Image">
+                      {% endif %}
+                    </div>
+
+                  </a>
+
+                  <span class="category">{{ hotel.property_type|default:"Hotel" }}</span>
+
+                  <!-- Star Rating -->
+                  <div class="stars" style="margin: 8px 0;">
+                    {% if hotel.star_rating %}
+                      {% for i in "12345"|make_list %}
+                        {% if forloop.counter <= hotel.star_rating %}
+                          <i class="fa fa-star text-warning"></i>
+                        {% else %}
+                          <i class="fa fa-star-o"></i>
+                        {% endif %}
+                      {% endfor %}
+                    {% else %}
+                      <span>No Rating</span>
+                    {% endif %}
+                  </div>
+
+                  <!-- Hotel Details -->
+                  <h4><a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">{{ hotel.hotel_name }}</a></h4>
+
+                  {% if hotel.address %}
+                    <p><i class="fa fa-map-marker"></i> {{ hotel.address }}</p>
+                  {% elif hotel.city %}
+                    <p><i class="fa fa-map-marker"></i> {{ hotel.city }}</p>
+                  {% else %}
+                    <p><i class="fa fa-map-marker"></i> Location not provided</p>
+                  {% endif %}
+
+                  <!-- Amenities -->
+                  <ul>
+                    <li><strong>Type:</strong> {{ hotel.property_type|default:"-" }}</li>
+                    {% if hotel.amenities %}
+                      <li><strong>Amenities:</strong> {{ hotel.amenities }}</li>
+                    {% else %}
+                      <li><strong>Amenities:</strong> None listed</li>
+                    {% endif %}
+                  </ul>
+
+                  <div class="main-button">
+                    <a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">View Details</a>
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">No hotels yet. Use "Add New Hotel" to create your first property.</div>
+            {% endif %}
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="od-card" style="margin-top: 24px;">
+            <div class="section-heading" style="margin-bottom: 16px;">
+              <h6>| Actions</h6>
+              <h2>Quick Actions</h2>
+            </div>
+            <div class="od-actions">
+              <div class="main-button"><a href="{% url 'hotels:owner_hotel_new' %}">Add New Hotel</a></div>
+              <div class="main-button"><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
