@@ -4,10 +4,24 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
+<style>
+.delete-btn {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: 0.3s ease;
+  width: 100%;
+}
+.delete-btn:hover {
+  background-color: #bb2d3b;
+}
+</style>
 {% endblock %}
 
 {% block content %}
-
 <div class="page-heading header-text">
   <div class="container">
     <div class="row">
@@ -59,22 +73,20 @@
             {% if hotels %}
             <div class="row">
               {% for hotel in hotels %}
-              <div class="col-lg-6 col-md-6 mb-30">
+              <div class="col-lg-6 col-md-6 mb-30" id="hotel-card-{{ hotel.id }}">
                 <div class="item">
                   <a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">
-                    <div class="image-wrapper" style='height:200px'>
+                    <div class="image-wrapper" style="height:200px;">
                       {% if hotel.photo %}
                         <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
                       {% else %}
                         <img src="{% static 'images/default-hotel.jpg' %}" alt="Hotel Image">
                       {% endif %}
                     </div>
-
                   </a>
 
                   <span class="category">{{ hotel.property_type|default:"Hotel" }}</span>
 
-                  <!-- Star Rating -->
                   <div class="stars" style="margin: 8px 0;">
                     {% if hotel.star_rating %}
                       {% for i in "12345"|make_list %}
@@ -89,7 +101,6 @@
                     {% endif %}
                   </div>
 
-                  <!-- Hotel Details -->
                   <h4><a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">{{ hotel.hotel_name }}</a></h4>
 
                   {% if hotel.address %}
@@ -100,19 +111,36 @@
                     <p><i class="fa fa-map-marker"></i> Location not provided</p>
                   {% endif %}
 
-                  <!-- Amenities -->
                   <ul>
                     <li><strong>Type:</strong> {{ hotel.property_type|default:"-" }}</li>
                     {% if hotel.amenities %}
-                      <li><strong>Amenities:</strong> {{ hotel.amenities }}</li>
+                     <li><strong>Amenities:</strong> {{ hotel.amenities|join:", " }}</li>
+
                     {% else %}
                       <li><strong>Amenities:</strong> None listed</li>
                     {% endif %}
                   </ul>
+<div style="display: flex; gap: 100px; align-items: center;">
+  <a href="{% url 'hotels:owner_hotel_detail' hotel.id %}"
+     style="background-color: #000; color: #fff; border: none; border-radius: 6px; 
+            width: 110px; height: 36px; font-size: 14px; text-decoration: none; 
+            cursor: pointer; transition: 0.3s; display: inline-flex; 
+            align-items: center; justify-content: center; line-height: 1;">
+    Edit Hotel
+  </a>
 
-                  <div class="main-button">
-                    <a href="{% url 'hotels:owner_hotel_detail' hotel.id %}">View Details</a>
-                  </div>
+  <button class="delete-btn" data-hotel-id="{{ hotel.id }}"
+     style="background-color: #f35525; color: #fff; border: none; border-radius: 6px; 
+            width: 110px; height: 36px; font-size: 14px; cursor: pointer; transition: 0.3s; 
+            display: inline-flex; align-items: center; justify-content: center; line-height: 1;">
+    Delete
+  </button>
+</div>
+
+
+
+
+
                 </div>
               </div>
               {% endfor %}
@@ -122,9 +150,8 @@
             {% endif %}
           </div>
 
-          <!-- Quick Actions -->
-          <div class="od-card" style="margin-top: 24px;">
-            <div class="section-heading" style="margin-bottom: 16px;">
+          <div class="od-card mt-4">
+            <div class="section-heading mb-3">
               <h6>| Actions</h6>
               <h2>Quick Actions</h2>
             </div>
@@ -133,12 +160,38 @@
               <div class="main-button"><a href="{% url 'hotels:owner_add_room' %}">Add New Room</a></div>
             </div>
           </div>
-
         </section>
       </div>
 
     </div>
   </div>
+
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelectorAll(".delete-btn").forEach(button => {
+    button.addEventListener("click", function() {
+      const hotelId = this.dataset.hotelId;
+      if (confirm("Are you sure you want to delete this hotel?")) {
+        fetch(`/hotels/delete_hotel/${hotelId}/`, {
+          method: "POST",
+          headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+          },
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById(`hotel-card-${hotelId}`).remove();
+          } else {
+            alert("Error deleting hotel.");
+          }
+        })
+        .catch(() => alert("Something went wrong."));
+      }
+    });
+  });
+});
+</script>
 {% endblock %}

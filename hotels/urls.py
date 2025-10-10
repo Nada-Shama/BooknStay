@@ -24,9 +24,11 @@ urlpatterns = [
      
      path('owner/hotel/<int:hotel_id>/photo_upload/', views.owner_hotel_photo_upload, name='owner_hotel_photo_upload'),
      path("delete_room_image/<int:image_id>/", views.delete_room_image, name="delete_room_image"),
+     path('delete_hotel/<int:hotel_id>/', views.delete_hotel, name='delete_hotel'),
+     path('owner/room/<int:room_id>/delete/', views.owner_room_delete, name='owner_room_delete'),
+]
      
 
 
     
-]
 

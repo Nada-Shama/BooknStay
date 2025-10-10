@@ -304,3 +304,29 @@ def delete_room_image(request, image_id):
         return JsonResponse({"success": True})
     return JsonResponse({"success": False})
 
+
+@login_required
+def delete_hotel(request, hotel_id):
+    if request.method == "POST":
+        try:
+            hotel = get_object_or_404(Hotel, id=hotel_id, owner=request.user)
+            hotel.delete()
+            return JsonResponse({"success": True})
+        except Exception:
+            return JsonResponse({"success": False})
+    return JsonResponse({"success": False})
+
+
+
+@login_required
+def owner_room_delete(request, room_id):
+    room = get_object_or_404(Room, id=room_id, hotel__owner=request.user)
+
+    if request.method == "POST":
+        hotel_id = room.hotel.id
+        room.delete()
+        messages.success(request, "Room deleted successfully.")
+        return redirect('hotels:owner_hotel_detail', hotel_id=hotel_id)
+
+    messages.error(request, "Invalid request.")
+    return redirect('hotels:owner_hotels')

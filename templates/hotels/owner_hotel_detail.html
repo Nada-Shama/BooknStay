@@ -204,11 +204,25 @@
                 <p class="mb-0 small"><strong>Price:</strong> ${{ room.price }}</p>
                 <p class="mb-0 small"><strong>Capacity:</strong> {{ room.capacity }}</p>
               </div>
-              <div class="mt-auto">
-                <a href="{% url 'hotels:owner_room_detail' room.id %}" class="btn btn-sm w-100 rounded-pill" style="background-color: #f35525; color:white; font-size:0.85rem;">
-                  Edit Room
-                </a>
-              </div>
+<div class="mt-auto d-flex justify-content-between align-items-center">
+  <a href="{% url 'hotels:owner_room_detail' room.id %}"
+     class="btn btn-sm rounded-pill px-3 py-1"
+     style="background-color: #000000ff; color:white; font-size:0.8rem;">
+    Edit room
+  </a>
+
+  <form action="{% url 'hotels:owner_room_delete' room.id %}" method="post"
+        onsubmit="return confirm('Are you sure you want to delete this room?');"
+        style="display:inline;">
+    {% csrf_token %}
+    <button type="submit"
+            class="btn btn-sm rounded-pill px-3 py-1"
+            style="background-color: #dc3545; color:white; font-size:0.8rem;">
+      Delete
+    </button>
+  </form>
+</div>
+
             </div>
           </div>
         </div>
