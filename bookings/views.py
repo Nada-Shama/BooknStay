@@ -217,6 +217,67 @@ def modify_booking(request, booking_id):
 
 @login_required
 @require_http_methods(["GET"])
+def owner_bookings_calendar_data(request):
+    """Return per-day booking counts for a given room/month (owner/admin only)."""
+    room_id = request.GET.get('room_id')
+    year = int(request.GET.get('year') or date.today().year)
+    month = int(request.GET.get('month') or date.today().month)
+
+    # Validate and authorize
+    try:
+        room = Room.objects.select_related('hotel').get(id=room_id)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
+
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and room.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    first_day = date(year, month, 1)
+    last_day = date(year, month, monthrange(year, month)[1])
+
+    # Overlapping bookings in month
+    bookings = Booking.objects.filter(
+        room=room,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
+        check_in__lte=last_day,
+        check_out__gte=first_day,
+    ).values('check_in', 'check_out')
+
+    counts = {d: 0 for d in range(1, monthrange(year, month)[1] + 1)}
+    for b in bookings:
+        start = max(b['check_in'], first_day)
+        end = min(b['check_out'], last_day)
+        cur = start
+        while cur <= end:
+            # Count nights (exclude checkout day)
+            if cur < b['check_out']:
+                counts[cur.day] += 1
+            # add one day safely
+            cur = cur + (last_day - last_day.replace(day=last_day.day - 1))
+
+    def color_for(count: int) -> str:
+        if count >= 10:
+            return '#e74c3c'
+        if count >= 5:
+            return '#f39c12'
+        return '#2ecc71'
+
+    events = []
+    for d, c in counts.items():
+        if c <= 0:
+            continue
+        events.append({
+            'title': f'{c} bookings',
+            'start': f'{year}-{month:02d}-{d:02d}',
+            'color': color_for(c),
+            'allDay': True,
+        })
+    return JsonResponse(events, safe=False)
+
+@login_required
+@require_http_methods(["GET"])
 def owner_bookings_list(request):
     """Return bookings for a given room with basic details; filter by day/week/month optionally."""
     room_id = request.GET.get('room_id')
