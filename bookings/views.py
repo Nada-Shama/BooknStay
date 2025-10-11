@@ -4,9 +4,10 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model, login
-from datetime import datetime
+from datetime import datetime, date
 from hotels.models import Hotel, Room
 from .models import Booking
+from calendar import monthrange
 
 # Create your views here.
 def booking(request, hotel_id):
@@ -212,3 +213,123 @@ def modify_booking(request, booking_id):
         'total_price': float(booking.total_price),
         'status': booking.status,
     })
+
+
+@login_required
+@require_http_methods(["GET"])
+def owner_bookings_list(request):
+    """Return bookings for a given room with basic details; filter by day/week/month optionally."""
+    room_id = request.GET.get('room_id')
+    view = (request.GET.get('view') or 'month').lower()  # day|week|month
+    y = int(request.GET.get('year') or date.today().year)
+    m = int(request.GET.get('month') or date.today().month)
+    d = int(request.GET.get('day') or 1)
+
+    try:
+        room = Room.objects.select_related('hotel').get(id=room_id)
+    except Room.DoesNotExist:
+        return JsonResponse({'error': 'Room not found'}, status=404)
+
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and room.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    start = date(y, m, d)
+    if view == 'day':
+        end = start
+    elif view == 'week':
+        # assume week starting on start date, 7 days window
+        end = date(y, m, d) if d + 6 <= monthrange(y, m)[1] else date(y, m, monthrange(y, m)[1])
+    else:
+        # month
+        start = date(y, m, 1)
+        end = date(y, m, monthrange(y, m)[1])
+
+    qs = Booking.objects.filter(
+        room=room,
+        check_in__lte=end,
+        check_out__gte=start,
+    ).select_related('user')
+
+    def paid_status(b: Booking) -> str:
+        # Placeholder: no payments model yet
+        return 'Paid' if b.status == Booking.STATUS_CONFIRMED else 'Unpaid'
+
+    data = []
+    for b in qs:
+        data.append({
+            'id': b.id,
+            'guest': (b.user.username if b.user else (b.guest_first_name or '-') ),
+            'check_in': b.check_in.isoformat(),
+            'check_out': b.check_out.isoformat(),
+            'nights': (b.check_out - b.check_in).days,
+            'price_per_night': float(b.room.price),
+            'total_price': float(b.total_price),
+            'paid': paid_status(b),
+            'first_time_guest': 'Yes' if (b.user and b.user.bookings.exclude(id=b.id).count()==0) else 'No',
+            'status': b.status,
+        })
+
+    return JsonResponse({'results': data})
+
+
+@login_required
+@require_http_methods(["POST"])
+def owner_update_booking(request, booking_id):
+    """Update booking dates/guests via owner management."""
+    booking = get_object_or_404(Booking, id=booking_id)
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and booking.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    check_in_str = request.POST.get('check_in')
+    check_out_str = request.POST.get('check_out')
+    num_guests_str = request.POST.get('num_guests')
+
+    if check_in_str:
+        try:
+            booking.check_in = datetime.strptime(check_in_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'error': 'Invalid check_in'}, status=400)
+    if check_out_str:
+        try:
+            booking.check_out = datetime.strptime(check_out_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({'error': 'Invalid check_out'}, status=400)
+    if num_guests_str:
+        try:
+            booking.num_guests = int(num_guests_str)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid guests'}, status=400)
+
+    if booking.check_in >= booking.check_out:
+        return JsonResponse({'error': 'check_out must be after check_in'}, status=400)
+
+    # Availability check excluding current booking
+    overlapping = Booking.objects.filter(
+        room=booking.room,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
+        check_in__lt=booking.check_out,
+        check_out__gt=booking.check_in,
+    ).exclude(id=booking.id).count()
+    capacity = booking.room.available_rooms or 1
+    if overlapping >= capacity:
+        return JsonResponse({'error': 'Room not available for the selected dates.'}, status=409)
+
+    booking.compute_total_price()
+    booking.save()
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_http_methods(["POST"])
+def owner_delete_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and booking.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    booking.delete()
+    return JsonResponse({'success': True})
