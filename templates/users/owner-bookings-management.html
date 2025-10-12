@@ -52,7 +52,7 @@
               <h2>Room Calendar</h2>
             </div>
 
-            <div class="row g-2 mb-3">
+            <div class="row g-2 mb-3" id="controlsMonth">
               <div class="col-md-8">
                 <label class="form-label">Select Room</label>
                 <select id="roomSelect" class="form-control">
@@ -82,6 +82,16 @@
               <div class="col-md-2">
                 <label class="form-label">Year</label>
                 <input id="yearInput" class="form-control" type="number" min="2000" max="2100" />
+              </div>
+            </div>
+            <div class="row g-2 mb-3" id="controlsDay" style="display:none;">
+              <div class="col-md-8">
+                <label class="form-label">Select Room</label>
+                <select id="roomSelect2" class="form-control"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Day</label>
+                <input id="dayInput" type="date" class="form-control" />
               </div>
             </div>
 
@@ -127,6 +137,21 @@
       grid.appendChild(cell);
     }
   }
+  function renderWeek(year, month, startDay){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    title.textContent = 'Week view';
+    const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    // Stack in a single column: labels then day boxes
+    dows.forEach((d,i)=>{
+      const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h);
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=(startDay+i);
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+(startDay+i)+'</div>';
+      grid.appendChild(cell);
+    });
+  }
   function applyCounts(payload){
     const grid = document.getElementById('calGrid');
     if(!grid) return;
@@ -160,25 +185,47 @@
     });
   }
   function fetchData(){
-    const roomId = document.getElementById('roomSelect').value;
+    const activeViewBtn = document.querySelector('.js-view.active');
+    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
+    const roomId = (view==='day' ? document.getElementById('roomSelect2').value : document.getElementById('roomSelect').value);
     if(!roomId){
       document.getElementById('calGrid').innerHTML = '';
       document.getElementById('bookingList').innerHTML = '';
       return;
     }
-    const month = document.getElementById('monthSelect').value;
     let year = parseInt(document.getElementById('yearInput').value,10);
     if(!year || isNaN(year)){ year = new Date().getFullYear(); }
+    if(view==='week'){
+      const month = document.getElementById('monthSelect').value;
+      // choose week start based on today within month for simplicity
+      const today = new Date();
+      const startDay = Math.max(1, today.getDate() - ((today.getDay()+6)%7));
+      renderWeek(year, parseInt(month,10), startDay);
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=week`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    if(view==='day'){
+      const dayVal = document.getElementById('dayInput').value;
+      const d = dayVal ? new Date(dayVal) : new Date();
+      const month = d.getMonth()+1;
+      renderWeek(d.getFullYear(), month, d.getDate()); // render a single stacked day box
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}&view=day&day=${d.getDate()}`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    // month
+    const month = document.getElementById('monthSelect').value;
     renderGrid(year, parseInt(month,10));
-    const url = `/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`;
-    fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} })
-      .then(r=>r.json())
-      .then(applyCounts)
-      .catch(()=>{});
-    // Load list by selected view
-    const activeViewBtn = document.querySelector('.js-view.active');
-    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
-    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=${view}`;
+    fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+      .then(r=>r.json()).then(applyCounts).catch(()=>{});
+    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=month`;
     fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
       .then(r=>r.json())
       .then(renderList)
@@ -216,6 +263,17 @@
     if(v){
       document.querySelectorAll('.js-view').forEach(b=>b.classList.remove('active'));
       v.classList.add('active');
+      const view = v.dataset.view;
+      // Toggle controls
+      const cm = document.getElementById('controlsMonth');
+      const cd = document.getElementById('controlsDay');
+      if(view==='day'){
+        cm.style.display='none'; cd.style.display='flex';
+        // Mirror rooms into roomSelect2 if empty
+        const rs = document.getElementById('roomSelect');
+        const rs2 = document.getElementById('roomSelect2');
+        if(rs2 && rs && rs2.options.length<=0){ rs2.innerHTML = rs.innerHTML; rs2.value = rs.value; }
+      } else { cm.style.display='flex'; cd.style.display='none'; }
       fetchData();
     }
     if(del){
