@@ -17,6 +17,10 @@
   .od-calendar-grid .day:hover .day-num{ color:#f35525; }
   .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
   .od-calendar-grid .day[data-overlap="1"]{ box-shadow:0 0 0 2px #f35525 inset; background:#ffe8e8 !important; }
+  /* Overlap hover: make names red for contrast */
+  .od-calendar-grid .day[data-overlap="1"]:hover .user-names{ color:#e74c3c; }
+  .od-calendar-grid .day[data-overlap="1"]:hover .hover-details{ color:#e74c3c; }
+  .od-calendar-grid .day[data-overlap="1"]:hover .hover-details .user-name{ color:#e74c3c; }
 </style>
 {% endblock %}
 {% block content %}
