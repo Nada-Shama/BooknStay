@@ -7,7 +7,7 @@
   .od-calendar-grid .day{ position:relative; overflow:visible; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; transform-origin:center center; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
   .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; cursor:crosshair; }
-  .od-calendar-grid .day .user-names .user-line{ display:block; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; font-size:10px; line-height:12px; }
+  .od-calendar-grid .day .user-names .user-line{ display:block; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:crosshair; font-size:10px; line-height:12px; }
   .od-calendar-grid .day .day-num{ font-weight:600; }
   .od-calendar-grid .day:hover{ z-index:3; transform:scale(1.25); box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
@@ -238,6 +238,12 @@
               document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
               document.getElementById('ownerEditGuests').value = b.num_guests||1;
               document.getElementById('ownerEditMsg').innerHTML = '';
+              const t = document.querySelector('#ownerEditModal .custom-modal__title');
+              if(t){
+                let nm = `${(b.guest_first_name||'').trim()} ${(b.guest_last_name||'').trim()}`.trim();
+                if(!nm) nm = (u.name||'').trim() || (b.guest_email||'Guest');
+                t.textContent = 'Edit Booking for ' + nm;
+              }
               m.style.display = 'flex';
             });
         });
