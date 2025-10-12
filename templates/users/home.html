@@ -2,6 +2,31 @@
 {% load static %}
 {% block title %}Book & Stay - Hotel Booking HTML5 Template{% endblock %}
 {% block content %}
+
+
+<style>
+.property-card .property-img {
+    width: 100%;
+    height: 220px; /* fixed height for all images */
+    object-fit: cover; /* crops without distortion */
+    border-radius: 5px;
+}
+
+.property-card .property-text,
+.property-card ul li,
+.property-card ul li span {
+    font-size: 0.85rem; /* smaller text */
+}
+
+.property-card ul li span {
+    font-size: 0.8rem;
+}
+
+.property-card {
+    padding: 10px;
+}
+
+</style>
     <div class="main-banner">
         <div class="owl-carousel owl-banner">
             <div class="item item-1">
@@ -136,262 +161,165 @@
                     <div class="wrapper">
                         <div class="row">
                         <div class="col-lg-4">
-                            <div class="counter">
-                            <h2 class="timer count-title count-number" data-to="34" data-speed="1000"></h2>
-                            <p class="count-text ">Hotels<br>Available Now</p>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="counter">
-                            <h2 class="timer count-title count-number" data-to="12" data-speed="1000"></h2>
-                            <p class="count-text ">Years<br>Experience</p>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="counter">
-                            <h2 class="timer count-title count-number" data-to="24" data-speed="1000"></h2>
-                            <p class="count-text ">Awards<br>Won 2024</p>
-                            </div>
-                        </div>
+                <div class="counter">
+                    <h2 class="timer count-title count-number" data-to="{{ num_hotel }}" data-speed="1000"></h2>
+                    <p class="count-text">Hotels to<br>choose from</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="counter">
+                    <h2 class="timer count-title count-number" data-to="{{ available_rooms_count }}" data-speed="1000"></h2>
+                    <p class="count-text">Available<br>Rooms</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="counter">
+                    <h2 class="timer count-title count-number" data-to="{{ country_count }}" data-speed="1000"></h2>
+                    <p class="count-text">Countries<br>Listed</p>
+                </div>
+            </div>
+
+                       
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+<div class="section best-deal">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="section-heading">
+                    <h6>| Best Deal</h6>
+                    <h2>Find Your Best Deal Right Now!</h2>
+                </div>
+            </div>
+            <div class="col-lg-12">
+                <div class="tabs-content">
+                    <div class="row">
+                        <div class="nav-wrapper">
+                            <ul class="nav nav-tabs" role="tablist">
+                                {% for deal in best_deals_list %}
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link {% if forloop.first %}active{% endif %}"
+                                            id="{{ deal.type|lower }}-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#{{ deal.type|lower }}"
+                                            type="button" role="tab"
+                                            aria-controls="{{ deal.type|lower }}"
+                                            aria-selected="{% if forloop.first %}true{% else %}false{% endif %}">
+                                        {{ deal.type }}
+                                    </button>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+
+                        <div class="tab-content" id="myTabContent">
+                            {% for deal in best_deals_list %}
+                            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}"
+                                 id="{{ deal.type|lower }}"
+                                 role="tabpanel"
+                                 aria-labelledby="{{ deal.type|lower }}-tab">
+                                <div class="row">
+                                    {% for hotel in deal.hotels %}
+                                    <div class="col-lg-12 mb-4">
+                                        <div class="row">
+                                            <div class="col-lg-3">
+                                                <div class="info-table">
+                                                    <ul>
+                                                        <li>Total Room Space <span>{{ hotel.rooms.first.size|default:"N/A" }} m2</span></li>
+                                                        <li>Floor number <span>{{ hotel.rooms.first.floor|default:"N/A" }}</span></li>
+                                                        <li>Number of rooms <span>{{ hotel.num_rooms|default:hotel.rooms.count }}</span></li>
+                                                        <li>Parking Available <span>Yes</span></li>
+                                                        <li>Payment Process <span>Secure</span></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                {% if hotel.photo %}
+                                                    <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
+                                                {% else %}
+                                                    <img src="{% static 'images/default-hotel.jpg' %}" alt="{{ hotel.hotel_name }}">
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-lg-3">
+                                                <h4>{{ hotel.hotel_name }}</h4>
+                                                <p>{{ hotel.description|truncatewords:40 }}</p>
+                                                <div class="icon-button">
+                                                    <a href="{% url 'property-details' hotel.id %}">
+                                                        <i class="fa fa-calendar"></i> Schedule a visit
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                        <p>No {{ deal.type }}s available.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="properties section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 offset-lg-4">
+                <div class="section-heading text-center">
+                    <h6>| Properties</h6>
+                    <h2>We Provide The Best Hotels You Like</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            {% for hotel in properties_hotels %}
+            <div class="col-lg-4 col-md-6">
+                <div class="item property-card">
+                    <a href="{% url 'property-details' hotel.id %}">
+                        {% if hotel.photo %}
+                            <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}" class="property-img">
+                        {% else %}
+                            <img src="{% static 'images/default-hotel.jpg' %}" alt="{{ hotel.hotel_name }}" class="property-img">
+                        {% endif %}
+                    </a>
+                    <span class="category property-text">{{ hotel.property_type|default:"Hotel" }}</span>
+                    <h6 class="property-text">${{ hotel.price_per_night|default:"0" }}/night</h6>
+                    <h4 class="property-text"><a href="{% url 'property-details' hotel.id %}">{{ hotel.hotel_name }}</a></h4>
+                    <ul class="property-text">
+                        <li>Bedrooms: <span>{{ hotel.rooms.first.bedrooms|default:"N/A" }}</span></li>
+                        <li>Bathrooms: <span>{{ hotel.rooms.first.bathrooms|default:"N/A" }}</span></li>
+                        <li>Area: <span>{{ hotel.rooms.first.size|default:"N/A" }}m2</span></li>
+                        <li>Floor: <span>{{ hotel.rooms.first.floor|default:"N/A" }}</span></li>
+                        <li>Parking: <span>{{ hotel.rooms.first.parking|default:"N/A" }}</span></li>
+                    </ul>
+                    <div class="main-button">
+                        <a href="{% url 'property-details' hotel.id %}">Book Now</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
     </div>
 
-    <div class="section best-deal">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4">
-                    <div class="section-heading">
-                        <h6>| Best Deal</h6>
-                        <h2>Find Your Best Deal Right Now!</h2>
-                    </div>
-                </div>
-                <div class="col-lg-12">
-                    <div class="tabs-content">
-                        <div class="row">
-                            <div class="nav-wrapper ">
-                                <ul class="nav nav-tabs" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="hotel-tab" data-bs-toggle="tab" data-bs-target="#hotel" type="button" role="tab" aria-controls="hotel" aria-selected="true">Hotel</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="resort-tab" data-bs-toggle="tab" data-bs-target="#resort" type="button" role="tab" aria-controls="resort" aria-selected="false">Resort</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="suite-tab" data-bs-toggle="tab" data-bs-target="#suite" type="button" role="tab" aria-controls="suite" aria-selected="false">Suite</button>
-                                </li>
-                                </ul>
-                            </div>              
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="hotel" role="tabpanel" aria-labelledby="hotel-tab">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <div class="info-table">
-                                                <ul>
-                                                    <li>Total Room Space <span>185 m2</span></li>
-                                                    <li>Floor number <span>26th</span></li>
-                                                    <li>Number of rooms <span>4</span></li>
-                                                    <li>Parking Available <span>Yes</span></li>
-                                                    <li>Payment Process <span>Secure</span></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <img src="{% static 'images/deal-01.jpg' %}" alt="">
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <h4>Extra Info About Hotel</h4>
-                                            <p>Experience luxury and comfort in our premium hotel rooms. Perfect for business travelers and vacationers alike. 
-                                            <br><br>Book your stay today and enjoy world-class amenities, exceptional service, and unforgettable memories.</p>
-                                            <div class="icon-button">
-                                                <a href="{% url 'property-details'  1%}"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="resort" role="tabpanel" aria-labelledby="resort-tab">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <div class="info-table">
-                                                <ul>
-                                                <li>Total Room Space <span>250 m2</span></li>
-                                                <li>Floor number <span>Ground</span></li>
-                                                <li>Number of rooms <span>5</span></li>
-                                                <li>Parking Available <span>Yes</span></li>
-                                                <li>Payment Process <span>Secure</span></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <img src="{% static 'images/deal-02.jpg' %}" alt="">
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <h4>Detail Info About Resort</h4>
-                                            <p>Escape to paradise with our luxury resort accommodations. Featuring stunning ocean views, private beaches, and premium amenities. <br><br>Perfect for romantic getaways, family vacations, and special celebrations. Book your dream resort stay today!</p>
-                                            <div class="icon-button">
-                                                <a href="{% url 'property-details'  1%}"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="suite" role="tabpanel" aria-labelledby="suite-tab">
-                                    <div class="row">
-                                        <div class="col-lg-3">
-                                            <div class="info-table">
-                                                <ul>
-                                                    <li>Total Room Space <span>320 m2</span></li>
-                                                    <li>Floor number <span>34th</span></li>
-                                                    <li>Number of rooms <span>6</span></li>
-                                                    <li>Parking Available <span>Yes</span></li>
-                                                    <li>Payment Process <span>Secure</span></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-6">
-                                            <img src="{% static 'images/deal-03.jpg' %}" alt="">
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <h4>Extra Info About Suite</h4>
-                                            <p>Indulge in the ultimate luxury with our premium suites. Featuring panoramic city views, private balconies, and exclusive amenities. <br><br>Perfect for VIP guests, special occasions, and those who demand the finest accommodations. Reserve your suite today!</p>
-                                            <div class="icon-button">
-                                                <a href="{% url 'property-details'  1%}"><i class="fa fa-calendar"></i> Schedule a visit</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <div class="properties section">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4 offset-lg-4">
-                    <div class="section-heading text-center">
-                        <h6>| Properties</h6>
-                        <h2>We Provide The Best Hotels You Like</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-01.jpg' %}" alt=""></a>
-                        <span class="category">Luxury Hotel</span>
-                        <h6>$226/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">18 New Street Miami, FL 33101</a></h4>
-                        <ul>
-                            <li>Bedrooms: <span>2</span></li>
-                            <li>Bathrooms: <span>2</span></li>
-                            <li>Area: <span>45m2</span></li>
-                            <li>Floor: <span>3rd</span></li>
-                            <li>Parking: <span>1 spot</span></li>
-                        </ul>
-                        <div class="main-button">
-                            <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-02.jpg' %}" alt=""></a>
-                        <span class="category">Boutique Hotel</span>
-                        <h6>$118/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">54 Mid Street Florida, FL 27001</a></h4>
-                        <ul>
-                            <li>Bedrooms: <span>1</span></li>
-                            <li>Bathrooms: <span>1</span></li>
-                            <li>Area: <span>35m2</span></li>
-                            <li>Floor: <span>2nd</span></li>
-                            <li>Parking: <span>1 spot</span></li>
-                        </ul>
-                        <div class="main-button">
-                        <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-03.jpg' %}" alt=""></a>
-                        <span class="category">Resort Hotel</span>
-                        <h6>$146/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">26 Old Street Miami, FL 38540</a></h4>
-                        <ul>
-                            <li>Bedrooms: <span>2</span></li>
-                            <li>Bathrooms: <span>2</span></li>
-                            <li>Area: <span>55m2</span></li>
-                            <li>Floor: <span>1st</span></li>
-                            <li>Parking: <span>2 spots</span></li>
-                        </ul>
-                        <div class="main-button">
-                            <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-04.jpg' %}" alt=""></a>
-                        <span class="category">Business Hotel</span>
-                        <h6>$58/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">12 New Street Miami, FL 12650</a></h4>
-                        <ul>
-                        <li>Bedrooms: <span>1</span></li>
-                        <li>Bathrooms: <span>1</span></li>
-                        <li>Area: <span>25m2</span></li>
-                        <li>Floor: <span>25th</span></li>
-                        <li>Parking: <span>1 spot</span></li>
-                        </ul>
-                        <div class="main-button">
-                        <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-05.jpg' %}" alt=""></a>
-                        <span class="category">Penthouse Suite</span>
-                        <h6>$925/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">34 Beach Street Miami, FL 42680</a></h4>
-                        <ul>
-                            <li>Bedrooms: <span>3</span></li>
-                            <li>Bathrooms: <span>3</span></li>
-                            <li>Area: <span>80m2</span></li>
-                            <li>Floor: <span>38th</span></li>
-                            <li>Parking: <span>2 spots</span></li>
-                        </ul>
-                        <div class="main-button">
-                            <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="item">
-                        <a href="{% url 'property-details'  1%}"><img src="{% static 'images/property-06.jpg' %}" alt=""></a>
-                        <span class="category">Modern Hotel</span>
-                        <h6>$45/night</h6>
-                        <h4><a href="{% url 'property-details'  1%}">22 New Street Portland, OR 16540</a></h4>
-                        <ul>
-                            <li>Bedrooms: <span>1</span></li>
-                            <li>Bathrooms: <span>1</span></li>
-                            <li>Area: <span>30m2</span></li>
-                            <li>Floor: <span>26th</span></li>
-                            <li>Parking: <span>1 spot</span></li>
-                        </ul>
-                        <div class="main-button">
-                            <a href="{% url 'property-details'  1%}">Book Now</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+
+
 
     <div class="contact section">
         <div class="container">

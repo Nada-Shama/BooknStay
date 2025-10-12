@@ -26,6 +26,9 @@ urlpatterns = [
      path("delete_room_image/<int:image_id>/", views.delete_room_image, name="delete_room_image"),
      path('delete_hotel/<int:hotel_id>/', views.delete_hotel, name='delete_hotel'),
      path('owner/room/<int:room_id>/delete/', views.owner_room_delete, name='owner_room_delete'),
+     
+     path('search/', views.search_results, name='search_results'),
+    
 ]
      
 

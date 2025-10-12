@@ -11,13 +11,45 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.utils import timezone
 import traceback
+from django.core.paginator import Paginator
+from django.db.models import Q
+from random import sample
 
 from .forms import RoomForm,HotelForm,RoomImageForm
 from users.views import _is_owner_or_admin
 
+
+
+from random import sample
+
 def home(request):
-    hotels = Hotel.objects.all()
-    return render(request, 'users/home.html', {'hotels': hotels})
+    num_hotel = Hotel.objects.count()
+    available_rooms_count = Room.objects.filter(status='available').count()
+    country_count = Hotel.objects.exclude(country__isnull=True).exclude(country__exact='').values('country').distinct().count()
+
+    all_hotels = list(Hotel.objects.all())
+
+    # Best Deals: first hotel of each type
+    hotel_types = ['Hotel', 'Resort', 'Apartment']
+    best_deals_list = [
+        {"type": t, "hotels": [h for h in all_hotels if h.property_type == t][:1]}  # 1 per type
+        for t in hotel_types
+    ]
+
+    # Properties section: pick 6 random hotels
+    properties_hotels = sample(all_hotels, min(6, len(all_hotels)))
+
+    context = {
+        'num_hotel': num_hotel,
+        'available_rooms_count': available_rooms_count,
+        'country_count': country_count,
+        'hotel_types': hotel_types,
+        'best_deals_list': best_deals_list,
+        'properties_hotels': properties_hotels,
+    }
+    return render(request, 'users/home.html', context)
+
+
 
 
 def hotel_list(request):
@@ -39,6 +71,7 @@ def hotel_detail(request, hotel_id):
     user_has_review = False
     if request.user.is_authenticated:
         user_has_review = reviews.filter(user=request.user).exists()
+
 
     context = {
         'hotel': hotel,
@@ -330,3 +363,76 @@ def owner_room_delete(request, room_id):
 
     messages.error(request, "Invalid request.")
     return redirect('hotels:owner_hotels')
+
+
+def search_results(request):
+    hotels = Hotel.objects.all()
+
+    # Get filters
+    name_query = request.GET.get('name', '').strip()
+    country_query = request.GET.get('country', '').strip()
+    star_ratings = request.GET.getlist('stars')
+    amenities = request.GET.getlist('amenities')
+    sort_by = request.GET.get('sort', 'recommended')
+
+    # Apply search filters
+    if name_query:
+        hotels = hotels.filter(
+            Q(hotel_name__icontains=name_query) |
+            Q(city__icontains=name_query)
+        )
+
+    if country_query:
+        hotels = hotels.filter(country__icontains=country_query)
+
+    if star_ratings:
+        hotels = hotels.filter(star_rating__in=star_ratings)
+
+    if amenities:
+        for amenity in amenities:
+            hotels = hotels.filter(amenities__icontains=amenity)
+
+    
+
+    # Sorting
+    if sort_by == "rating_high":
+        hotels = hotels.order_by("-star_rating")
+    elif sort_by == "price_low":
+        hotels = hotels.order_by("price")
+    elif sort_by == "price_high":
+        hotels = hotels.order_by("-price")
+    elif sort_by == "distance":
+        hotels = hotels.order_by("city")  
+    else:
+        hotels = hotels.order_by("?")
+
+    for hotel in hotels:
+        if isinstance(hotel.amenities, str):
+            hotel.amenities_list = [a.strip() for a in hotel.amenities.split(",") if a.strip()]
+        elif isinstance(hotel.amenities, list):
+            hotel.amenities_list = hotel.amenities
+        else:
+            hotel.amenities_list = []
+
+    # Pagination
+    paginator = Paginator(hotels, 9)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    # Fixed list for sidebar
+    amenity_list = ["Pool", "WiFi", "Parking", "Breakfast", "Gym"]
+    
+    context = {
+        "page_obj": page_obj,
+        "total_hotels": hotels.count(),
+        "location_query": name_query,
+        "selected_stars": star_ratings,
+        "selected_amenities": amenities,
+        "amenity_list": amenity_list,
+        "request": request,
+    }
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return render(request, 'hotels/partials/hotel_list.html', {'page_obj': page_obj})
+
+
+    return render(request, "hotels/hotels-search-results.html", context)
