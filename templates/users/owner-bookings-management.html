@@ -14,6 +14,7 @@
   .od-calendar-grid .day:hover .user-names .user-name{ font-size:12px; }
   .od-calendar-grid .day:hover .day-num{ color:#f35525; }
   .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
+  .od-calendar-grid .day[data-overlap="1"]{ box-shadow:0 0 0 2px #f35525 inset; background:#ffe8e8 !important; }
 </style>
 {% endblock %}
 {% block content %}
@@ -204,6 +205,7 @@
         small.appendChild(a);
       });
       cell.appendChild(small);
+      if(users.length > 1){ cell.setAttribute('data-overlap','1'); }
     });
     // Mark empty days for hover label
     grid.querySelectorAll('.day').forEach(cell=>{
@@ -238,7 +240,9 @@
       const dayVal = document.getElementById('dayInput').value;
       const d = dayVal ? new Date(dayVal) : new Date();
       const month = d.getMonth()+1;
-      renderWeek(d.getFullYear(), month, d.getDate()); // render a single stacked day box
+      // For day view, we emphasize the single cell; reuse week renderer but only one day
+      const grid = document.getElementById('calGrid'); if(grid){ grid.innerHTML=''; }
+      renderWeek(d.getFullYear(), month, d.getDate());
       fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
         .then(r=>r.json()).then(applyCounts).catch(()=>{});
       const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}&view=day&day=${d.getDate()}`;
