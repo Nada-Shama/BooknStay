@@ -449,3 +449,31 @@ def owner_delete_booking(request, booking_id):
         return JsonResponse({'error': 'Not authorized'}, status=403)
     booking.delete()
     return JsonResponse({'success': True})
+
+
+@login_required
+@require_http_methods(["POST"])
+def owner_approve_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and booking.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if booking.status in [Booking.STATUS_PENDING, Booking.STATUS_UNDER_REVIEW, Booking.STATUS_CANCELLED]:
+        booking.status = Booking.STATUS_CONFIRMED
+        booking.save(update_fields=['status', 'updated_at'])
+    return JsonResponse({'success': True, 'status': booking.status})
+
+
+@login_required
+@require_http_methods(["POST"])
+def owner_deny_booking(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and booking.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    if booking.status in [Booking.STATUS_PENDING, Booking.STATUS_UNDER_REVIEW]:
+        booking.status = Booking.STATUS_CANCELLED
+        booking.save(update_fields=['status', 'updated_at'])
+    return JsonResponse({'success': True, 'status': booking.status})

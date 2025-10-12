@@ -308,6 +308,20 @@
     const el = document.getElementById('bookingList');
     if(!el) return;
     const rows = (resp.results||[]).map(b=>{
+      const isPending = (b.status === 'pending' || b.status === 'under_review');
+      const statusBadge = (function(){
+        const text = b.status.replace('_',' ');
+        if(isPending){
+          return `<span class="badge" style="background:#ffc107;color:#1e1e1e;">${text}</span>`;
+        }
+        if(b.status === 'confirmed'){
+          return `<span class="badge bg-success">${text}</span>`;
+        }
+        if(b.status === 'cancelled'){
+          return `<span class="badge bg-secondary">${text}</span>`;
+        }
+        return `<span class="badge bg-light text-dark">${text}</span>`;
+      })();
       return `<tr>
         <td>#${b.id}</td>
         <td>${b.guest||'-'}</td>
@@ -317,10 +331,12 @@
         <td>$${b.total_price.toFixed ? b.total_price.toFixed(2) : b.total_price}</td>
         <td>${b.paid}</td>
         <td>${b.first_time_guest}</td>
-        <td>${b.status}</td>
-        <td style="padding:5px 10px;">
+        <td>${statusBadge}</td>
+        <td style="padding:5px 10px; white-space:nowrap;">
           <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" style="margin:5px;"><i class="fa fa-pencil"></i></button>
           <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" style="margin:5px;"><i class="fa fa-trash"></i></button>
+          ${isPending ? `<button class="btn btn-sm btn-outline-success js-approve" data-id="${b.id}" style="margin:5px;">Approve</button>` : ''}
+          ${isPending ? `<button class="btn btn-sm btn-outline-warning js-deny" data-id="${b.id}" style="margin:5px;">Deny</button>` : ''}
         </td>
       </tr>`;
     }).join('');
@@ -333,6 +349,8 @@
     const v = e.target.closest('.js-view');
     const edit = e.target.closest('.js-edit');
     const del = e.target.closest('.js-del');
+    const approve = e.target.closest('.js-approve');
+    const deny = e.target.closest('.js-deny');
     if(v){
       document.querySelectorAll('.js-view').forEach(b=>b.classList.remove('active'));
       v.classList.add('active');
@@ -363,6 +381,16 @@
         fetch(`/bookings/owner/delete/${id}/`, { method:'POST', headers:{'X-CSRFToken':getCsrf()}, credentials:'same-origin' })
           .then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
       }
+    }
+    if(approve){
+      const id = approve.dataset.id;
+      fetch(`/bookings/owner/approve/${id}/`, { method:'POST', headers:{'X-CSRFToken':getCsrf()}, credentials:'same-origin' })
+        .then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
+    }
+    if(deny){
+      const id = deny.dataset.id;
+      fetch(`/bookings/owner/deny/${id}/`, { method:'POST', headers:{'X-CSRFToken':getCsrf()}, credentials:'same-origin' })
+        .then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
     }
     if(edit){
       const id = edit.dataset.id;

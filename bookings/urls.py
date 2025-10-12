@@ -14,4 +14,6 @@ urlpatterns = [
     path('owner/detail/<int:booking_id>/', views.owner_booking_detail, name='owner_booking_detail'),
     path('owner/update/<int:booking_id>/', views.owner_update_booking, name='owner_update_booking'),
     path('owner/delete/<int:booking_id>/', views.owner_delete_booking, name='owner_delete_booking'),
+    path('owner/approve/<int:booking_id>/', views.owner_approve_booking, name='owner_approve_booking'),
+    path('owner/deny/<int:booking_id>/', views.owner_deny_booking, name='owner_deny_booking'),
 ]
