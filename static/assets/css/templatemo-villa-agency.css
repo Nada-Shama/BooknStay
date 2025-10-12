@@ -2603,6 +2603,11 @@ body {
   overflow-x: hidden;
 }
 
+/* Global font size override */
+body {
+  font-size: 0.8rem;
+}
+
 @media (max-width: 767px) {
   .header-area .main-nav .logo h1 {
     line-height: 80px !important;
