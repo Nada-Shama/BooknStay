@@ -219,7 +219,7 @@
       // Names list
       const small = document.createElement('div');
       small.className = 'user-names';
-      small.textContent = users.map(u=>u.name||'Guest').join(', ');
+      // Note: render per-user spans to avoid duplicate text
       cell.appendChild(small);
       // Inline clickable names (expand on hover via scale)
       users.forEach(function(u){
