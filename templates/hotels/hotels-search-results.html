@@ -2,578 +2,470 @@
 {% load static %}
 {% block title %}Book & Stay - Find Your Perfect Hotel{% endblock %}
 {% block content %}
+<style>
+    /* --- Existing Grid Styles (Kept) --- */
+    .hotels-grid .hotel-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 500px;
+      border: 1px solid #eee;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      background: #fff;
+    }
+    .hotels-grid .hotel-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .hotel-image {
+      position: relative;
+      height: 220px;
+      overflow: hidden;
+      border-bottom: 1px solid #eee;
+    }
+    .hotel-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hotel-badge {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background-color: #ff5a5f;
+      color: #fff;
+      padding: 5px 10px;
+      font-size: 0.85rem;
+      border-radius: 8px;
+    }
+    .hotel-actions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+    .btn-heart {
+      background: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+    }
+    .btn-heart i {
+      color: #ff5a5f;
+    }
+    .hotel-content {
+      flex: 1;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hotel-rating {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.9rem;
+    }
+    .stars i {
+      color: #FFD700;
+      font-size: 0.85rem;
+    }
+    .hotel-amenities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .hotel-amenities span i {
+      margin-right: 5px;
+    }
+    
+    /* --- New Search Form Styles (Simplified) --- */
+    .search-form-section {
+        padding: 40px 0;
+        background-color: #f7f7f7;
+        margin-bottom: 30px;
+    }
+    .search-form-top h4 {
+        margin-bottom: 20px;
+        font-weight: 700;
+        color: #1e1e1e;
+    }
+    .search-form-top .row > div {
+        margin-bottom: 15px;
+    }
+    .search-form-top .form-control {
+        height: 50px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+    }
+    /* Style for the search button to match the filter button (a.main-button) */
+    .search-form-top button.main-button {
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+        background-color: #ff5a5f;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 10px;
+        cursor: pointer;
+        border: none;
+        padding: 0; /* Override any padding added by button elements */
+        display: block;
+        width: 100%;
+        transition: background-color 0.3s;
+    }
+    .search-form-top button.main-button:hover {
+        background-color: #e54d52; /* Slightly darker on hover */
+    }
 
-  <div class="page-heading header-text">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Hotels</span>
-          <h3>Find Your Perfect Hotel</h3>
-        </div>
+    /* --- New List View Styles (Kept) --- */
+    .hotels-list .hotel-list-item {
+      display: flex;
+      margin-bottom: 25px;
+      border: 1px solid #eee;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      background: #fff;
+      transition: box-shadow 0.2s ease;
+      height: 250px; /* Fixed height for a uniform look */
+    }
+    .hotels-list .hotel-list-item:hover {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .hotels-list .hotel-image {
+      flex-basis: 30%; /* Image takes 30% width */
+      height: 100%;
+      border-bottom: none;
+      border-right: 1px solid #eee;
+    }
+    .hotels-list .hotel-content {
+      flex: 1; /* Content takes remaining width */
+      padding: 20px;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    .hotels-list .hotel-details {
+        flex-basis: 60%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .hotels-list .hotel-pricing-action {
+        flex-basis: 35%;
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .hotels-list .hotel-price .current-price {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ff5a5f;
+    }
+    .hotels-list .hotel-price .price-period {
+        display: block;
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+
+
+</style>
+
+<div class="page-heading header-text">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <span class="breadcrumb"><a href="{% url 'home' %}">Home</a> / Hotels</span>
+        <h3>Find Your Perfect Hotel</h3>
       </div>
     </div>
   </div>
+</div>
 
-  <!-- ***** Search Section Start ***** -->
-  <div class="section search-section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="search-form">
-            <div class="row">
-              <div class="col-lg-3 col-md-6">
-                <div class="form-group">
-                  <label for="location">Where are you going?</label>
-                  <input type="text" id="location" placeholder="Enter destination" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-2 col-md-6">
-                <div class="form-group">
-                  <label for="checkin">Check-in</label>
-                  <input type="date" id="checkin" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-2 col-md-6">
-                <div class="form-group">
-                  <label for="checkout">Check-out</label>
-                  <input type="date" id="checkout" class="form-control">
-                </div>
-              </div>
-              <div class="col-lg-2 col-md-6">
-                <div class="form-group">
-                  <label for="guests">Guests</label>
-                  <select id="guests" class="form-control">
-                    <option value="1">1 Guest</option>
-                    <option value="2">2 Guests</option>
-                    <option value="3">3 Guests</option>
-                    <option value="4">4+ Guests</option>
-                  </select>
-                </div>
-              </div>
-              <div class="col-lg-3 col-md-12">
-                <div class="form-group">
-                  <label>&nbsp;</label>
-                  <div class="main-button">
-                    <a href="#"><i class="fa fa-search"></i> Search Hotels</a>
-                  </div>
-                </div>
-              </div>
+<!-- START: Simplified Top Search Form Section -->
+<div class="section search-form-section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <form action="{% url 'hotels:search_results' %}" method="get" class="search-form-top">
+          <h4>Where are you going?</h4>
+          <div class="row align-items-end">
+            <div class="col-lg-10 col-md-9">
+              <label class="form-label">Search by Hotel Name or Location</label>
+              <!-- Name changed to 'name' as requested for name-only search -->
+              <input type="text" name="name" class="form-control" placeholder="Enter hotel name or city" value="{{ request.GET.name|default:'' }}">
+            </div>
+            <div class="col-lg-2 col-md-3">
+              <button type="submit" class="main-button">Search</button>
             </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   </div>
-  <!-- ***** Search Section End ***** -->
+</div>
+<!-- END: Simplified Top Search Form Section -->
 
-  <div class="section hotels-section">
-    <div class="container">
-      <div class="row">
-        <!-- ***** Filters Sidebar Start ***** -->
-        <div class="col-lg-3">
-          <div class="filters-sidebar">
-            <h4>Filters</h4>
+<div class="section hotels-section">
+  <div class="container">
+    <div class="row">
+      <!-- Filters Sidebar -->
+      <div class="col-lg-3">
+        <div class="filters-sidebar">
+          <h4>Filters</h4>
+
+          <form method="get" action="{% url 'hotels:search_results' %}">
             
-            <!-- Price Range -->
+            <!-- START: Country Filter (New) -->
             <div class="filter-group">
-              <h5>Price Range</h5>
-              <div class="price-range">
-                <input type="range" min="50" max="500" value="250" class="slider" id="priceRange">
-                <div class="price-labels">
-                  <span>$50</span>
-                  <span>$500</span>
-                </div>
-                <div class="current-price">$250 per night</div>
-              </div>
+              <h5>Country</h5>
+              <input type="text" name="country" class="form-control" placeholder="e.g., France" value="{{ request.GET.country|default:'' }}">
             </div>
 
-            <!-- Star Rating -->
-            <div class="filter-group">
+            <div class="filter-group mt-3">
               <h5>Star Rating</h5>
               <div class="star-filters">
-                <label><input type="checkbox" value="5"> <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i> 5 Stars</label>
-                <label><input type="checkbox" value="4"> <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i> 4 Stars</label>
-                <label><input type="checkbox" value="3"> <i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i> 3 Stars</label>
+                {% for i in "54321"|make_list %}
+                  <label>
+                    <input type="checkbox" name="stars" value="{{ i }}" {% if i in selected_stars %}checked{% endif %}>
+                    {% for star in "12345"|make_list %}
+                      {% if forloop.counter <= i|add:'0' %}
+                        <i class="fa fa-star"></i>
+                      {% endif %}
+                    {% endfor %}
+                    {{ i }} Stars
+                  </label>
+                {% endfor %}
               </div>
             </div>
 
-            <!-- Amenities -->
-            <div class="filter-group">
-              <h5>Amenities</h5>
-              <div class="amenity-filters">
-                <label><input type="checkbox" value="wifi"> <i class="fa fa-wifi"></i> Free WiFi</label>
-                <label><input type="checkbox" value="parking"> <i class="fa fa-car"></i> Free Parking</label>
-                <label><input type="checkbox" value="pool"> <i class="fa fa-swimming-pool"></i> Swimming Pool</label>
-                <label><input type="checkbox" value="gym"> <i class="fa fa-dumbbell"></i> Fitness Center</label>
-                <label><input type="checkbox" value="spa"> <i class="fa fa-spa"></i> Spa</label>
-                <label><input type="checkbox" value="restaurant"> <i class="fa fa-utensils"></i> Restaurant</label>
-              </div>
+            <!-- Amenities (Kept) -->
+            <h5 class="fw-bold mb-3 mt-3">Amenities</h5>
+            <div class="d-flex flex-column mb-4">
+              {% for amenity in amenity_list %}
+                <label class="form-check-label mb-1">
+                  <input type="checkbox" class="form-check-input me-2" name="amenities" value="{{ amenity }}" {% if amenity in request.GET.amenities %}checked{% endif %}>
+                  <span class="text-dark">{{ amenity }}</span>
+                </label>
+              {% endfor %}
             </div>
 
-            <!-- Distance -->
-            <div class="filter-group">
-              <h5>Distance from Center</h5>
-              <div class="distance-filters">
-                <label><input type="radio" name="distance" value="1"> Within 1 km</label>
-                <label><input type="radio" name="distance" value="5"> Within 5 km</label>
-                <label><input type="radio" name="distance" value="10"> Within 10 km</label>
-                <label><input type="radio" name="distance" value="any"> Any distance</label>
-              </div>
-            </div>
+            <!-- Distance and Price Range filters removed -->
 
-            <div class="main-button" style="margin-top: 20px;">
-              <a href="#">Apply Filters</a>
+            <div class="main-button mt-4">
+               <a href="#" style='background-color: #ff5a5f;'>Apply Filters</a>
             </div>
-          </div>
+          </form>
         </div>
-        <!-- ***** Filters Sidebar End ***** -->
+      </div>
 
-        <!-- ***** Results Section Start ***** -->
-        <div class="col-lg-9">
-          <!-- Results Header -->
-          <div class="results-header">
-            <div class="row">
-              <div class="col-lg-6">
-                <h4>Found 24 hotels in Miami</h4>
-                <p>Showing 1-12 of 24 results</p>
-              </div>
-              <div class="col-lg-6">
-                <div class="sort-options">
-                  <label>Sort by:</label>
-                  <select class="form-control" style="width: auto; display: inline-block;">
-                    <option>Recommended</option>
-                    <option>Price: Low to High</option>
-                    <option>Price: High to Low</option>
-                    <option>Rating: High to Low</option>
-                    <option>Distance</option>
-                  </select>
-                  <div class="view-toggle">
-                    <a href="#" class="btn active" data-view="grid"><i class="fa fa-th"></i></a>
-                    <a href="#" class="btn" data-view="list"><i class="fa fa-list"></i></a>
-                  </div>
-                </div>
-              </div>
+      <!-- Results Section -->
+      <div class="col-lg-9">
+        <div class="results-header mb-3">
+          <div class="row align-items-center">
+            <div class="col-lg-6">
+              <h4>Found {{ total_hotels }} hotels{% if location_query %} in {{ location_query }}{% endif %}</h4>
+              <p>Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ total_hotels }} results</p>
             </div>
-          </div>
-
-          <!-- Hotels Grid -->
-          <div class="hotels-grid" id="hotelsGrid">
-            <div class="row">
-              <!-- Hotel Card 1 -->
-              <div class="col-lg-6 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Best Seller</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                  <div class="hotel-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                      </div>
-                      <span class="rating-number">4.8</span>
-                      <span class="reviews-count">(124 reviews)</span>
-                    </div>
-                    <h4>Grand Miami Hotel</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-car"></i> Parking</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$189</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                      <div class="original-price">$249</div>
-                    </div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
+            <div class="col-lg-6 text-end">
+              <div class="sort-options d-inline-block me-3">
+                <label class="me-2">Sort by:</label>
+          <form id="filterForm" method="get" action="{% url 'hotels:search_results' %}">
+            <select id="sortSelect" name="sort" class="form-control" style="width: auto; display: inline-block;">
+              <option value="recommended" {% if request.GET.sort == 'recommended' %}selected{% endif %}>Recommended</option>
+              <option value="rating_high" {% if request.GET.sort == 'rating_high' %}selected{% endif %}>Rating: High to Low</option>
+            </select>
+          </form>
               </div>
-
-              <!-- Hotel Card 2 -->
-              <div class="col-lg-6 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/property-02.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Popular</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                  <div class="hotel-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                      </div>
-                      <span class="rating-number">4.5</span>
-                      <span class="reviews-count">(89 reviews)</span>
-                    </div>
-                    <h4>Ocean View Resort</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> South Beach, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                      <span><i class="fa fa-spa"></i> Spa</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$299</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                      <div class="original-price">$399</div>
-                    </div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hotel Card 3 -->
-              <div class="col-lg-6 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/property-03.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Deal</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                  <div class="hotel-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                      </div>
-                      <span class="rating-number">4.3</span>
-                      <span class="reviews-count">(67 reviews)</span>
-                    </div>
-                    <h4>Business Center Hotel</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Brickell, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-car"></i> Parking</span>
-                      <span><i class="fa fa-dumbbell"></i> Gym</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$149</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                      <div class="original-price">$199</div>
-                    </div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Hotel Card 4 -->
-              <div class="col-lg-6 col-md-6">
-                <div class="hotel-card">
-                  <div class="hotel-image">
-                    <img src="{% static 'images/property-04.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Luxury</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                  <div class="hotel-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                      </div>
-                      <span class="rating-number">4.9</span>
-                      <span class="reviews-count">(156 reviews)</span>
-                    </div>
-                    <h4>Luxury Suites Miami</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Aventura, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                      <span><i class="fa fa-spa"></i> Spa</span>
-                    </div>
-                    <div class="hotel-price">
-                      <div class="price">
-                        <span class="current-price">$449</span>
-                        <span class="price-period">/night</span>
-                      </div>
-                      <div class="original-price">$599</div>
-                    </div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Hotels List View (Hidden by default) -->
-          <div class="hotels-list" id="hotelsList" style="display: none;">
-            <!-- Hotel List Item 1 -->
-            <div class="hotel-list-item">
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="hotel-list-image">
-                    <img src="{% static 'images/property-01.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Best Seller</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-5">
-                  <div class="hotel-list-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                      </div>
-                      <span class="rating-number">4.8</span>
-                      <span class="reviews-count">(124 reviews)</span>
-                    </div>
-                    <h4>Grand Miami Hotel</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Downtown Miami, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-car"></i> Parking</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                      <span><i class="fa fa-spa"></i> Spa</span>
-                    </div>
-                    <p class="hotel-description">Experience luxury in the heart of downtown Miami. Our hotel offers world-class amenities, stunning city views, and exceptional service for both business and leisure travelers.</p>
-                  </div>
-                </div>
-                <div class="col-lg-3">
-                  <div class="hotel-list-price">
-                    <div class="price">
-                      <span class="current-price">$189</span>
-                      <span class="price-period">/night</span>
-                    </div>
-                    <div class="original-price">$249</div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hotel List Item 2 -->
-            <div class="hotel-list-item">
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="hotel-list-image">
-                    <img src="{% static 'images/property-02.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Popular</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-5">
-                  <div class="hotel-list-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                      </div>
-                      <span class="rating-number">4.5</span>
-                      <span class="reviews-count">(89 reviews)</span>
-                    </div>
-                    <h4>Ocean View Resort</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> South Beach, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                      <span><i class="fa fa-spa"></i> Spa</span>
-                      <span><i class="fa fa-utensils"></i> Restaurant</span>
-                    </div>
-                    <p class="hotel-description">Wake up to breathtaking ocean views at our luxury resort. Located on the famous South Beach, we offer direct beach access and premium amenities.</p>
-                  </div>
-                </div>
-                <div class="col-lg-3">
-                  <div class="hotel-list-price">
-                    <div class="price">
-                      <span class="current-price">$299</span>
-                      <span class="price-period">/night</span>
-                    </div>
-                    <div class="original-price">$399</div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hotel List Item 3 -->
-            <div class="hotel-list-item">
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="hotel-list-image">
-                    <img src="{% static 'images/property-03.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Deal</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-5">
-                  <div class="hotel-list-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star-o"></i>
-                      </div>
-                      <span class="rating-number">4.3</span>
-                      <span class="reviews-count">(67 reviews)</span>
-                    </div>
-                    <h4>Business Center Hotel</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Brickell, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-car"></i> Parking</span>
-                      <span><i class="fa fa-dumbbell"></i> Gym</span>
-                      <span><i class="fa fa-utensils"></i> Restaurant</span>
-                    </div>
-                    <p class="hotel-description">Perfect for business travelers in the heart of Miami's financial district. Modern rooms, meeting facilities, and easy access to downtown attractions.</p>
-                  </div>
-                </div>
-                <div class="col-lg-3">
-                  <div class="hotel-list-price">
-                    <div class="price">
-                      <span class="current-price">$149</span>
-                      <span class="price-period">/night</span>
-                    </div>
-                    <div class="original-price">$199</div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Hotel List Item 4 -->
-            <div class="hotel-list-item">
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="hotel-list-image">
-                    <img src="{% static 'images/property-04.jpg' %}" alt="Hotel Image">
-                    <div class="hotel-badge">Luxury</div>
-                    <div class="hotel-actions">
-                      <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-lg-5">
-                  <div class="hotel-list-content">
-                    <div class="hotel-rating">
-                      <div class="stars">
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                        <i class="fa fa-star"></i>
-                      </div>
-                      <span class="rating-number">4.9</span>
-                      <span class="reviews-count">(156 reviews)</span>
-                    </div>
-                    <h4>Luxury Suites Miami</h4>
-                    <p class="hotel-location"><i class="fa fa-map-marker"></i> Aventura, FL</p>
-                    <div class="hotel-amenities">
-                      <span><i class="fa fa-wifi"></i> Free WiFi</span>
-                      <span><i class="fa fa-swimming-pool"></i> Pool</span>
-                      <span><i class="fa fa-spa"></i> Spa</span>
-                      <span><i class="fa fa-utensils"></i> Restaurant</span>
-                    </div>
-                    <p class="hotel-description">Ultimate luxury experience with spacious suites, premium amenities, and personalized service. Perfect for special occasions and VIP guests.</p>
-                  </div>
-                </div>
-                <div class="col-lg-3">
-                  <div class="hotel-list-price">
-                    <div class="price">
-                      <span class="current-price">$449</span>
-                      <span class="price-period">/night</span>
-                    </div>
-                    <div class="original-price">$599</div>
-                    <div class="main-button">
-                      <a href="#">View Details</a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Professional Pagination -->
-          <div class="pagination-section">
-            <div class="pagination-container">
-              <div class="pagination-info">
-                <span>Showing 1-9 of 25 hotels</span>
-              </div>
-              <div class="pagination-buttons">
-                <button class="pagination-btn prev-btn" disabled>
-                  <i class="fa fa-chevron-left"></i>
-                  <span>Previous</span>
-                </button>
-                <div class="page-numbers">
-                  <button class="pagination-btn page-btn active">1</button>
-                  <button class="pagination-btn page-btn">2</button>
-                  <button class="pagination-btn page-btn">3</button>
-                  <button class="pagination-btn page-btn">4</button>
-                  <button class="pagination-btn page-btn">5</button>
-                  <span class="pagination-dots">...</span>
-                  <button class="pagination-btn page-btn">12</button>
-                </div>
-                <button class="pagination-btn next-btn">
-                  <span>Next</span>
-                  <i class="fa fa-chevron-right"></i>
-                </button>
+              <div class="view-toggle d-inline-block">
+                  <a href="#" class="btn active" data-view="grid"><i class="fa fa-th"></i></a>
+                  <a href="#" class="btn" data-view="list"><i class="fa fa-list"></i></a>
               </div>
             </div>
           </div>
         </div>
-        <!-- ***** Results Section End ***** -->
+
+        <!-- Hotel Views Container -->
+        
+        <!-- START: Hotels Grid View (Initial View) -->
+        <div class="hotels-grid" id="hotelsGrid">
+
+          <div class="row">
+            {% if page_obj %}
+              {% for hotel in page_obj %}
+                <div class="col-lg-6 col-md-6">
+                  <div class="hotel-card">
+                    <div class="hotel-image">
+                      {% if hotel.photo %}
+                        <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
+                      {% else %}
+                        <img src="{% static 'images/default-hotel.jpg' %}" alt="Default Hotel">
+                      {% endif %}
+                      <div class="hotel-badge">
+                        {% if hotel.star_rating >= 5 %} Luxury
+                        {% elif hotel.star_rating == 4 %} Popular
+                        {% elif hotel.star_rating == 3 %} Deal
+                        {% else %} Best Seller
+                        {% endif %}
+                      </div>
+                      <div class="hotel-actions">
+                        <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
+                      </div>
+                    </div>
+                    
+                    <div class="hotel-content">
+                      <div class="hotel-rating">
+                        <div class="stars">
+                          {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= hotel.star_rating %}
+                              <i class="fa fa-star"></i>
+                            {% else %}
+                              <i class="fa fa-star-o"></i>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                        <span class="rating-number">{{ hotel.star_rating|default:"-" }}</span>
+                        {% if hotel.reviews_count %}
+                          <span class="reviews-count">({{ hotel.reviews_count }} reviews)</span>
+                        {% endif %}
+                      </div>
+
+                      <h4>{{ hotel.hotel_name }}</h4>
+                      <p class="hotel-location">
+                        <i class="fa fa-map-marker"></i> {{ hotel.city }}, {{ hotel.country }}
+                      </p>
+
+                      {% if hotel.amenities_list %}
+                      <div class="hotel-amenities">
+                        {% for amenity in hotel.amenities_list|slice:":3" %}
+                          <span><i class="fa fa-check"></i> {{ amenity }}</span>
+                        {% endfor %}
+                      </div>
+                      {% endif %}
+
+                      <div class="hotel-price">
+                        {% if hotel.price %}
+                          <div class="price">
+                            <span class="current-price">${{ hotel.price }}</span>
+                            <span class="price-period">/night</span>
+                          </div>
+                        {% endif %}
+                      </div>
+
+                      <div class="main-button">
+                        <a href="{% url 'hotels:hotel_detail' hotel.id %}">View Details</a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-center">No hotels found matching your filters.</p>
+            {% endif %}
+          </div>
+        </div>
+        <!-- END: Hotels Grid View -->
+
+        <!-- START: Hotels List View (Initially Hidden) -->
+        <div class="hotels-list" id="hotelsList" style="display: none;">
+          <div class="row">
+            {% if page_obj %}
+              {% for hotel in page_obj %}
+                <div class="col-lg-12">
+                  <div class="hotel-list-item">
+                    <div class="hotel-image">
+                      {% if hotel.photo %}
+                        <img src="{{ hotel.photo.url }}" alt="{{ hotel.hotel_name }}">
+                      {% else %}
+                        <img src="{% static 'images/default-hotel.jpg' %}" alt="Default Hotel">
+                      {% endif %}
+                      <div class="hotel-badge">
+                        {% if hotel.star_rating >= 5 %} Luxury
+                        {% elif hotel.star_rating == 4 %} Popular
+                        {% elif hotel.star_rating == 3 %} Deal
+                        {% else %} Best Seller
+                        {% endif %}
+                      </div>
+                      <div class="hotel-actions">
+                        <button class="btn-heart"><i class="fa fa-heart-o"></i></button>
+                      </div>
+                    </div>
+                    
+                    <div class="hotel-content">
+                      <div class="hotel-details">
+                        <div class="top-info">
+                            <div class="hotel-rating">
+                                <div class="stars">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= hotel.star_rating %}
+                                            <i class="fa fa-star"></i>
+                                        {% else %}
+                                            <i class="fa fa-star-o"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <span class="rating-number">{{ hotel.star_rating|default:"-" }}</span>
+                                {% if hotel.reviews_count %}
+                                    <span class="reviews-count">({{ hotel.reviews_count }} reviews)</span>
+                                {% endif %}
+                            </div>
+                            <h4 class="mt-2">{{ hotel.hotel_name }}</h4>
+                            <p class="hotel-location">
+                                <i class="fa fa-map-marker"></i> {{ hotel.city }}, {{ hotel.country }}
+                            </p>
+                        </div>
+                        
+                        {% if hotel.amenities_list %}
+                        <div class="hotel-amenities">
+                          {% for amenity in hotel.amenities_list|slice:":4" %}
+                            <span><i class="fa fa-check"></i> {{ amenity }}</span>
+                          {% endfor %}
+                        </div>
+                        {% endif %}
+                      </div>
+
+                      <div class="hotel-pricing-action">
+                        <div class="hotel-price">
+                          {% if hotel.price %}
+                            <div class="price">
+                              <span class="current-price">${{ hotel.price }}</span>
+                              <span class="price-period">/night</span>
+                            </div>
+                          {% endif %}
+                        </div>
+
+                        <div class="main-button">
+                          <a href="{% url 'hotels:hotel_detail' hotel.id %}">View Details</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="text-center">No hotels found matching your filters.</p>
+            {% endif %}
+          </div>
+        </div>
+        <!-- END: Hotels List View -->
+
       </div>
     </div>
   </div>
-
-  <!-- ***** Map Section Start ***** -->
   <div class="section map-section">
     <div class="container">
       <div class="row">
@@ -586,24 +478,22 @@
       </div>
     </div>
   </div>
-  <!-- ***** Map Section End ***** -->
-
+</div>
 {% endblock %}
 {% block extra_js %}
 <script>
-    // View Toggle Functionality
+    // Ensure jQuery is loaded for this script to work
     $(document).ready(function() {
-      // View toggle buttons
+      
+      // --- 1. View Toggle Functionality ---
       $('.view-toggle a').click(function(e) {
         e.preventDefault();
         
-        // Remove active class from all buttons
+        // Remove active class from all buttons and add to the clicked one
         $('.view-toggle a').removeClass('active');
-        
-        // Add active class to clicked button
         $(this).addClass('active');
         
-        // Get view type
+        // Get view type (either 'grid' or 'list')
         var viewType = $(this).data('view');
         
         if (viewType === 'grid') {
@@ -617,100 +507,143 @@
         }
       });
       
-      // Price range slider functionality
-      $('#priceRange').on('input', function() {
-        var price = $(this).val();
-        $('.current-price').text('$' + price + ' per night');
-      });
-      
-      // Heart button functionality
+      // --- 2. Heart button functionality ---
       $('.btn-heart').click(function(e) {
         e.preventDefault();
+        // Prevent event from bubbling up and triggering parent link/button actions
+        e.stopPropagation(); 
+        
         var icon = $(this).find('i');
         
         if (icon.hasClass('fa-heart-o')) {
+          // Fill heart (add to wishlist)
           icon.removeClass('fa-heart-o').addClass('fa-heart');
           $(this).css('background', '#f35525').css('color', '#fff');
         } else {
+          // Unfill heart (remove from wishlist)
           icon.removeClass('fa-heart').addClass('fa-heart-o');
-          $(this).css('background', 'rgba(255, 255, 255, 0.9)').css('color', '#666');
+          $(this).css('background', 'rgba(255, 255, 255, 0.9)').css('color', '#ff5a5f');
         }
       });
       
-      // Filter functionality
-      $('.filter-group input').change(function() {
-        // This is where you would implement actual filtering
-        console.log('Filter changed:', $(this).attr('name'), $(this).val());
+      // --- 3. Guests Slider Functionality (New) ---
+      $('#guestsRange').on('input', function() {
+        var guests = $(this).val();
+        var label = guests + ' Guest' + (guests > 1 ? 's' : '');
+        $('.current-guests').text(label);
+      }).trigger('input'); // Trigger on load to show initial value
+      
+      // --- 4. Filter Button Action ---
+      // This ensures the "Apply Filters" button in the sidebar submits the form
+      $('.filters-sidebar .main-button a').click(function(e) {
+          e.preventDefault();
+          // Set the value of the Guests slider input before submitting
+          var guestsValue = $('#guestsRange').val();
+          $('input[name="guests_count"]').val(guestsValue);
+          $(this).closest('form').submit();
       });
-      
-      // Search form functionality
-      $('.search-form').submit(function(e) {
-        e.preventDefault();
-        // This is where you would implement actual search
-        console.log('Search submitted');
-      });
-      
-      // Pagination functionality
-      $('.pagination-btn').click(function(e) {
-        e.preventDefault();
-        
-        if ($(this).hasClass('page-btn')) {
-          // Remove active class from all page buttons
-          $('.page-btn').removeClass('active');
-          // Add active class to clicked button
-          $(this).addClass('active');
-          
-          // Update pagination info
-          var pageNumber = $(this).text();
-          var startItem = (parseInt(pageNumber) - 1) * 9 + 1;
-          var endItem = Math.min(parseInt(pageNumber) * 9, 25);
-          $('.pagination-info span').text('Showing ' + startItem + '-' + endItem + ' of 25 hotels');
-          
-          // Update previous/next button states
-          updatePaginationButtons(pageNumber);
-          
-          console.log('Page changed to:', pageNumber);
-        } else if ($(this).hasClass('prev-btn')) {
-          var currentPage = parseInt($('.page-btn.active').text());
-          if (currentPage > 1) {
-            $('.page-btn').removeClass('active');
-            $('.page-btn').eq(currentPage - 2).addClass('active');
-            updatePaginationButtons(currentPage - 1);
-          }
-        } else if ($(this).hasClass('next-btn')) {
-          var currentPage = parseInt($('.page-btn.active').text());
-          if (currentPage < 12) {
-            $('.page-btn').removeClass('active');
-            $('.page-btn').eq(currentPage).addClass('active');
-            updatePaginationButtons(currentPage + 1);
-          }
-        }
-      });
-      
-      
-      // Function to update pagination button states
-      function updatePaginationButtons(currentPage) {
-        var totalPages = 12;
-        
-        // Update previous button
-        if (currentPage <= 1) {
-          $('.prev-btn').prop('disabled', true);
-        } else {
-          $('.prev-btn').prop('disabled', false);
-        }
-        
-        // Update next button
-        if (currentPage >= totalPages) {
-          $('.next-btn').prop('disabled', true);
-        } else {
-          $('.next-btn').prop('disabled', false);
-        }
-        
-        // Update pagination info
-        var startItem = (currentPage - 1) * 9 + 1;
-        var endItem = Math.min(currentPage * 9, 25);
-        $('.pagination-info span').text('Showing ' + startItem + '-' + endItem + ' of 25 hotels');
-      }
+
     });
-  </script>
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const sortSelect = document.getElementById('sortSelect'); // your <select> should have this id
+  const resultsContainer = document.getElementById('hotel-results');
+  const form = document.getElementById('filterForm'); // optional: if you use a form
+
+  // helper: build url with current query params + overrides
+  function buildUrl(overrides = {}) {
+    // use current location.search as base
+    const params = new URLSearchParams(window.location.search);
+    for (const k in overrides) {
+      if (overrides[k] === null || overrides[k] === undefined || overrides[k] === '') {
+        params.delete(k);
+      } else {
+        params.set(k, overrides[k]);
+      }
+    }
+    // keep path (same page)
+    return window.location.pathname + '?' + params.toString();
+  }
+
+  // Replace inner HTML of #hotel-results by extracting from returned full page
+  function replaceResultsHtml(htmlText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlText, 'text/html');
+    const newResults = doc.getElementById('hotel-results');
+    if (!newResults) {
+      console.error('AJAX: could not find #hotel-results inside response');
+      return;
+    }
+    // replace only innerHTML so event bindings elsewhere remain
+    resultsContainer.innerHTML = newResults.innerHTML;
+
+    // update url in address bar (optional, keeps GET state)
+    window.history.replaceState({}, '', doc.location.pathname + doc.location.search);
+  }
+
+  // Generic AJAX loader: fetch full page and swap
+  function ajaxLoad(url) {
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest' // optional, but sometimes used server-side
+      },
+      credentials: 'same-origin'
+    })
+    .then(resp => {
+      if (!resp.ok) throw new Error('Network response was not ok');
+      return resp.text();
+    })
+    .then(html => replaceResultsHtml(html))
+    .catch(err => {
+      console.error('AJAX load error:', err);
+      // optionally show a message to the user
+    });
+  }
+
+  // Hook the sort select (call with current form values)
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function () {
+      // build URL keeping other GET params (if filter form exists)
+      // This expects your sort <select> has name="sort" and is inside #filterForm OR you want to set override explicitly
+      const url = buildUrl({ sort: this.value, page: 1 }); // reset to first page on sort
+      ajaxLoad(url);
+    });
+  }
+
+  // If you have a filter form and want to submit via AJAX:
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const data = new FormData(form);
+      const params = new URLSearchParams(data);
+      // ensure page=1 for fresh filter
+      params.set('page', 1);
+      const url = window.location.pathname + '?' + params.toString();
+      ajaxLoad(url);
+    });
+  }
+
+
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('a');
+    if (!el) return;
+
+    if (el.closest('#hotel-results') || el.classList.contains('ajax-page')) {
+      const href = el.getAttribute('href');
+      if (href && href.includes('page=')) {
+        e.preventDefault();
+        const fullUrl = href.startsWith('/') ? href : (window.location.pathname + '?' + href);
+        ajaxLoad(fullUrl);
+      }
+    }
+  }, true);
+});
+</script>
+
+
 {% endblock %}
+
+

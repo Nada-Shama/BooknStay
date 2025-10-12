@@ -52,8 +52,7 @@ def redirect_user(user):
         return redirect('/admin/')  # admins → Django Admin
     return redirect('home')
 
-def home(request):
-    return render(request, 'users/home.html')
+
 
 def contact(request):
     return render(request, 'users/contact.html')
