@@ -78,36 +78,27 @@
             </div>
             <div class="od-card">
               <div class="row">
+                {% for h in latest_hotels %}
                 <div class="col-lg-6 col-md-6 mb-30">
                   <div class="item">
-                    <a href="#"><img src="{% static 'images/property-01.jpg' %}" alt="Grand Miami Hotel"></a>
+                    <a href="{% url 'hotels:hotel_detail' h.id %}">
+                      <img src="{% if h.photo %}{{ h.photo.url }}{% else %}{% static 'images/property-01.jpg' %}{% endif %}" alt="{{ h.hotel_name }}">
+                    </a>
                     <span class="category">Hotel</span>
-                    <h6>Downtown Miami, FL</h6>
-                    <h4><a href="#">Grand Miami Hotel</a></h4>
+                    <h6>{{ h.city }}, {{ h.state }}</h6>
+                    <h4><a href="{% url 'hotels:hotel_detail' h.id %}">{{ h.hotel_name }}</a></h4>
                     <ul>
-                      <li>Amenities: <span>WiFi, Parking, Pool, Spa</span></li>
-                      <li>Rating: <span>4.8</span></li>
+                      <li>Amenities: <span>{{ h.amenities|join:', ' }}</span></li>
+                      <li>Rating: <span>{{ h.star_rating|default:'-' }}</span></li>
                     </ul>
                     <div class="main-button">
-                      <a href="#">View</a>
+                      <a href="{% url 'hotels:hotel_detail' h.id %}">View</a>
                     </div>
                   </div>
                 </div>
-                <div class="col-lg-6 col-md-6 mb-30">
-                  <div class="item">
-                    <a href="#"><img src="{% static 'images/property-02.jpg' %}" alt="Ocean View Resort"></a>
-                    <span class="category">Hotel</span>
-                    <h6>South Beach, FL</h6>
-                    <h4><a href="#">Ocean View Resort</a></h4>
-                    <ul>
-                      <li>Amenities: <span>WiFi, Pool, Spa</span></li>
-                      <li>Rating: <span>4.5</span></li>
-                    </ul>
-                    <div class="main-button">
-                      <a href="#">View</a>
-                    </div>
-                  </div>
-                </div>
+                {% empty %}
+                <div class="col-12"><p class="text-muted mb-0">No hotels yet.</p></div>
+                {% endfor %}
               </div>
             </div>
 

@@ -211,8 +211,10 @@ def owner_register(request):
 def owner_dashboard(request):
     # Recent bookings for hotels owned by this user
     recent_bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user')[:10]
+    latest_hotels = Hotel.objects.filter(owner=request.user).order_by('-created_at')[:2]
     return render(request, 'users/owner-dashboard.html', {
         'recent_bookings': recent_bookings,
+        'latest_hotels': latest_hotels,
     })
 
 
