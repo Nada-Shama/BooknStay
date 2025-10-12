@@ -8,6 +8,7 @@ from datetime import datetime, date
 from hotels.models import Hotel, Room
 from .models import Booking
 from calendar import monthrange
+from django.forms.models import model_to_dict
 
 # Create your views here.
 def booking(request, hotel_id):
@@ -218,7 +219,7 @@ def modify_booking(request, booking_id):
 @login_required
 @require_http_methods(["GET"])
 def owner_bookings_calendar_data(request):
-    """Return per-day booking counts for a given room/month (owner/admin only)."""
+    """Return per-day users occupying the room for a given month (owner/admin only)."""
     room_id = request.GET.get('room_id')
     if not room_id:
         return JsonResponse({'error': 'room_id is required'}, status=400)
@@ -239,44 +240,54 @@ def owner_bookings_calendar_data(request):
     first_day = date(year, month, 1)
     last_day = date(year, month, monthrange(year, month)[1])
 
-    # Overlapping bookings in month
-    bookings = Booking.objects.filter(
+    # Overlapping bookings in month with user
+    bookings = Booking.objects.select_related('user').filter(
         room=room,
         status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
         check_in__lte=last_day,
         check_out__gte=first_day,
-    ).values('check_in', 'check_out')
+    )
 
-    counts = {d: 0 for d in range(1, monthrange(year, month)[1] + 1)}
+    # Stable palette for users
+    palette = [
+        '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#e74c3c',
+        '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#c0392b'
+    ]
+
+    def user_color(u) -> str:
+        key = (u.id if u and getattr(u, 'id', None) else 0)
+        return palette[key % len(palette)]
+
+    def user_name(b: Booking) -> str:
+        if b.user:
+            fn = (getattr(b.user, 'first_name', '') or '').strip()
+            ln = (getattr(b.user, 'last_name', '') or '').strip()
+            if fn or ln:
+                return (fn + ' ' + ln).strip()
+            return getattr(b.user, 'username', 'Guest')
+        full = ((b.guest_first_name or '').strip() + ' ' + (b.guest_last_name or '').strip()).strip()
+        return full or (b.guest_email or 'Guest')
+
+    days = {}
+    # Iterate bookings and populate day users (exclude checkout day)
     for b in bookings:
-        start = max(b['check_in'], first_day)
-        end = min(b['check_out'], last_day)
+        start = max(b.check_in, first_day)
+        end = min(b.check_out, last_day)
         cur = start
-        while cur <= end:
-            # Count nights (exclude checkout day)
-            if cur < b['check_out']:
-                counts[cur.day] += 1
-            # add one day safely
+        while cur < end:  # exclude checkout day
+            key = cur.strftime('%Y-%m-%d')
+            days.setdefault(key, [])
+            # Deduplicate users per day
+            if not any((u.get('user_id') == (b.user_id or -1)) for u in days[key]):
+                days[key].append({
+                    'user_id': b.user_id or -1,
+                    'booking_id': b.id,
+                    'name': user_name(b),
+                    'color': user_color(b.user),
+                })
             cur = cur + (last_day - last_day.replace(day=last_day.day - 1))
 
-    def color_for(count: int) -> str:
-        if count >= 10:
-            return '#e74c3c'
-        if count >= 5:
-            return '#f39c12'
-        return '#2ecc71'
-
-    events = []
-    for d, c in counts.items():
-        if c <= 0:
-            continue
-        events.append({
-            'title': f'{c} bookings',
-            'start': f'{year}-{month:02d}-{d:02d}',
-            'color': color_for(c),
-            'allDay': True,
-        })
-    return JsonResponse(events, safe=False)
+    return JsonResponse({'success': True, 'days': days})
 
 @login_required
 @require_http_methods(["GET"])
@@ -351,6 +362,8 @@ def owner_update_booking(request, booking_id):
 
     check_in_str = request.POST.get('check_in')
     check_out_str = request.POST.get('check_out')
+    check_in_time_str = request.POST.get('check_in_time')
+    check_out_time_str = request.POST.get('check_out_time')
     num_guests_str = request.POST.get('num_guests')
 
     if check_in_str:
@@ -368,6 +381,18 @@ def owner_update_booking(request, booking_id):
             booking.num_guests = int(num_guests_str)
         except ValueError:
             return JsonResponse({'error': 'Invalid guests'}, status=400)
+    # Optional times
+    from datetime import time
+    def parse_time(s):
+        try:
+            h, m = s.split(':')
+            return time(int(h), int(m))
+        except Exception:
+            return None
+    if check_in_time_str:
+        booking.check_in_time = parse_time(check_in_time_str) or None
+    if check_out_time_str:
+        booking.check_out_time = parse_time(check_out_time_str) or None
 
     if booking.check_in >= booking.check_out:
         return JsonResponse({'error': 'check_out must be after check_in'}, status=400)
@@ -387,6 +412,32 @@ def owner_update_booking(request, booking_id):
     booking.save()
     return JsonResponse({'success': True})
 
+
+@login_required
+@require_http_methods(["GET"])
+def owner_booking_detail(request, booking_id):
+    booking = get_object_or_404(Booking, id=booking_id)
+    user = request.user
+    is_owner = getattr(user, 'is_owner', lambda: False)()
+    if not (user.is_staff or user.is_superuser or (is_owner and booking.hotel.owner_id == user.id)):
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+    data = {
+        'id': booking.id,
+        'guest_first_name': booking.guest_first_name,
+        'guest_last_name': booking.guest_last_name,
+        'guest_email': booking.guest_email,
+        'guest_phone': booking.guest_phone,
+        'num_guests': booking.num_guests,
+        'check_in': booking.check_in.isoformat(),
+        'check_out': booking.check_out.isoformat(),
+        'check_in_time': booking.check_in_time.isoformat() if booking.check_in_time else '',
+        'check_out_time': booking.check_out_time.isoformat() if booking.check_out_time else '',
+        'special_requests': booking.special_requests,
+        'room_id': booking.room_id,
+        'hotel_id': booking.hotel_id,
+        'status': booking.status,
+    }
+    return JsonResponse({'success': True, 'booking': data})
 
 @login_required
 @require_http_methods(["POST"])

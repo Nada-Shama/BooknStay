@@ -3,6 +3,25 @@
 {% block title %}Bookings Management{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
+<style>
+  .od-calendar-grid .day{ position:relative; overflow:visible; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; transform-origin:center center; }
+  .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
+  .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; cursor:crosshair; }
+  .od-calendar-grid .day .user-names .user-line{ display:block; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:crosshair; font-size:10px; line-height:12px; }
+  .od-calendar-grid .day .day-num{ font-weight:600; }
+  .od-calendar-grid .day:hover{ z-index:3; transform:scale(1.25); box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
+  .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
+  .od-calendar-grid .day:hover .user-names{ color:#fff; }
+  .od-calendar-grid .day:hover .user-names .user-line{ white-space:normal; overflow:visible; text-overflow:clip; }
+  /* remove separate hover popover; expand same cell instead */
+  .od-calendar-grid .day:hover .day-num{ color:#f35525; }
+  .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
+  .od-calendar-grid .day[data-overlap="1"]{ box-shadow:0 0 0 2px #f35525 inset; background:#ffe8e8 !important; }
+  /* Overlap hover: make names medium red for contrast */
+  .od-calendar-grid .day[data-overlap="1"]:hover .user-names{ color:#dc3545; }
+  .od-calendar-grid .day[data-overlap="1"]:hover .user-names .user-line{ color:#dc3545; }
+  /* removed hover-details usage */
+</style>
 {% endblock %}
 {% block content %}
 
@@ -44,7 +63,7 @@
               <h2>Room Calendar</h2>
             </div>
 
-            <div class="row g-2 mb-3">
+            <div class="row g-2 mb-3" id="controlsMonth">
               <div class="col-md-8">
                 <label class="form-label">Select Room</label>
                 <select id="roomSelect" class="form-control">
@@ -76,6 +95,26 @@
                 <input id="yearInput" class="form-control" type="number" min="2000" max="2100" />
               </div>
             </div>
+            <div class="row g-2 mb-3" id="controlsDay" style="display:none;">
+              <div class="col-md-8">
+                <label class="form-label">Select Room</label>
+                <select id="roomSelect2" class="form-control"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Day</label>
+                <input id="dayInput" type="date" class="form-control" />
+              </div>
+            </div>
+            <div class="row g-2 mb-3" id="controlsWeek" style="display:none;">
+              <div class="col-md-6">
+                <label class="form-label">Week of</label>
+                <div class="d-flex align-items-center" style="gap:6px;">
+                  <button class="btn btn-sm btn-outline-secondary" id="weekPrev" type="button">◀</button>
+                  <input id="weekInput" type="date" class="form-control">
+                  <button class="btn btn-sm btn-outline-secondary" id="weekNext" type="button">▶</button>
+                </div>
+              </div>
+            </div>
 
             <div class="od-calendar">
               <div class="od-calendar-header">
@@ -87,7 +126,7 @@
                 </div>
               </div>
               <div class="od-calendar-grid" id="calGrid"></div>
-              <div class="note">Colors indicate current load per day.</div>
+              <div class="note">Each user gets a unique color. Light shade fills their days.</div>
             </div>
             <div class="mt-3" id="bookingList"></div>
           </section>
@@ -101,6 +140,7 @@
 (function(){
   function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
   function pad(n){ return (n<10?'0':'') + n; }
+  function iso(d){ return d.toISOString().slice(0,10); }
   function renderGrid(year, month){
     const grid = document.getElementById('calGrid');
     const title = document.getElementById('calTitle');
@@ -114,45 +154,151 @@
     dows.forEach(d=>{ const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h); });
     for(let i=0;i<firstDow;i++){ const padCell=document.createElement('div'); padCell.className='pad'; grid.appendChild(padCell); }
     for(let d=1; d<=dim; d++){
-      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d;
-      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+d+'</div>';
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d; cell.dataset.iso = iso(new Date(year, month-1, d));
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d+'</div>';
       grid.appendChild(cell);
     }
   }
-  function applyCounts(events){
+  function renderWeekByDate(startDate){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    title.textContent = 'Week view';
+    const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    // Header row
+    dows.forEach(d=>{ const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h); });
+    // Cells row
+    for(let i=0;i<7;i++){
+      const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+i);
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d.getDate(); cell.dataset.iso = iso(d);
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d.getDate()+'</div>';
+      grid.appendChild(cell);
+    }
+  }
+  function renderSingleDay(dateObj){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    title.textContent = 'Day view';
+    const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    // Header row across 7 columns
+    dows.forEach(d=>{ const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h); });
+    // Determine Monday-based index of selected day
+    const idx = (dateObj.getDay()+6)%7; // Mon=0..Sun=6
+    // Add pad cells before the day cell
+    for(let i=0;i<idx;i++){ const pad=document.createElement('div'); pad.className='pad'; grid.appendChild(pad); }
+    // Add the single day cell in correct column
+    const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=dateObj.getDate(); cell.dataset.iso = iso(dateObj);
+    cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+dateObj.getDate()+'</div>';
+    grid.appendChild(cell);
+    // Fill remaining columns with pads to keep grid consistent (optional)
+    for(let i=idx+1;i<7;i++){ const pad=document.createElement('div'); pad.className='pad'; grid.appendChild(pad); }
+  }
+  function applyCounts(payload){
     const grid = document.getElementById('calGrid');
     if(!grid) return;
     grid.querySelectorAll('.res-count').forEach(n=>{ n.style.display='none'; n.textContent=''; });
-    (events||[]).forEach(ev=>{
-      const d = new Date(ev.start).getDate();
-      const cell = grid.querySelector('.day[data-day="'+d+'"]');
-      if(cell){
-        const badge = cell.querySelector('.res-count');
-        if(badge){ badge.style.display='inline-block'; badge.textContent=(ev.title||'').replace(/\D/g,'')||'1'; }
-        cell.style.boxShadow = '0 0 0 2px '+(ev.color||'#2ecc71')+' inset';
-      }
+    if(!payload || !payload.success) return;
+    const days = payload.days||{};
+    Object.keys(days).forEach(iso=>{
+      const cell = grid.querySelector('.day[data-iso="'+iso+'"]') || grid.querySelector('.day[data-day="'+(new Date(iso).getDate())+'"]');
+      if(!cell) return;
+      const users = days[iso];
+      // Compose labels and compute blended background (use first color lightly)
+      const first = users[0] || {};
+      const color = first.color || '#2ecc71';
+      cell.style.boxShadow = '0 0 0 2px '+color+' inset';
+      cell.style.background = color + '1A'; // ~10% opacity if supported
+      // Top-left triangle badge
+      cell.style.position = 'relative';
+      cell.style.setProperty('--uclr', color);
+      const tri = document.createElement('div');
+      tri.className = 'triangle';
+      tri.style.borderTop = '20px solid '+color;
+      tri.style.borderRight = '17px solid transparent';
+      cell.appendChild(tri);
+      // Names list as numbered lines
+      const small = document.createElement('div');
+      small.className = 'user-names';
+      cell.appendChild(small);
+      users.forEach(function(u, idx){
+        const p = document.createElement('p');
+        p.className = 'user-line';
+        p.textContent = `${idx+1}- ${u.name||'Guest'}`;
+        p.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
+          fetch(`/bookings/owner/detail/${u.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+            .then(r=>r.json()).then(d=>{
+              if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
+              m.dataset.id = u.booking_id;
+              document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+              document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+              document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+              document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+              document.getElementById('ownerEditGuests').value = b.num_guests||1;
+              document.getElementById('ownerEditMsg').innerHTML = '';
+              const t = document.querySelector('#ownerEditModal .custom-modal__title');
+              if(t){
+                let nm = `${(b.guest_first_name||'').trim()} ${(b.guest_last_name||'').trim()}`.trim();
+                if(!nm) nm = (u.name||'').trim() || (b.guest_email||'Guest');
+                t.textContent = 'Edit Booking for ' + nm;
+              }
+              m.style.display = 'flex';
+            });
+        });
+        small.appendChild(p);
+      });
+      if(users.length > 1){ cell.setAttribute('data-overlap','1'); }
+    });
+    // Mark empty days for hover label
+    grid.querySelectorAll('.day').forEach(cell=>{
+      if(!cell.querySelector('.user-names')){ cell.setAttribute('data-empty','1'); }
     });
   }
   function fetchData(){
-    const roomId = document.getElementById('roomSelect').value;
+    const activeViewBtn = document.querySelector('.js-view.active');
+    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
+    const roomId = (view==='day' ? document.getElementById('roomSelect2').value : document.getElementById('roomSelect').value);
     if(!roomId){
       document.getElementById('calGrid').innerHTML = '';
       document.getElementById('bookingList').innerHTML = '';
       return;
     }
-    const month = document.getElementById('monthSelect').value;
     let year = parseInt(document.getElementById('yearInput').value,10);
     if(!year || isNaN(year)){ year = new Date().getFullYear(); }
+    if(view==='week'){
+      const month = document.getElementById('monthSelect').value;
+      // choose week start based on today within month for simplicity
+      const baseVal = document.getElementById('weekInput').value;
+      const base = baseVal ? new Date(baseVal) : new Date();
+      const monday = new Date(base.getFullYear(), base.getMonth(), base.getDate() - ((base.getDay()+6)%7));
+      renderWeekByDate(monday);
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=week`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    if(view==='day'){
+      const dayVal = document.getElementById('dayInput').value;
+      const d = dayVal ? new Date(dayVal) : new Date();
+      const month = d.getMonth()+1;
+      renderSingleDay(d);
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}&view=day&day=${d.getDate()}`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    // month
+    const month = document.getElementById('monthSelect').value;
     renderGrid(year, parseInt(month,10));
-    const url = `/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`;
-    fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} })
-      .then(r=>r.json())
-      .then(applyCounts)
-      .catch(()=>{});
-    // Load list by selected view
-    const activeViewBtn = document.querySelector('.js-view.active');
-    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
-    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=${view}`;
+    fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+      .then(r=>r.json()).then(applyCounts).catch(()=>{});
+    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=month`;
     fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
       .then(r=>r.json())
       .then(renderList)
@@ -172,9 +318,9 @@
         <td>${b.paid}</td>
         <td>${b.first_time_guest}</td>
         <td>${b.status}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}"><i class="fa fa-pencil"></i></button>
-          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}"><i class="fa fa-trash"></i></button>
+        <td style="padding:5px 10px;">
+          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" style="margin:5px;"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" style="margin:5px;"><i class="fa fa-trash"></i></button>
         </td>
       </tr>`;
     }).join('');
@@ -190,6 +336,25 @@
     if(v){
       document.querySelectorAll('.js-view').forEach(b=>b.classList.remove('active'));
       v.classList.add('active');
+      const view = v.dataset.view;
+      // Toggle controls
+      const cm = document.getElementById('controlsMonth');
+      const cd = document.getElementById('controlsDay');
+      const cw = document.getElementById('controlsWeek');
+      if(view==='day'){
+        cm.style.display='none'; cw.style.display='none'; cd.style.display='flex';
+        // Mirror rooms into roomSelect2 if empty
+        const rs = document.getElementById('roomSelect');
+        const rs2 = document.getElementById('roomSelect2');
+        if(rs2 && rs && rs2.options.length<=0){ rs2.innerHTML = rs.innerHTML; rs2.value = rs.value; }
+      } else if(view==='week') {
+        cm.style.display='flex'; cw.style.display='flex'; cd.style.display='none';
+        // Initialize weekInput if empty
+        const wi = document.getElementById('weekInput');
+        if(wi && !wi.value){ const t=new Date(); wi.value = t.toISOString().slice(0,10); }
+      } else {
+        cm.style.display='flex'; cw.style.display='none'; cd.style.display='none';
+      }
       fetchData();
     }
     if(del){
@@ -201,18 +366,43 @@
     }
     if(edit){
       const id = edit.dataset.id;
-      const ci = prompt('New check-in (YYYY-MM-DD):'); if(!ci) return;
-      const co = prompt('New check-out (YYYY-MM-DD):'); if(!co) return;
-      fetch(`/bookings/owner/update/${id}/`, {
-        method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
-        body:`check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}`,
-        credentials:'same-origin'
-      }).then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
+      fetch(`/bookings/owner/detail/${id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(d=>{
+          if(!d.success) return;
+          const b = d.booking;
+          const m = document.getElementById('ownerEditModal');
+          if(!m) return;
+          m.dataset.id = id;
+          document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+          document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+          document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+          document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+          document.getElementById('ownerEditGuests').value = b.num_guests||1;
+          document.getElementById('ownerEditMsg').innerHTML = '';
+          (function(){
+            const t = document.querySelector('#ownerEditModal .custom-modal__title');
+            if(t){
+              let name = ((b.guest_first_name||'').trim() + ' ' + (b.guest_last_name||'').trim()).trim();
+              if(!name) name = b.guest_email || 'Guest';
+              t.textContent = 'Edit Booking for ' + name;
+            }
+          })();
+          m.style.display = 'flex';
+        });
     }
   });
   document.addEventListener('change', function(e){
-    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput')){
+    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput' || e.target.id==='roomSelect2' || e.target.id==='dayInput' || e.target.id==='weekInput')){
       fetchData();
+    }
+  });
+  // Week prev/next buttons adjust weekInput by 7 days
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id==='weekPrev'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()-7); wi.value=d.toISOString().slice(0,10); fetchData();
+    }
+    if(e.target && e.target.id==='weekNext'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()+7); wi.value=d.toISOString().slice(0,10); fetchData();
     }
   });
   // initial
@@ -220,6 +410,71 @@
   document.getElementById('yearInput').value = now.getFullYear();
   document.getElementById('monthSelect').value = (now.getMonth()+1);
   // do not fetch until room selected to avoid 400/500
+})();
+</script>
+<div id="ownerEditModal" class="custom-modal" style="display:none;">
+  <div class="custom-modal__dialog">
+    <div class="custom-modal__content">
+      <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
+      <div class="custom-modal__body">
+        <div class="row g-2">
+          <div class="col">
+            <label class="form-label">Check-in</label>
+            <input type="date" id="ownerEditCheckIn" class="form-control">
+          </div>
+          <div class="col">
+            <label class="form-label">Time</label>
+            <input type="time" id="ownerEditCheckInTime" class="form-control">
+          </div>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col">
+            <label class="form-label">Check-out</label>
+            <input type="date" id="ownerEditCheckOut" class="form-control">
+          </div>
+          <div class="col">
+            <label class="form-label">Time</label>
+            <input type="time" id="ownerEditCheckOutTime" class="form-control">
+          </div>
+        </div>
+        <div class="mt-2">
+          <label class="form-label">Guests</label>
+          <input type="number" id="ownerEditGuests" class="form-control" min="1" value="1">
+        </div>
+        <div id="ownerEditMsg" class="mt-2"></div>
+      </div>
+      <div class="custom-modal__footer">
+        <button class="btn btn-outline js-owner-close">Close</button>
+        <button class="orange-button js-owner-save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('ownerEditModal');
+  function close(){ if(modal) modal.style.display='none'; }
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.js-owner-close')){ close(); }
+    if(e.target.closest('.js-owner-save')){
+      if(!modal) return;
+      const id = modal.dataset.id;
+      const ci = document.getElementById('ownerEditCheckIn').value;
+      const ciT = document.getElementById('ownerEditCheckInTime').value;
+      const co = document.getElementById('ownerEditCheckOut').value;
+      const coT = document.getElementById('ownerEditCheckOutTime').value;
+      const guests = document.getElementById('ownerEditGuests').value||'1';
+      const msg = document.getElementById('ownerEditMsg');
+      const body = `check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}&num_guests=${encodeURIComponent(guests)}&check_in_time=${encodeURIComponent(ciT)}&check_out_time=${encodeURIComponent(coT)}`;
+      fetch(`/bookings/owner/update/${id}/`, {
+        method:'POST', headers:{'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]||'', 'Content-Type':'application/x-www-form-urlencoded'},
+        body, credentials:'same-origin'
+      }).then(r=>r.json()).then(d=>{
+        if(d && d.success){ msg.innerHTML='<div class="alert alert-success">Saved.</div>'; setTimeout(()=>{ close(); }, 600); (window.fetchData||function(){})(); }
+        else { msg.innerHTML='<div class="alert alert-danger">Failed to save.</div>'; }
+      }).catch(()=>{ msg.innerHTML='<div class="alert alert-danger">Network error.</div>'; });
+    }
+  });
 })();
 </script>
 {% endblock %}
