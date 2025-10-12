@@ -321,13 +321,21 @@
       // Toggle controls
       const cm = document.getElementById('controlsMonth');
       const cd = document.getElementById('controlsDay');
+      const cw = document.getElementById('controlsWeek');
       if(view==='day'){
-        cm.style.display='none'; cd.style.display='flex';
+        cm.style.display='none'; cw.style.display='none'; cd.style.display='flex';
         // Mirror rooms into roomSelect2 if empty
         const rs = document.getElementById('roomSelect');
         const rs2 = document.getElementById('roomSelect2');
         if(rs2 && rs && rs2.options.length<=0){ rs2.innerHTML = rs.innerHTML; rs2.value = rs.value; }
-      } else { cm.style.display='flex'; cd.style.display='none'; }
+      } else if(view==='week') {
+        cm.style.display='flex'; cw.style.display='flex'; cd.style.display='none';
+        // Initialize weekInput if empty
+        const wi = document.getElementById('weekInput');
+        if(wi && !wi.value){ const t=new Date(); wi.value = t.toISOString().slice(0,10); }
+      } else {
+        cm.style.display='flex'; cw.style.display='none'; cd.style.display='none';
+      }
       fetchData();
     }
     if(del){
@@ -365,8 +373,17 @@
     }
   });
   document.addEventListener('change', function(e){
-    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput')){
+    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput' || e.target.id==='roomSelect2' || e.target.id==='dayInput' || e.target.id==='weekInput')){
       fetchData();
+    }
+  });
+  // Week prev/next buttons adjust weekInput by 7 days
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id==='weekPrev'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()-7); wi.value=d.toISOString().slice(0,10); fetchData();
+    }
+    if(e.target && e.target.id==='weekNext'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()+7); wi.value=d.toISOString().slice(0,10); fetchData();
     }
   });
   // initial
