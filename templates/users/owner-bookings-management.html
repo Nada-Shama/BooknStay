@@ -4,12 +4,15 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <style>
-  .od-calendar-grid .day{ position:relative; overflow:hidden; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; }
+  .od-calendar-grid .day{ position:relative; overflow:hidden; transition:box-shadow .15s ease, background .15s ease, min-height .15s ease, padding .15s ease; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
-  .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .od-calendar-grid .day:hover{ transform:translate(-12px,-12px) scale(1.2); z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
+  .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:crosshair; }
+  .od-calendar-grid .day .day-num{ font-weight:600; }
+  .od-calendar-grid .day:hover{ z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; overflow:visible; min-height:110px; padding-bottom:25px; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
   .od-calendar-grid .day:hover .user-names{ color:#fff; white-space:normal; overflow:visible; }
+  .od-calendar-grid .day:hover .day-num{ color:#f35525; }
+  .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
 </style>
 {% endblock %}
 {% block content %}
@@ -52,7 +55,7 @@
               <h2>Room Calendar</h2>
             </div>
 
-            <div class="row g-2 mb-3">
+            <div class="row g-2 mb-3" id="controlsMonth">
               <div class="col-md-8">
                 <label class="form-label">Select Room</label>
                 <select id="roomSelect" class="form-control">
@@ -82,6 +85,16 @@
               <div class="col-md-2">
                 <label class="form-label">Year</label>
                 <input id="yearInput" class="form-control" type="number" min="2000" max="2100" />
+              </div>
+            </div>
+            <div class="row g-2 mb-3" id="controlsDay" style="display:none;">
+              <div class="col-md-8">
+                <label class="form-label">Select Room</label>
+                <select id="roomSelect2" class="form-control"></select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Day</label>
+                <input id="dayInput" type="date" class="form-control" />
               </div>
             </div>
 
@@ -123,9 +136,24 @@
     for(let i=0;i<firstDow;i++){ const padCell=document.createElement('div'); padCell.className='pad'; grid.appendChild(padCell); }
     for(let d=1; d<=dim; d++){
       const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d;
-      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+d+'</div>';
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d+'</div>';
       grid.appendChild(cell);
     }
+  }
+  function renderWeek(year, month, startDay){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    title.textContent = 'Week view';
+    const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    // Stack in a single column: labels then day boxes
+    dows.forEach((d,i)=>{
+      const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h);
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=(startDay+i);
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+(startDay+i)+'</div>';
+      grid.appendChild(cell);
+    });
   }
   function applyCounts(payload){
     const grid = document.getElementById('calGrid');
@@ -156,29 +184,71 @@
       const small = document.createElement('div');
       small.className = 'user-names';
       small.textContent = names.join(', ');
+      // Click to open edit for the first booking of the day by that user
+      small.addEventListener('click', function(){
+        const firstBk = users[0]||{}; if(!firstBk.booking_id) return;
+        fetch(`/bookings/owner/detail/${firstBk.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+          .then(r=>r.json()).then(d=>{
+            if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
+            m.dataset.id = firstBk.booking_id;
+            document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+            document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+            document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+            document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+            document.getElementById('ownerEditGuests').value = b.num_guests||1;
+            document.getElementById('ownerEditMsg').innerHTML = '';
+            m.style.display = 'flex';
+          });
+      });
       cell.appendChild(small);
+    });
+    // Mark empty days for hover label
+    grid.querySelectorAll('.day').forEach(cell=>{
+      if(!cell.querySelector('.user-names')){ cell.setAttribute('data-empty','1'); }
     });
   }
   function fetchData(){
-    const roomId = document.getElementById('roomSelect').value;
+    const activeViewBtn = document.querySelector('.js-view.active');
+    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
+    const roomId = (view==='day' ? document.getElementById('roomSelect2').value : document.getElementById('roomSelect').value);
     if(!roomId){
       document.getElementById('calGrid').innerHTML = '';
       document.getElementById('bookingList').innerHTML = '';
       return;
     }
-    const month = document.getElementById('monthSelect').value;
     let year = parseInt(document.getElementById('yearInput').value,10);
     if(!year || isNaN(year)){ year = new Date().getFullYear(); }
+    if(view==='week'){
+      const month = document.getElementById('monthSelect').value;
+      // choose week start based on today within month for simplicity
+      const today = new Date();
+      const startDay = Math.max(1, today.getDate() - ((today.getDay()+6)%7));
+      renderWeek(year, parseInt(month,10), startDay);
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=week`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    if(view==='day'){
+      const dayVal = document.getElementById('dayInput').value;
+      const d = dayVal ? new Date(dayVal) : new Date();
+      const month = d.getMonth()+1;
+      renderWeek(d.getFullYear(), month, d.getDate()); // render a single stacked day box
+      fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(applyCounts).catch(()=>{});
+      const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}&view=day&day=${d.getDate()}`;
+      fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(renderList).catch(()=>{});
+      return;
+    }
+    // month
+    const month = document.getElementById('monthSelect').value;
     renderGrid(year, parseInt(month,10));
-    const url = `/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`;
-    fetch(url, { headers:{'X-Requested-With':'XMLHttpRequest'} })
-      .then(r=>r.json())
-      .then(applyCounts)
-      .catch(()=>{});
-    // Load list by selected view
-    const activeViewBtn = document.querySelector('.js-view.active');
-    const view = activeViewBtn ? activeViewBtn.dataset.view : 'month';
-    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=${view}`;
+    fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+      .then(r=>r.json()).then(applyCounts).catch(()=>{});
+    const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=month`;
     fetch(listUrl, { headers:{'X-Requested-With':'XMLHttpRequest'} })
       .then(r=>r.json())
       .then(renderList)
@@ -216,6 +286,17 @@
     if(v){
       document.querySelectorAll('.js-view').forEach(b=>b.classList.remove('active'));
       v.classList.add('active');
+      const view = v.dataset.view;
+      // Toggle controls
+      const cm = document.getElementById('controlsMonth');
+      const cd = document.getElementById('controlsDay');
+      if(view==='day'){
+        cm.style.display='none'; cd.style.display='flex';
+        // Mirror rooms into roomSelect2 if empty
+        const rs = document.getElementById('roomSelect');
+        const rs2 = document.getElementById('roomSelect2');
+        if(rs2 && rs && rs2.options.length<=0){ rs2.innerHTML = rs.innerHTML; rs2.value = rs.value; }
+      } else { cm.style.display='flex'; cd.style.display='none'; }
       fetchData();
     }
     if(del){

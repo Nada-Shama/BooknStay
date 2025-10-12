@@ -281,6 +281,7 @@ def owner_bookings_calendar_data(request):
             if not any((u.get('user_id') == (b.user_id or -1)) for u in days[key]):
                 days[key].append({
                     'user_id': b.user_id or -1,
+                    'booking_id': b.id,
                     'name': user_name(b),
                     'color': user_color(b.user),
                 })
