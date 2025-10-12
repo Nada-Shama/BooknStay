@@ -228,9 +228,15 @@ def owner_dashboard(request):
     ).values_list('room_id', flat=True).distinct()
     num_occupied = len(list(occupied_room_ids))
     occupancy_percent = int(round((num_occupied / total_rooms) * 100)) if total_rooms else 0
+    # Quick actions: bookings needing owner decision
+    quick_actions = Booking.objects.filter(
+        hotel__owner=request.user,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_UNDER_REVIEW]
+    ).select_related('hotel', 'room', 'user').order_by('-updated_at')[:8]
     return render(request, 'users/owner-dashboard.html', {
         'recent_bookings': recent_bookings,
         'latest_hotels': latest_hotels,
+        'quick_actions': quick_actions,
         'stats': {
             'total_hotels': total_hotels,
             'total_rooms': total_rooms,

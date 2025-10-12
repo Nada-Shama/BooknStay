@@ -44,6 +44,61 @@
         </div>
         <div class="col-lg-9">
           <section class="od-content">
+            {% if quick_actions %}
+            <div class="section-heading">
+              <h6>| Quick</h6>
+              <h2>Needs Your Action</h2>
+              <p style="color:#666;">Approve or deny edited/cancelled reservations.</p>
+            </div>
+            <div class="od-card">
+              <div class="table-responsive">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Hotel</th>
+                      <th>Room</th>
+                      <th>Guest</th>
+                      <th>Check-in</th>
+                      <th>Check-out</th>
+                      <th>Status</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for b in quick_actions %}
+                    <tr>
+                      <td>#{{ b.id }}</td>
+                      <td>{{ b.hotel.hotel_name }}</td>
+                      <td>{{ b.room.room_number }}</td>
+                      <td>{% if b.user %}{{ b.user.username }}{% else %}{{ b.guest_email|default:'-' }}{% endif %}</td>
+                      <td>{{ b.check_in }}</td>
+                      <td>{{ b.check_out }}</td>
+                      <td>
+                        {% if b.status == 'under_review' or b.status == 'pending' %}
+                          <span class="badge" style="background:#ffc107;color:#1e1e1e;">{{ b.status|capfirst|cut:"_" }}</span>
+                        {% else %}
+                          <span class="badge bg-secondary">{{ b.status }}</span>
+                        {% endif %}
+                      </td>
+                      <td style="white-space:nowrap;">
+                        <a class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; margin-right:6px;" href="{% url 'hotels:hotel_detail' b.hotel.id %}">View</a>
+                        <form action="/bookings/owner/approve/{{ b.id }}/" method="post" style="display:inline-block; margin-right:6px;">
+                          {% csrf_token %}
+                          <button type="submit" class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #198754;">Approve</button>
+                        </form>
+                        <form action="/bookings/owner/deny/{{ b.id }}/" method="post" style="display:inline-block;">
+                          {% csrf_token %}
+                          <button type="submit" class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #fd7e14;">Deny</button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            {% endif %}
             <div class="section-heading">
               <h6>| Overview</h6>
               <h2>Your Properties at a Glance</h2>
