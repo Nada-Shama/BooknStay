@@ -4,23 +4,20 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <style>
-  .od-calendar-grid .day{ position:relative; overflow:visible; transition:box-shadow .15s ease, background .15s ease; }
+  .od-calendar-grid .day{ position:relative; overflow:visible; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; transform-origin:center center; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
   .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:crosshair; }
   .od-calendar-grid .day .day-num{ font-weight:600; }
-  .od-calendar-grid .day:hover{ z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
+  .od-calendar-grid .day:hover{ z-index:3; transform:scale(1.25); box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
   .od-calendar-grid .day:hover .user-names{ color:#fff; }
-  .od-calendar-grid .day .hover-details{ display:none; position:absolute; top:100%; left:50%; transform:translateX(-50%); background:#000; color:#fff; border:2px solid #f35525; border-radius:6px; padding:8px; min-width:180px; max-width:260px; z-index:5; box-shadow:0 6px 14px rgba(0,0,0,.25); }
-  .od-calendar-grid .day:hover .hover-details{ display:block; }
-  .od-calendar-grid .day .hover-details .user-name{ display:inline-block; margin-right:8px; font-size:12px; cursor:crosshair; }
+  /* remove separate hover popover; expand same cell instead */
   .od-calendar-grid .day:hover .day-num{ color:#f35525; }
   .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
   .od-calendar-grid .day[data-overlap="1"]{ box-shadow:0 0 0 2px #f35525 inset; background:#ffe8e8 !important; }
   /* Overlap hover: make names red for contrast */
   .od-calendar-grid .day[data-overlap="1"]:hover .user-names{ color:#e74c3c; }
-  .od-calendar-grid .day[data-overlap="1"]:hover .hover-details{ color:#e74c3c; }
-  .od-calendar-grid .day[data-overlap="1"]:hover .hover-details .user-name{ color:#e74c3c; }
+  /* removed hover-details usage */
 </style>
 {% endblock %}
 {% block content %}
@@ -214,30 +211,25 @@
       small.className = 'user-names';
       small.textContent = users.map(u=>u.name||'Guest').join(', ');
       cell.appendChild(small);
-      // Hover popover with clickable names
-      if(users.length){
-        const pop = document.createElement('div'); pop.className='hover-details';
-        users.forEach(function(u){
-          const a = document.createElement('span');
-          a.className='user-name'; a.textContent = u.name||'Guest';
-          a.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
-            fetch(`/bookings/owner/detail/${u.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
-              .then(r=>r.json()).then(d=>{
-                if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
-                m.dataset.id = u.booking_id;
-                document.getElementById('ownerEditCheckIn').value = b.check_in||'';
-                document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
-                document.getElementById('ownerEditCheckOut').value = b.check_out||'';
-                document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
-                document.getElementById('ownerEditGuests').value = b.num_guests||1;
-                document.getElementById('ownerEditMsg').innerHTML = '';
-                m.style.display = 'flex';
-              });
-          });
-          pop.appendChild(a);
+      // Inline clickable names (expand on hover via scale)
+      users.forEach(function(u){
+        const a = document.createElement('span'); a.className='user-name'; a.textContent = u.name||'Guest'; a.style.marginRight='8px';
+        a.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
+          fetch(`/bookings/owner/detail/${u.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+            .then(r=>r.json()).then(d=>{
+              if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
+              m.dataset.id = u.booking_id;
+              document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+              document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+              document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+              document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+              document.getElementById('ownerEditGuests').value = b.num_guests||1;
+              document.getElementById('ownerEditMsg').innerHTML = '';
+              m.style.display = 'flex';
+            });
         });
-        cell.appendChild(pop);
-      }
+        small.appendChild(a);
+      });
       if(users.length > 1){ cell.setAttribute('data-overlap','1'); }
     });
     // Mark empty days for hover label
@@ -329,13 +321,21 @@
       // Toggle controls
       const cm = document.getElementById('controlsMonth');
       const cd = document.getElementById('controlsDay');
+      const cw = document.getElementById('controlsWeek');
       if(view==='day'){
-        cm.style.display='none'; cd.style.display='flex';
+        cm.style.display='none'; cw.style.display='none'; cd.style.display='flex';
         // Mirror rooms into roomSelect2 if empty
         const rs = document.getElementById('roomSelect');
         const rs2 = document.getElementById('roomSelect2');
         if(rs2 && rs && rs2.options.length<=0){ rs2.innerHTML = rs.innerHTML; rs2.value = rs.value; }
-      } else { cm.style.display='flex'; cd.style.display='none'; }
+      } else if(view==='week') {
+        cm.style.display='flex'; cw.style.display='flex'; cd.style.display='none';
+        // Initialize weekInput if empty
+        const wi = document.getElementById('weekInput');
+        if(wi && !wi.value){ const t=new Date(); wi.value = t.toISOString().slice(0,10); }
+      } else {
+        cm.style.display='flex'; cw.style.display='none'; cd.style.display='none';
+      }
       fetchData();
     }
     if(del){
@@ -360,13 +360,30 @@
           document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
           document.getElementById('ownerEditGuests').value = b.num_guests||1;
           document.getElementById('ownerEditMsg').innerHTML = '';
+          (function(){
+            const t = document.querySelector('#ownerEditModal .custom-modal__title');
+            if(t){
+              let name = ((b.guest_first_name||'').trim() + ' ' + (b.guest_last_name||'').trim()).trim();
+              if(!name) name = b.guest_email || 'Guest';
+              t.textContent = 'Edit Booking for ' + name;
+            }
+          })();
           m.style.display = 'flex';
         });
     }
   });
   document.addEventListener('change', function(e){
-    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput')){
+    if(e.target && (e.target.id==='roomSelect' || e.target.id==='monthSelect' || e.target.id==='yearInput' || e.target.id==='roomSelect2' || e.target.id==='dayInput' || e.target.id==='weekInput')){
       fetchData();
+    }
+  });
+  // Week prev/next buttons adjust weekInput by 7 days
+  document.addEventListener('click', function(e){
+    if(e.target && e.target.id==='weekPrev'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()-7); wi.value=d.toISOString().slice(0,10); fetchData();
+    }
+    if(e.target && e.target.id==='weekNext'){
+      const wi=document.getElementById('weekInput'); if(!wi||!wi.value) return; const d=new Date(wi.value); d.setDate(d.getDate()+7); wi.value=d.toISOString().slice(0,10); fetchData();
     }
   });
   // initial
