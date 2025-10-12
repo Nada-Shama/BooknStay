@@ -29,6 +29,9 @@ class Booking(models.Model):
 
     check_in = models.DateField()
     check_out = models.DateField()
+    # Optional times for finer control (owner/admin editing)
+    check_in_time = models.TimeField(blank=True, null=True)
+    check_out_time = models.TimeField(blank=True, null=True)
     num_guests = models.IntegerField(default=1)
 
     # Guest contact snapshot at booking time (so later profile changes don't lose history)

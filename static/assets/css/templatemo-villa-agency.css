@@ -525,8 +525,6 @@ Header Style
 .header-area .main-nav .nav li {
   padding-left: 10px;
   padding-right: 10px;
-  height: 100px;
-  line-height: 100px;
 }
 
 .header-area .main-nav .nav li a {
@@ -2603,6 +2601,11 @@ Responsive Style
 
 body {
   overflow-x: hidden;
+}
+
+/* Global font size override */
+body {
+  font-size: 0.8rem;
 }
 
 @media (max-width: 767px) {

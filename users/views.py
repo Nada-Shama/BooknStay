@@ -210,8 +210,38 @@ def owner_register(request):
 def owner_dashboard(request):
     # Recent bookings for hotels owned by this user
     recent_bookings = Booking.objects.filter(hotel__owner=request.user).select_related('hotel', 'room', 'user')[:10]
+    latest_hotels = Hotel.objects.filter(owner=request.user).order_by('-created_at')[:2]
+    # Stats
+    total_hotels = Hotel.objects.filter(owner=request.user).count()
+    total_rooms = Room.objects.filter(hotel__owner=request.user).count()
+    active_bookings = Booking.objects.filter(
+        hotel__owner=request.user,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED]
+    ).count()
+    today = date.today()
+    occupied_room_ids = Booking.objects.filter(
+        hotel__owner=request.user,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
+        check_in__lte=today,
+        check_out__gt=today,
+    ).values_list('room_id', flat=True).distinct()
+    num_occupied = len(list(occupied_room_ids))
+    occupancy_percent = int(round((num_occupied / total_rooms) * 100)) if total_rooms else 0
+    # Quick actions: bookings needing owner decision
+    quick_actions = Booking.objects.filter(
+        hotel__owner=request.user,
+        status__in=[Booking.STATUS_PENDING, Booking.STATUS_UNDER_REVIEW]
+    ).select_related('hotel', 'room', 'user').order_by('-updated_at')[:8]
     return render(request, 'users/owner-dashboard.html', {
         'recent_bookings': recent_bookings,
+        'latest_hotels': latest_hotels,
+        'quick_actions': quick_actions,
+        'stats': {
+            'total_hotels': total_hotels,
+            'total_rooms': total_rooms,
+            'active_bookings': active_bookings,
+            'occupancy_percent': occupancy_percent,
+        }
     })
 
 
