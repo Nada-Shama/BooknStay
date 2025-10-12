@@ -4,13 +4,14 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <style>
-  .od-calendar-grid .day{ position:relative; overflow:hidden; transition:box-shadow .15s ease, background .15s ease, min-height .15s ease, padding .15s ease; }
+  .od-calendar-grid .day{ position:relative; overflow:visible; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
   .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:crosshair; }
   .od-calendar-grid .day .day-num{ font-weight:600; }
-  .od-calendar-grid .day:hover{ z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; overflow:visible; min-height:110px; padding-bottom:25px; }
+  .od-calendar-grid .day:hover{ z-index:3; transform:scale(1.25); box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
   .od-calendar-grid .day:hover .user-names{ color:#fff; white-space:normal; overflow:visible; }
+  .od-calendar-grid .day:hover .user-names .user-name{ font-size:12px; }
   .od-calendar-grid .day:hover .day-num{ color:#f35525; }
   .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
 </style>
@@ -180,25 +181,27 @@
       tri.style.borderRight = '17px solid transparent';
       cell.appendChild(tri);
       // Names list
-      const names = users.map(u=>u.name||'Guest');
       const small = document.createElement('div');
       small.className = 'user-names';
-      small.textContent = names.join(', ');
-      // Click to open edit for the first booking of the day by that user
-      small.addEventListener('click', function(){
-        const firstBk = users[0]||{}; if(!firstBk.booking_id) return;
-        fetch(`/bookings/owner/detail/${firstBk.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
-          .then(r=>r.json()).then(d=>{
-            if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
-            m.dataset.id = firstBk.booking_id;
-            document.getElementById('ownerEditCheckIn').value = b.check_in||'';
-            document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
-            document.getElementById('ownerEditCheckOut').value = b.check_out||'';
-            document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
-            document.getElementById('ownerEditGuests').value = b.num_guests||1;
-            document.getElementById('ownerEditMsg').innerHTML = '';
-            m.style.display = 'flex';
-          });
+      users.forEach(function(u){
+        const a = document.createElement('span');
+        a.className = 'user-name'; a.style.cursor='crosshair'; a.style.marginRight='6px';
+        a.textContent = (u.name||'Guest');
+        a.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
+          fetch(`/bookings/owner/detail/${u.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+            .then(r=>r.json()).then(d=>{
+              if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
+              m.dataset.id = u.booking_id;
+              document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+              document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+              document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+              document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+              document.getElementById('ownerEditGuests').value = b.num_guests||1;
+              document.getElementById('ownerEditMsg').innerHTML = '';
+              m.style.display = 'flex';
+            });
+        });
+        small.appendChild(a);
       });
       cell.appendChild(small);
     });
