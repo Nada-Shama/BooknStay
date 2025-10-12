@@ -172,7 +172,7 @@
         <td>${b.paid}</td>
         <td>${b.first_time_guest}</td>
         <td>${b.status}</td>
-        <td class="d-flex" style="gap:8px; padding:5px 10px;">
+        <td style="padding:5px 10px;">
           <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" style="margin:5px;"><i class="fa fa-pencil"></i></button>
           <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" style="margin:5px;"><i class="fa fa-trash"></i></button>
         </td>
@@ -205,17 +205,16 @@
         .then(r=>r.json()).then(d=>{
           if(!d.success) return;
           const b = d.booking;
-          const ci = prompt('Check-in (YYYY-MM-DD):', b.check_in||''); if(ci===null) return;
-          const ciTime = prompt('Check-in time (HH:MM, optional):', b.check_in_time||''); if(ciTime===null) return;
-          const co = prompt('Check-out (YYYY-MM-DD):', b.check_out||''); if(co===null) return;
-          const coTime = prompt('Check-out time (HH:MM, optional):', b.check_out_time||''); if(coTime===null) return;
-          const guests = prompt('Guests:', b.num_guests||'1'); if(guests===null) return;
-          const body=`check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}&num_guests=${encodeURIComponent(guests)}&check_in_time=${encodeURIComponent(ciTime)}&check_out_time=${encodeURIComponent(coTime)}`;
-          fetch(`/bookings/owner/update/${id}/`, {
-            method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
-            body,
-            credentials:'same-origin'
-          }).then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
+          const m = document.getElementById('ownerEditModal');
+          if(!m) return;
+          m.dataset.id = id;
+          document.getElementById('ownerEditCheckIn').value = b.check_in||'';
+          document.getElementById('ownerEditCheckInTime').value = (b.check_in_time||'').slice(0,5);
+          document.getElementById('ownerEditCheckOut').value = b.check_out||'';
+          document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
+          document.getElementById('ownerEditGuests').value = b.num_guests||1;
+          document.getElementById('ownerEditMsg').innerHTML = '';
+          m.style.display = 'flex';
         });
     }
   });
@@ -229,6 +228,71 @@
   document.getElementById('yearInput').value = now.getFullYear();
   document.getElementById('monthSelect').value = (now.getMonth()+1);
   // do not fetch until room selected to avoid 400/500
+})();
+</script>
+<div id="ownerEditModal" class="custom-modal" style="display:none;">
+  <div class="custom-modal__dialog">
+    <div class="custom-modal__content">
+      <div class="custom-modal__header"><h5 class="custom-modal__title">Edit Booking</h5></div>
+      <div class="custom-modal__body">
+        <div class="row g-2">
+          <div class="col">
+            <label class="form-label">Check-in</label>
+            <input type="date" id="ownerEditCheckIn" class="form-control">
+          </div>
+          <div class="col">
+            <label class="form-label">Time</label>
+            <input type="time" id="ownerEditCheckInTime" class="form-control">
+          </div>
+        </div>
+        <div class="row g-2 mt-2">
+          <div class="col">
+            <label class="form-label">Check-out</label>
+            <input type="date" id="ownerEditCheckOut" class="form-control">
+          </div>
+          <div class="col">
+            <label class="form-label">Time</label>
+            <input type="time" id="ownerEditCheckOutTime" class="form-control">
+          </div>
+        </div>
+        <div class="mt-2">
+          <label class="form-label">Guests</label>
+          <input type="number" id="ownerEditGuests" class="form-control" min="1" value="1">
+        </div>
+        <div id="ownerEditMsg" class="mt-2"></div>
+      </div>
+      <div class="custom-modal__footer">
+        <button class="btn btn-outline js-owner-close">Close</button>
+        <button class="orange-button js-owner-save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const modal = document.getElementById('ownerEditModal');
+  function close(){ if(modal) modal.style.display='none'; }
+  document.addEventListener('click', function(e){
+    if(e.target.closest('.js-owner-close')){ close(); }
+    if(e.target.closest('.js-owner-save')){
+      if(!modal) return;
+      const id = modal.dataset.id;
+      const ci = document.getElementById('ownerEditCheckIn').value;
+      const ciT = document.getElementById('ownerEditCheckInTime').value;
+      const co = document.getElementById('ownerEditCheckOut').value;
+      const coT = document.getElementById('ownerEditCheckOutTime').value;
+      const guests = document.getElementById('ownerEditGuests').value||'1';
+      const msg = document.getElementById('ownerEditMsg');
+      const body = `check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}&num_guests=${encodeURIComponent(guests)}&check_in_time=${encodeURIComponent(ciT)}&check_out_time=${encodeURIComponent(coT)}`;
+      fetch(`/bookings/owner/update/${id}/`, {
+        method:'POST', headers:{'X-CSRFToken': (document.cookie.match(/csrftoken=([^;]+)/)||[])[1]||'', 'Content-Type':'application/x-www-form-urlencoded'},
+        body, credentials:'same-origin'
+      }).then(r=>r.json()).then(d=>{
+        if(d && d.success){ msg.innerHTML='<div class="alert alert-success">Saved.</div>'; setTimeout(()=>{ close(); }, 600); (window.fetchData||function(){})(); }
+        else { msg.innerHTML='<div class="alert alert-danger">Failed to save.</div>'; }
+      }).catch(()=>{ msg.innerHTML='<div class="alert alert-danger">Network error.</div>'; });
+    }
+  });
 })();
 </script>
 {% endblock %}
