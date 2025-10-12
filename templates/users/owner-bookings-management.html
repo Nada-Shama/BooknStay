@@ -172,9 +172,9 @@
         <td>${b.paid}</td>
         <td>${b.first_time_guest}</td>
         <td>${b.status}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}"><i class="fa fa-pencil"></i></button>
-          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}"><i class="fa fa-trash"></i></button>
+        <td class="d-flex" style="gap:8px; padding:5px 10px;">
+          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" style="margin:5px;"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" style="margin:5px;"><i class="fa fa-trash"></i></button>
         </td>
       </tr>`;
     }).join('');
@@ -201,13 +201,22 @@
     }
     if(edit){
       const id = edit.dataset.id;
-      const ci = prompt('New check-in (YYYY-MM-DD):'); if(!ci) return;
-      const co = prompt('New check-out (YYYY-MM-DD):'); if(!co) return;
-      fetch(`/bookings/owner/update/${id}/`, {
-        method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
-        body:`check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}`,
-        credentials:'same-origin'
-      }).then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
+      fetch(`/bookings/owner/detail/${id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
+        .then(r=>r.json()).then(d=>{
+          if(!d.success) return;
+          const b = d.booking;
+          const ci = prompt('Check-in (YYYY-MM-DD):', b.check_in||''); if(ci===null) return;
+          const ciTime = prompt('Check-in time (HH:MM, optional):', b.check_in_time||''); if(ciTime===null) return;
+          const co = prompt('Check-out (YYYY-MM-DD):', b.check_out||''); if(co===null) return;
+          const coTime = prompt('Check-out time (HH:MM, optional):', b.check_out_time||''); if(coTime===null) return;
+          const guests = prompt('Guests:', b.num_guests||'1'); if(guests===null) return;
+          const body=`check_in=${encodeURIComponent(ci)}&check_out=${encodeURIComponent(co)}&num_guests=${encodeURIComponent(guests)}&check_in_time=${encodeURIComponent(ciTime)}&check_out_time=${encodeURIComponent(coTime)}`;
+          fetch(`/bookings/owner/update/${id}/`, {
+            method:'POST', headers:{'X-CSRFToken':getCsrf(),'Content-Type':'application/x-www-form-urlencoded'},
+            body,
+            credentials:'same-origin'
+          }).then(r=>r.json()).then(()=> fetchData()).catch(()=>{});
+        });
     }
   });
   document.addEventListener('change', function(e){

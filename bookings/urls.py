@@ -11,6 +11,7 @@ urlpatterns = [
     # Owner management APIs (AJAX)
     path('owner/calendar/', views.owner_bookings_calendar_data, name='owner_bookings_calendar_data'),
     path('owner/list/', views.owner_bookings_list, name='owner_bookings_list'),
+    path('owner/detail/<int:booking_id>/', views.owner_booking_detail, name='owner_booking_detail'),
     path('owner/update/<int:booking_id>/', views.owner_update_booking, name='owner_update_booking'),
     path('owner/delete/<int:booking_id>/', views.owner_delete_booking, name='owner_delete_booking'),
 ]
