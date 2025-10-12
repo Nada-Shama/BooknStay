@@ -5,6 +5,37 @@
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <link rel="stylesheet" href="{% static 'css/owner-hotels.css' %}">
 {% endblock %}
+{% block extra_js %}
+<script>
+(function(){
+  function getCsrf(){ const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:''; }
+  document.addEventListener('click', function(e){
+    const ap = e.target.closest('.js-qa-approve');
+    const dn = e.target.closest('.js-qa-deny');
+    if(ap){
+      const id = ap.dataset.id;
+      ap.disabled = true;
+      fetch(`/bookings/owner/approve/${id}/`, { method:'POST', headers:{'X-CSRFToken':getCsrf()}, credentials:'same-origin' })
+        .then(r=>r.json()).then(d=>{
+          if(d && d.success){
+            const row = ap.closest('tr'); if(row){ row.parentNode.removeChild(row); }
+          }
+        }).finally(()=>{ ap.disabled=false; });
+    }
+    if(dn){
+      const id = dn.dataset.id;
+      dn.disabled = true;
+      fetch(`/bookings/owner/deny/${id}/`, { method:'POST', headers:{'X-CSRFToken':getCsrf()}, credentials:'same-origin' })
+        .then(r=>r.json()).then(d=>{
+          if(d && d.success){
+            const row = dn.closest('tr'); if(row){ row.parentNode.removeChild(row); }
+          }
+        }).finally(()=>{ dn.disabled=false; });
+    }
+  });
+})();
+</script>
+{% endblock %}
 {% block content %}
   <div class="page-heading header-text">
     <div class="container">
@@ -83,14 +114,8 @@
                       </td>
                       <td style="white-space:nowrap;">
                         <a class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; margin-right:6px;" href="{% url 'hotels:hotel_detail' b.hotel.id %}">View</a>
-                        <form action="/bookings/owner/approve/{{ b.id }}/" method="post" style="display:inline-block; margin-right:6px;">
-                          {% csrf_token %}
-                          <button type="submit" class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #198754;">Approve</button>
-                        </form>
-                        <form action="/bookings/owner/deny/{{ b.id }}/" method="post" style="display:inline-block;">
-                          {% csrf_token %}
-                          <button type="submit" class="main-button" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #fd7e14;">Deny</button>
-                        </form>
+                        <button type="button" class="main-button js-qa-approve" data-id="{{ b.id }}" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #198754; margin-right:6px;">Approve</button>
+                        <button type="button" class="main-button js-qa-deny" data-id="{{ b.id }}" style="display:inline-block;padding:6px 12px; border-radius:20px; background:#fff; color:#1e1e1e; border:1px solid #fd7e14;">Deny</button>
                       </td>
                     </tr>
                     {% endfor %}
