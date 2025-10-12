@@ -105,6 +105,16 @@
                 <input id="dayInput" type="date" class="form-control" />
               </div>
             </div>
+            <div class="row g-2 mb-3" id="controlsWeek" style="display:none;">
+              <div class="col-md-6">
+                <label class="form-label">Week of</label>
+                <div class="d-flex align-items-center" style="gap:6px;">
+                  <button class="btn btn-sm btn-outline-secondary" id="weekPrev" type="button">◀</button>
+                  <input id="weekInput" type="date" class="form-control">
+                  <button class="btn btn-sm btn-outline-secondary" id="weekNext" type="button">▶</button>
+                </div>
+              </div>
+            </div>
 
             <div class="od-calendar">
               <div class="od-calendar-header">
@@ -130,6 +140,7 @@
 (function(){
   function daysInMonth(year, month){ return new Date(year, month, 0).getDate(); }
   function pad(n){ return (n<10?'0':'') + n; }
+  function iso(d){ return d.toISOString().slice(0,10); }
   function renderGrid(year, month){
     const grid = document.getElementById('calGrid');
     const title = document.getElementById('calTitle');
@@ -143,25 +154,37 @@
     dows.forEach(d=>{ const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h); });
     for(let i=0;i<firstDow;i++){ const padCell=document.createElement('div'); padCell.className='pad'; grid.appendChild(padCell); }
     for(let d=1; d<=dim; d++){
-      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d;
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d; cell.dataset.iso = iso(new Date(year, month-1, d));
       cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d+'</div>';
       grid.appendChild(cell);
     }
   }
-  function renderWeek(year, month, startDay){
+  function renderWeekByDate(startDate){
     const grid = document.getElementById('calGrid');
     const title = document.getElementById('calTitle');
     if(!grid||!title) return;
     grid.innerHTML='';
     title.textContent = 'Week view';
     const dows = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-    // Stack in a single column: labels then day boxes
-    dows.forEach((d,i)=>{
-      const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h);
-      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=(startDay+i);
-      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+(startDay+i)+'</div>';
+    for(let i=0;i<7;i++){
+      const label=document.createElement('div'); label.className='dow'; label.textContent=dows[i]; grid.appendChild(label);
+      const d = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate()+i);
+      const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d.getDate(); cell.dataset.iso = iso(d);
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d.getDate()+'</div>';
       grid.appendChild(cell);
-    });
+    }
+  }
+  function renderSingleDay(dateObj){
+    const grid = document.getElementById('calGrid');
+    const title = document.getElementById('calTitle');
+    if(!grid||!title) return;
+    grid.innerHTML='';
+    title.textContent = 'Day view';
+    const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const label=document.createElement('div'); label.className='dow'; label.textContent=dows[dateObj.getDay()]; grid.appendChild(label);
+    const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=dateObj.getDate(); cell.dataset.iso = iso(dateObj);
+    cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+dateObj.getDate()+'</div>';
+    grid.appendChild(cell);
   }
   function applyCounts(payload){
     const grid = document.getElementById('calGrid');
@@ -170,8 +193,7 @@
     if(!payload || !payload.success) return;
     const days = payload.days||{};
     Object.keys(days).forEach(iso=>{
-      const d = new Date(iso).getDate();
-      const cell = grid.querySelector('.day[data-day="'+d+'"]');
+      const cell = grid.querySelector('.day[data-iso="'+iso+'"]') || grid.querySelector('.day[data-day="'+(new Date(iso).getDate())+'"]');
       if(!cell) return;
       const users = days[iso];
       // Compose labels and compute blended background (use first color lightly)
@@ -237,9 +259,10 @@
     if(view==='week'){
       const month = document.getElementById('monthSelect').value;
       // choose week start based on today within month for simplicity
-      const today = new Date();
-      const startDay = Math.max(1, today.getDate() - ((today.getDay()+6)%7));
-      renderWeek(year, parseInt(month,10), startDay);
+      const baseVal = document.getElementById('weekInput').value;
+      const base = baseVal ? new Date(baseVal) : new Date();
+      const monday = new Date(base.getFullYear(), base.getMonth(), base.getDate() - ((base.getDay()+6)%7));
+      renderWeekByDate(monday);
       fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
         .then(r=>r.json()).then(applyCounts).catch(()=>{});
       const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${year}&month=${month}&view=week`;
@@ -251,9 +274,7 @@
       const dayVal = document.getElementById('dayInput').value;
       const d = dayVal ? new Date(dayVal) : new Date();
       const month = d.getMonth()+1;
-      // For day view, we emphasize the single cell; reuse week renderer but only one day
-      const grid = document.getElementById('calGrid'); if(grid){ grid.innerHTML=''; }
-      renderWeek(d.getFullYear(), month, d.getDate());
+      renderSingleDay(d);
       fetch(`/bookings/owner/calendar/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
         .then(r=>r.json()).then(applyCounts).catch(()=>{});
       const listUrl = `/bookings/owner/list/?room_id=${encodeURIComponent(roomId)}&year=${d.getFullYear()}&month=${month}&view=day&day=${d.getDate()}`;
