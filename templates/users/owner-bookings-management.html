@@ -352,6 +352,14 @@
           document.getElementById('ownerEditCheckOutTime').value = (b.check_out_time||'').slice(0,5);
           document.getElementById('ownerEditGuests').value = b.num_guests||1;
           document.getElementById('ownerEditMsg').innerHTML = '';
+          (function(){
+            const t = document.querySelector('#ownerEditModal .custom-modal__title');
+            if(t){
+              let name = ((b.guest_first_name||'').trim() + ' ' + (b.guest_last_name||'').trim()).trim();
+              if(!name) name = b.guest_email || 'Guest';
+              t.textContent = 'Edit Booking for ' + name;
+            }
+          })();
           m.style.display = 'flex';
         });
     }
