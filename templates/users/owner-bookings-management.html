@@ -20,6 +20,9 @@
   /* Overlap hover: make names medium red for contrast */
   .od-calendar-grid .day[data-overlap="1"]:hover .user-names{ color:#dc3545; }
   .od-calendar-grid .day[data-overlap="1"]:hover .user-names .user-line{ color:#dc3545; }
+  .custom-fs {font-size: 0.8rem;}
+  i.fa.fa-trash,i.fa.fa-pencil{font-size: 12px;}
+  td.mx{max-width: 140px;}
   /* removed hover-details usage */
 </style>
 {% endblock %}
@@ -325,23 +328,23 @@
       return `<tr>
         <td>#${b.id}</td>
         <td>${b.guest||'-'}</td>
-        <td>${b.check_in} → ${b.check_out}</td>
+        <td>${b.check_in} <br> ${b.check_out}</td>
         <td>${b.nights}</td>
         <td>$${b.price_per_night.toFixed ? b.price_per_night.toFixed(2) : b.price_per_night}</td>
         <td>$${b.total_price.toFixed ? b.total_price.toFixed(2) : b.total_price}</td>
         <td>${b.paid}</td>
         <td>${b.first_time_guest}</td>
         <td>${statusBadge}</td>
-        <td>
-          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" style="margin:5px;"><i class="fa fa-pencil"></i></button>
-          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" style="margin:5px;"><i class="fa fa-trash"></i></button>
-          ${isPending ? `<button class="btn btn-sm btn-outline-success js-approve" data-id="${b.id}" style="margin:5px;">Approve</button>` : ''}
-          ${isPending ? `<button class="btn btn-sm btn-outline-warning js-deny" data-id="${b.id}" style="margin:5px;">Deny</button>` : ''}
+        <td class="mx">
+          ${isPending ? `<button class="custom-fs btn btn-sm js-approve" data-id="${b.id}" >Approve</button>` : ''}
+          <button class="btn btn-sm btn-outline-secondary js-edit" data-id="${b.id}" ><i class="fa fa-pencil"></i></button>
+          ${isPending ? `<button class="custom-fs btn btn-sm btn-outline-warning js-deny" data-id="${b.id}" >Deny</button>` : ''}
+          <button class="btn btn-sm btn-outline-danger js-del" data-id="${b.id}" ><i class="fa fa-trash"></i></button>
         </td>
       </tr>`;
     }).join('');
     el.innerHTML = `<div class="table-responsive"><table class="table table-sm">
-      <thead><tr><th>ID</th><th>Guest</th><th>Dates</th><th>Nights</th><th>Price/Night</th><th>Total</th><th>Paid</th><th>First-time</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>ID</th><th>Guest</th><th>Dates</th><th>Nights</th><th>Price/Night</th><th>Total</th><th>Paid</th><th>First-time</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${rows||''}</tbody></table></div>`;
   }
   function getCsrf(){ const m=document.cookie.match(/csrftoken=([^;]+)/); return m?m[1]:''; }
