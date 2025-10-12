@@ -220,6 +220,8 @@ def modify_booking(request, booking_id):
 def owner_bookings_calendar_data(request):
     """Return per-day booking counts for a given room/month (owner/admin only)."""
     room_id = request.GET.get('room_id')
+    if not room_id:
+        return JsonResponse({'error': 'room_id is required'}, status=400)
     year = int(request.GET.get('year') or date.today().year)
     month = int(request.GET.get('month') or date.today().month)
 
@@ -281,6 +283,8 @@ def owner_bookings_calendar_data(request):
 def owner_bookings_list(request):
     """Return bookings for a given room with basic details; filter by day/week/month optionally."""
     room_id = request.GET.get('room_id')
+    if not room_id:
+        return JsonResponse({'results': [], 'error': 'room_id is required'}, status=400)
     view = (request.GET.get('view') or 'month').lower()  # day|week|month
     y = int(request.GET.get('year') or date.today().year)
     m = int(request.GET.get('month') or date.today().month)

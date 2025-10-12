@@ -48,6 +48,7 @@
               <div class="col-md-8">
                 <label class="form-label">Select Room</label>
                 <select id="roomSelect" class="form-control">
+                  <option value="" selected disabled>Select a room…</option>
                   {% for r in rooms %}
                     <option value="{{ r.id }}">{{ r.hotel.hotel_name }} — Room {{ r.room_number }} ({{ r.get_type_display }})</option>
                   {% endfor %}
@@ -134,6 +135,11 @@
   }
   function fetchData(){
     const roomId = document.getElementById('roomSelect').value;
+    if(!roomId){
+      document.getElementById('calGrid').innerHTML = '';
+      document.getElementById('bookingList').innerHTML = '';
+      return;
+    }
     const month = document.getElementById('monthSelect').value;
     let year = parseInt(document.getElementById('yearInput').value,10);
     if(!year || isNaN(year)){ year = new Date().getFullYear(); }
@@ -213,7 +219,7 @@
   const now = new Date();
   document.getElementById('yearInput').value = now.getFullYear();
   document.getElementById('monthSelect').value = (now.getMonth()+1);
-  fetchData();
+  // do not fetch until room selected to avoid 400/500
 })();
 </script>
 {% endblock %}
