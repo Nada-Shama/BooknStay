@@ -4,12 +4,15 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/owner-dashboard.css' %}">
 <style>
-  .od-calendar-grid .day{ position:relative; overflow:hidden; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; }
+  .od-calendar-grid .day{ position:relative; overflow:hidden; transition:box-shadow .15s ease, background .15s ease, min-height .15s ease, padding .15s ease; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
   .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .od-calendar-grid .day:hover{ transform:translate(-12px,-12px) scale(1.2); z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
+  .od-calendar-grid .day .day-num{ font-weight:600; }
+  .od-calendar-grid .day:hover{ z-index:3; box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; overflow:visible; min-height:110px; padding-bottom:25px; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
   .od-calendar-grid .day:hover .user-names{ color:#fff; white-space:normal; overflow:visible; }
+  .od-calendar-grid .day:hover .day-num{ color:#f35525; }
+  .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
 </style>
 {% endblock %}
 {% block content %}
@@ -133,7 +136,7 @@
     for(let i=0;i<firstDow;i++){ const padCell=document.createElement('div'); padCell.className='pad'; grid.appendChild(padCell); }
     for(let d=1; d<=dim; d++){
       const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=d;
-      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+d+'</div>';
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+d+'</div>';
       grid.appendChild(cell);
     }
   }
@@ -148,7 +151,7 @@
     dows.forEach((d,i)=>{
       const h=document.createElement('div'); h.className='dow'; h.textContent=d; grid.appendChild(h);
       const cell=document.createElement('div'); cell.className='day'; cell.dataset.day=(startDay+i);
-      cell.innerHTML = '<div class="res-count" style="display:none"></div><div>'+(startDay+i)+'</div>';
+      cell.innerHTML = '<div class="res-count" style="display:none"></div><div class="day-num">'+(startDay+i)+'</div>';
       grid.appendChild(cell);
     });
   }
@@ -182,6 +185,10 @@
       small.className = 'user-names';
       small.textContent = names.join(', ');
       cell.appendChild(small);
+    });
+    // Mark empty days for hover label
+    grid.querySelectorAll('.day').forEach(cell=>{
+      if(!cell.querySelector('.user-names')){ cell.setAttribute('data-empty','1'); }
     });
   }
   function fetchData(){
