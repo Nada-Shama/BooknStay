@@ -6,17 +6,20 @@
 <style>
   .od-calendar-grid .day{ position:relative; overflow:visible; transition:transform .15s ease, box-shadow .15s ease, background .15s ease; transform-origin:center center; }
   .od-calendar-grid .day .triangle{ position:absolute; top:0; left:0; width:0; height:0; border-top:20px solid var(--uclr, #2ecc71); border-right:17px solid transparent; }
-  .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:crosshair; }
+  .od-calendar-grid .day .user-names{ font-size:10px; margin-top:4px; color:var(--uclr, #2ecc71); overflow:hidden; cursor:crosshair; }
+  .od-calendar-grid .day .user-names .user-line{ display:block; margin:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
   .od-calendar-grid .day .day-num{ font-weight:600; }
   .od-calendar-grid .day:hover{ z-index:3; transform:scale(1.25); box-shadow:0 0 0 2px #f35525 inset, 0 6px 14px rgba(0,0,0,.25); background:#000 !important; }
   .od-calendar-grid .day:hover .triangle{ border-top-color:#f35525; }
   .od-calendar-grid .day:hover .user-names{ color:#fff; }
+  .od-calendar-grid .day:hover .user-names .user-line{ white-space:normal; overflow:visible; text-overflow:clip; font-size:12px; }
   /* remove separate hover popover; expand same cell instead */
   .od-calendar-grid .day:hover .day-num{ color:#f35525; }
   .od-calendar-grid .day[data-empty="1"]:hover::after{ content:'empty'; position:absolute; left:6px; bottom:6px; font-size:10px; color:#fff; opacity:.85; }
   .od-calendar-grid .day[data-overlap="1"]{ box-shadow:0 0 0 2px #f35525 inset; background:#ffe8e8 !important; }
   /* Overlap hover: make names red for contrast */
   .od-calendar-grid .day[data-overlap="1"]:hover .user-names{ color:#e74c3c; }
+  .od-calendar-grid .day[data-overlap="1"]:hover .user-names .user-line{ color:#e74c3c; }
   /* removed hover-details usage */
 </style>
 {% endblock %}
@@ -216,15 +219,15 @@
       tri.style.borderTop = '20px solid '+color;
       tri.style.borderRight = '17px solid transparent';
       cell.appendChild(tri);
-      // Names list
+      // Names list as numbered lines
       const small = document.createElement('div');
       small.className = 'user-names';
-      // Note: render per-user spans to avoid duplicate text
       cell.appendChild(small);
-      // Inline clickable names (expand on hover via scale)
-      users.forEach(function(u){
-        const a = document.createElement('span'); a.className='user-name'; a.textContent = u.name||'Guest'; a.style.marginRight='8px';
-        a.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
+      users.forEach(function(u, idx){
+        const p = document.createElement('p');
+        p.className = 'user-line';
+        p.textContent = `${idx+1}- ${u.name||'Guest'}`;
+        p.addEventListener('click', function(ev){ ev.stopPropagation(); if(!u.booking_id) return;
           fetch(`/bookings/owner/detail/${u.booking_id}/`, { headers:{'X-Requested-With':'XMLHttpRequest'} })
             .then(r=>r.json()).then(d=>{
               if(!d.success) return; const b = d.booking; const m = document.getElementById('ownerEditModal'); if(!m) return;
@@ -238,7 +241,7 @@
               m.style.display = 'flex';
             });
         });
-        small.appendChild(a);
+        small.appendChild(p);
       });
       if(users.length > 1){ cell.setAttribute('data-overlap','1'); }
     });
