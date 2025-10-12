@@ -219,7 +219,7 @@ def modify_booking(request, booking_id):
 @login_required
 @require_http_methods(["GET"])
 def owner_bookings_calendar_data(request):
-    """Return per-day booking counts for a given room/month (owner/admin only)."""
+    """Return per-day users occupying the room for a given month (owner/admin only)."""
     room_id = request.GET.get('room_id')
     if not room_id:
         return JsonResponse({'error': 'room_id is required'}, status=400)
@@ -240,44 +240,53 @@ def owner_bookings_calendar_data(request):
     first_day = date(year, month, 1)
     last_day = date(year, month, monthrange(year, month)[1])
 
-    # Overlapping bookings in month
-    bookings = Booking.objects.filter(
+    # Overlapping bookings in month with user
+    bookings = Booking.objects.select_related('user').filter(
         room=room,
         status__in=[Booking.STATUS_PENDING, Booking.STATUS_CONFIRMED],
         check_in__lte=last_day,
         check_out__gte=first_day,
-    ).values('check_in', 'check_out')
+    )
 
-    counts = {d: 0 for d in range(1, monthrange(year, month)[1] + 1)}
+    # Stable palette for users
+    palette = [
+        '#1abc9c', '#2ecc71', '#3498db', '#9b59b6', '#e67e22', '#e74c3c',
+        '#16a085', '#27ae60', '#2980b9', '#8e44ad', '#d35400', '#c0392b'
+    ]
+
+    def user_color(u) -> str:
+        key = (u.id if u and getattr(u, 'id', None) else 0)
+        return palette[key % len(palette)]
+
+    def user_name(b: Booking) -> str:
+        if b.user:
+            fn = (getattr(b.user, 'first_name', '') or '').strip()
+            ln = (getattr(b.user, 'last_name', '') or '').strip()
+            if fn or ln:
+                return (fn + ' ' + ln).strip()
+            return getattr(b.user, 'username', 'Guest')
+        full = ((b.guest_first_name or '').strip() + ' ' + (b.guest_last_name or '').strip()).strip()
+        return full or (b.guest_email or 'Guest')
+
+    days = {}
+    # Iterate bookings and populate day users (exclude checkout day)
     for b in bookings:
-        start = max(b['check_in'], first_day)
-        end = min(b['check_out'], last_day)
+        start = max(b.check_in, first_day)
+        end = min(b.check_out, last_day)
         cur = start
-        while cur <= end:
-            # Count nights (exclude checkout day)
-            if cur < b['check_out']:
-                counts[cur.day] += 1
-            # add one day safely
+        while cur < end:  # exclude checkout day
+            key = cur.strftime('%Y-%m-%d')
+            days.setdefault(key, [])
+            # Deduplicate users per day
+            if not any((u.get('user_id') == (b.user_id or -1)) for u in days[key]):
+                days[key].append({
+                    'user_id': b.user_id or -1,
+                    'name': user_name(b),
+                    'color': user_color(b.user),
+                })
             cur = cur + (last_day - last_day.replace(day=last_day.day - 1))
 
-    def color_for(count: int) -> str:
-        if count >= 10:
-            return '#e74c3c'
-        if count >= 5:
-            return '#f39c12'
-        return '#2ecc71'
-
-    events = []
-    for d, c in counts.items():
-        if c <= 0:
-            continue
-        events.append({
-            'title': f'{c} bookings',
-            'start': f'{year}-{month:02d}-{d:02d}',
-            'color': color_for(c),
-            'allDay': True,
-        })
-    return JsonResponse(events, safe=False)
+    return JsonResponse({'success': True, 'days': days})
 
 @login_required
 @require_http_methods(["GET"])

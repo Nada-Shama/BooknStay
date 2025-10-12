@@ -87,7 +87,7 @@
                 </div>
               </div>
               <div class="od-calendar-grid" id="calGrid"></div>
-              <div class="note">Colors indicate current load per day.</div>
+              <div class="note">Each user gets a unique color. Light shade fills their days.</div>
             </div>
             <div class="mt-3" id="bookingList"></div>
           </section>
@@ -119,18 +119,35 @@
       grid.appendChild(cell);
     }
   }
-  function applyCounts(events){
+  function applyCounts(payload){
     const grid = document.getElementById('calGrid');
     if(!grid) return;
     grid.querySelectorAll('.res-count').forEach(n=>{ n.style.display='none'; n.textContent=''; });
-    (events||[]).forEach(ev=>{
-      const d = new Date(ev.start).getDate();
+    if(!payload || !payload.success) return;
+    const days = payload.days||{};
+    Object.keys(days).forEach(iso=>{
+      const d = new Date(iso).getDate();
       const cell = grid.querySelector('.day[data-day="'+d+'"]');
-      if(cell){
-        const badge = cell.querySelector('.res-count');
-        if(badge){ badge.style.display='inline-block'; badge.textContent=(ev.title||'').replace(/\D/g,'')||'1'; }
-        cell.style.boxShadow = '0 0 0 2px '+(ev.color||'#2ecc71')+' inset';
-      }
+      if(!cell) return;
+      const users = days[iso];
+      // Compose labels and compute blended background (use first color lightly)
+      const first = users[0] || {};
+      const color = first.color || '#2ecc71';
+      cell.style.boxShadow = '0 0 0 2px '+color+' inset';
+      cell.style.background = color + '1A'; // ~10% opacity if supported
+      // Top-left triangle badge
+      cell.style.position = 'relative';
+      const tri = document.createElement('div');
+      tri.style.position = 'absolute'; tri.style.top='0'; tri.style.left='0';
+      tri.style.width='0'; tri.style.height='0';
+      tri.style.borderTop='20px solid '+color; tri.style.borderRight='20px solid transparent';
+      cell.appendChild(tri);
+      // Names list
+      const names = users.map(u=>u.name||'Guest');
+      const small = document.createElement('div');
+      small.style.fontSize='10px'; small.style.marginTop='4px'; small.style.color=color;
+      small.textContent = names.join(', ');
+      cell.appendChild(small);
     });
   }
   function fetchData(){
